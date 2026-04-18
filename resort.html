@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Resort Stay — Eco Eyes Village</title>
+  <meta name="description" content="Luxury glamping and eco-resort accommodation at Eco Eyes Village, Nakhon Nayok. Book on Booking.com, Agoda, Tripadvisor or Trip.com." />
+  <link rel="icon" type="image/png" href="https://eco-eyes-bucket.s3.ap-southeast-1.amazonaws.com/icon-circle.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500;1,600&family=Jost:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: {
+        colors: { cream:'#FAF7EF','cream-mid':'#F0E9D8',gold:'#967138','gold-lt':'#C4A36A',dark:'#1C1915',forest:'#2B3A20' },
+        fontFamily: { display:['"Cormorant Garamond"','serif'], sans:['Jost','sans-serif'] }
+      }}
+    }
+  </script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{background:#FAF7EF;color:#1C1915;font-family:'Jost',sans-serif;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+    body::after{content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;opacity:0.028;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");background-size:200px}
+    #nav{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:center;justify-content:space-between;padding:1.5rem 3rem;transition:background 0.7s cubic-bezier(0.16,1,0.3,1),padding 0.5s cubic-bezier(0.16,1,0.3,1)}
+    #nav.scrolled{background:rgba(28,25,21,0.96);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding:0.875rem 3rem}
+    .nav-link{font-family:'Jost',sans-serif;font-size:0.62rem;letter-spacing:0.22em;text-transform:uppercase;color:rgba(255,255,255,0.7);text-decoration:none;transition:color 0.3s ease;position:relative;white-space:nowrap}
+    .nav-link::after{content:'';position:absolute;left:0;bottom:-3px;width:0;height:1px;background:#967138;transition:width 0.35s cubic-bezier(0.16,1,0.3,1)}
+    .nav-link:hover,.nav-link.active{color:rgba(255,255,255,1)}
+    .nav-link:hover::after,.nav-link.active::after{width:100%}
+    .lang-btn{font-family:'Jost',sans-serif;font-size:0.58rem;letter-spacing:0.18em;text-transform:uppercase;color:rgba(255,255,255,0.4);background:none;border:none;cursor:pointer;padding:0.15rem 0.2rem;transition:color 0.25s ease}
+    .lang-btn:hover,.lang-btn.active{color:#C4A36A}
+    .lang-divider{color:rgba(255,255,255,0.15);font-size:0.6rem}
+    .sep{display:block;width:52px;height:1px;background:#967138;margin:1.6rem 0}
+    .sep-center{margin:1.6rem auto}
+    .reveal{opacity:0;transform:translateY(28px);transition:opacity 1s cubic-bezier(0.16,1,0.3,1),transform 1s cubic-bezier(0.16,1,0.3,1)}
+    .reveal.visible{opacity:1;transform:translateY(0)}
+    .btn-outline-gold{display:inline-block;font-family:'Jost',sans-serif;font-size:0.62rem;letter-spacing:0.25em;text-transform:uppercase;border:1px solid #967138;color:#967138;padding:0.85rem 2rem;text-decoration:none;transition:background 0.35s ease,color 0.35s ease}
+    .btn-outline-gold:hover{background:#967138;color:#FAF7EF}
+    .btn-solid-gold{display:inline-block;font-family:'Jost',sans-serif;font-size:0.62rem;letter-spacing:0.25em;text-transform:uppercase;background:#967138;color:#FAF7EF;padding:0.85rem 2.5rem;text-decoration:none;transition:background 0.35s ease}
+    .btn-solid-gold:hover{background:#6B4F22}
+    .btn-outline-cream{display:inline-block;font-family:'Jost',sans-serif;font-size:0.62rem;letter-spacing:0.25em;text-transform:uppercase;border:1px solid rgba(196,163,106,0.5);color:#C4A36A;padding:0.85rem 2rem;text-decoration:none;transition:background 0.35s ease,color 0.35s ease,border-color 0.35s ease}
+    .btn-outline-cream:hover{background:#C4A36A;color:#1C1915;border-color:#C4A36A}
+    .platform-card{border:1px solid rgba(150,113,56,0.2);background:rgba(255,255,255,0.03);padding:2rem 1.75rem;text-decoration:none;display:flex;flex-direction:column;align-items:center;text-align:center;gap:1rem;transition:border-color 0.3s ease,background 0.3s ease,transform 0.4s cubic-bezier(0.16,1,0.3,1)}
+    .platform-card:hover{border-color:rgba(150,113,56,0.6);background:rgba(150,113,56,0.06);transform:translateY(-4px)}
+    .amenity-card{background:white;border:1px solid rgba(150,113,56,0.12);padding:2.5rem 2rem;transition:border-color 0.3s ease,transform 0.4s cubic-bezier(0.16,1,0.3,1),box-shadow 0.4s ease}
+    .amenity-card:hover{border-color:rgba(150,113,56,0.35);transform:translateY(-4px);box-shadow:0 12px 36px rgba(150,113,56,0.1)}
+    .room-card{overflow:hidden;background:white;border:1px solid rgba(150,113,56,0.12)}
+    .room-card img{transition:transform 0.8s cubic-bezier(0.16,1,0.3,1)}
+    .room-card:hover img{transform:scale(1.05)}
+    .gal-item img{transition:transform 0.7s cubic-bezier(0.16,1,0.3,1)}
+    .gal-item:hover img{transform:scale(1.05)}
+    .gal-cell{overflow:hidden;position:relative}
+    .gal-cell img{width:100%;height:100%;object-fit:cover;transition:opacity 0.5s ease}
+    #mobile-nav{position:fixed;inset:0;z-index:600;background:#1C1915;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2rem;transform:translateY(-100%);transition:transform 0.6s cubic-bezier(0.16,1,0.3,1)}
+    #mobile-nav.open{transform:translateY(0)}
+    #back-to-top{position:fixed;bottom:2.5rem;right:2.5rem;z-index:400;width:44px;height:44px;border:1px solid rgba(150,113,56,0.5);background:rgba(28,25,21,0.85);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;transform:translateY(12px);transition:opacity 0.4s ease,transform 0.4s ease,background 0.3s ease;pointer-events:none}
+    #back-to-top.visible{opacity:1;transform:translateY(0);pointer-events:auto}
+    #back-to-top:hover{background:rgba(150,113,56,0.9);border-color:rgba(150,113,56,0.9)}
+    @media(max-width:1024px){#nav{padding:1.25rem 1.5rem}#nav.scrolled{padding:0.875rem 1.5rem}#back-to-top{bottom:1.5rem;right:1.5rem}}
+  </style>
+</head>
+<body>
+
+<nav id="nav">
+  <a href="index.html" style="display:inline-flex;align-items:center;padding:0.25rem 0.5rem;border-radius:2px;background:rgba(28,25,21,0.3);backdrop-filter:blur(10px);">
+    <img src="brand_assets/brand%20logo%20updated.png" alt="Eco Eyes Village" style="height:36px;display:block;" onerror="this.src='brand_assets/brand%20logo%20old.png';this.onerror=null">
+  </a>
+  <div class="hidden lg:flex items-center gap-7">
+    <a href="resort.html"  class="nav-link active" data-en="Stay" data-th="พัก" data-zh="住宿">Stay</a>
+    <a href="cafe.html"    class="nav-link" data-en="Café" data-th="คาเฟ่" data-zh="咖啡厅">Café</a>
+    <a href="life.html"    class="nav-link" data-en="Experiences" data-th="ประสบการณ์" data-zh="体验">Experiences</a>
+    <a href="csr.html"     class="nav-link" data-en="Conservation" data-th="อนุรักษ์" data-zh="环保">Conservation</a>
+    <a href="explore.html" class="nav-link" data-en="Explore" data-th="สำรวจ" data-zh="探索">Explore</a>
+    <a href="contact.html" class="nav-link" data-en="Contact" data-th="ติดต่อ" data-zh="联系">Contact</a>
+  </div>
+  <div class="hidden lg:flex items-center gap-4">
+    <div class="flex items-center gap-1">
+      <button class="lang-btn active" onclick="setLang('en')" data-lang="en">EN</button>
+      <span class="lang-divider">|</span>
+      <button class="lang-btn" onclick="setLang('th')" data-lang="th">TH</button>
+      <span class="lang-divider">|</span>
+      <button class="lang-btn" onclick="setLang('zh')" data-lang="zh">ZH</button>
+    </div>
+    <a href="#booking" class="btn-solid-gold" style="padding:0.6rem 1.5rem;font-size:0.6rem;" data-en="Book Now" data-th="จองเดี๋ยวนี้" data-zh="立即预订">Book Now</a>
+  </div>
+  <button id="hamburger" onclick="openMenu()" class="lg:hidden flex flex-col gap-1.5 p-1" aria-label="Menu">
+    <span class="block w-6 h-px bg-white/80"></span>
+    <span class="block w-4 h-px bg-white/80"></span>
+    <span class="block w-6 h-px bg-white/80"></span>
+  </button>
+</nav>
+
+<button id="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C4A36A" stroke-width="1.5" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+</button>
+
+<div id="mobile-nav">
+  <button onclick="closeMenu()" class="absolute top-6 right-6 text-white/60 hover:text-white">
+    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+  </button>
+  <a href="index.html"   onclick="closeMenu()" class="font-display text-white text-4xl font-light italic hover:text-[#C4A36A] transition-colors" data-en="Home" data-th="หน้าแรก" data-zh="首页">Home</a>
+  <a href="resort.html"  onclick="closeMenu()" class="font-display text-[#C4A36A] text-4xl font-light italic" data-en="Stay" data-th="พัก" data-zh="住宿">Stay</a>
+  <a href="cafe.html"    onclick="closeMenu()" class="font-display text-white text-4xl font-light italic hover:text-[#C4A36A] transition-colors" data-en="Café" data-th="คาเฟ่" data-zh="咖啡厅">Café</a>
+  <a href="life.html"    onclick="closeMenu()" class="font-display text-white text-4xl font-light italic hover:text-[#C4A36A] transition-colors" data-en="Experiences" data-th="ประสบการณ์" data-zh="体验">Experiences</a>
+  <a href="csr.html"     onclick="closeMenu()" class="font-display text-white text-4xl font-light italic hover:text-[#C4A36A] transition-colors" data-en="Conservation" data-th="อนุรักษ์" data-zh="环保">Conservation</a>
+  <a href="explore.html" onclick="closeMenu()" class="font-display text-white text-4xl font-light italic hover:text-[#C4A36A] transition-colors" data-en="Explore" data-th="สำรวจ" data-zh="探索">Explore</a>
+  <a href="contact.html" onclick="closeMenu()" class="font-display text-white text-4xl font-light italic hover:text-[#C4A36A] transition-colors" data-en="Contact" data-th="ติดต่อ" data-zh="联系">Contact</a>
+</div>
+
+
+<!-- HERO -->
+<section class="relative h-screen overflow-hidden">
+  <img src="brand_assets/eco%20eyes%20website%20photos%20/Room%20Photos/630525041_1240272291531875_7916248610315048686_n.jpg"
+       alt="Eco Eyes Village Resort" class="absolute inset-0 w-full h-full object-cover">
+  <div class="absolute inset-0 bg-gradient-to-b from-black/50 via-black/20 to-black/65"></div>
+  <div class="absolute inset-0" style="background:radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.3) 100%)"></div>
+  <div class="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
+    <p class="font-sans text-white/50 text-[0.58rem] tracking-widest uppercase mb-7 reveal" style="transition-delay:0.3s"
+       data-en="Nakhon Nayok · Thailand" data-th="นครนายก · ประเทศไทย" data-zh="那空那育 · 泰国">Nakhon Nayok · Thailand</p>
+    <h1 class="font-display text-white font-light leading-none reveal" style="font-size:clamp(3.5rem,8vw,7.5rem);transition-delay:0.5s">
+      <span data-en="Resort " data-th="ที่พัก" data-zh="度假村">Resort </span><em><span data-en="Stay" data-th="พักผ่อน" data-zh="住宿">Stay</span></em>
+    </h1>
+    <span class="sep sep-center reveal" style="transition-delay:0.75s;background:#C4A36A;"></span>
+    <p class="font-sans text-white/55 text-[0.65rem] tracking-widest uppercase reveal" style="transition-delay:0.9s"
+       data-en="Glamping · Eco-Luxury · Nature Immersion" data-th="แคมปิ้งหรู · นิเวศน์หรูหรา · การดื่มด่ำธรรมชาติ" data-zh="豪华帐篷 · 生态奢华 · 沉浸自然">Glamping · Eco-Luxury · Nature Immersion</p>
+    <div class="flex gap-4 mt-10 reveal pointer-events-auto" style="transition-delay:1.1s">
+      <a href="#booking" class="btn-solid-gold" data-en="Book Your Stay" data-th="จองที่พักของคุณ" data-zh="预订您的住宿">Book Your Stay</a>
+    </div>
+  </div>
+</section>
+
+
+<!-- INTRO -->
+<section class="py-32 md:py-40 bg-cream">
+  <div class="max-w-7xl mx-auto px-6 md:px-12 grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-24 items-center">
+    <div class="reveal">
+      <p class="font-sans text-gold text-[0.62rem] tracking-widest uppercase mb-5"
+         data-en="Your Retreat" data-th="การพักผ่อนของคุณ" data-zh="您的静修之所">Your Retreat</p>
+      <h2 class="font-display text-dark font-light leading-[1.05] mb-2" style="font-size:clamp(2.4rem,4vw,3.8rem)">
+        <span data-en="Sleep Inside" data-th="พักผ่อนอยู่ใน" data-zh="沉睡于">Sleep Inside</span><br><em><span data-en="the Forest" data-th="ผืนป่า" data-zh="森林之中">the Forest</span></em>
+      </h2>
+      <span class="sep"></span>
+      <p class="font-sans text-dark/65 text-[0.9rem] leading-[1.85] mb-5"
+         data-en="Wake to birdsong, breathe clean forest air, and feel the rhythm of nature restored. Eco Eyes Village offers a rare kind of luxury — one where the forest itself is your amenity."
+         data-th="ตื่นนอนกับเสียงนก หายใจรับอากาศป่าบริสุทธิ์ และรู้สึกถึงจังหวะของธรรมชาติที่ฟื้นคืน อีโค่ อายส์ วิลเลจ นำเสนอความหรูหราที่หาได้ยาก — ความหรูหราที่ป่าเป็นสิ่งอำนวยความสะดวก"
+         data-zh="在鸟鸣声中醒来，呼吸清新的森林空气，感受自然节奏的恢复。生态眼村庄提供一种罕见的奢华——以森林本身作为您的设施。">Wake to birdsong, breathe clean forest air, and feel the rhythm of nature restored. Eco Eyes Village offers a rare kind of luxury — one where the forest itself is your amenity.</p>
+      <p class="font-sans text-dark/65 text-[0.9rem] leading-[1.85] mb-10"
+         data-en="Our glamping accommodation blends thoughtfully with the landscape — minimal footprint, maximum connection to nature. Rated 9.0 Exceptional on Agoda and 4.9/5 on Tripadvisor."
+         data-th="ที่พักแคมปิ้งหรูของเราผสมผสานกับภูมิทัศน์อย่างรอบคอบ — ผลกระทบต่อสิ่งแวดล้อมน้อยที่สุด ความเชื่อมต่อกับธรรมชาติสูงสุด ได้รับการให้คะแนน 9.0 จาก Agoda"
+         data-zh="我们的豪华帐篷住宿与景观融合——最小的环境足迹，最大的自然连接。在Agoda上获得9.0分（卓越评级），在Tripadvisor上获得4.9/5分。">Our glamping accommodation blends thoughtfully with the landscape — minimal footprint, maximum connection to nature. Rated 9.0 Exceptional on Agoda and 4.9/5 on Tripadvisor.</p>
+      <div class="flex gap-8 mb-10">
+        <div>
+          <p class="font-display text-gold text-4xl font-light">9.0</p>
+          <p class="font-sans text-dark/45 text-[0.6rem] tracking-widest uppercase mt-1" data-en="Agoda Score" data-th="คะแนน Agoda" data-zh="Agoda评分">Agoda Score</p>
+        </div>
+        <div style="width:1px;background:rgba(150,113,56,0.2)"></div>
+        <div>
+          <p class="font-display text-gold text-4xl font-light">4.9</p>
+          <p class="font-sans text-dark/45 text-[0.6rem] tracking-widest uppercase mt-1" data-en="Tripadvisor" data-th="ทริปแอดไวเซอร์" data-zh="猫途鹰">Tripadvisor</p>
+        </div>
+        <div style="width:1px;background:rgba(150,113,56,0.2)"></div>
+        <div>
+          <p class="font-display text-gold text-4xl font-light">8.7</p>
+          <p class="font-sans text-dark/45 text-[0.6rem] tracking-widest uppercase mt-1" data-en="Booking.com" data-th="บุ๊คกิ้ง" data-zh="缤客">Booking.com</p>
+        </div>
+      </div>
+      <a href="#booking" class="btn-outline-gold" data-en="Check Availability" data-th="ตรวจสอบความพร้อมใช้งาน" data-zh="查看房间供应情况">Check Availability</a>
+    </div>
+    <div class="relative reveal" style="transition-delay:0.2s">
+      <div class="aspect-[3/4] overflow-hidden">
+        <img src="brand_assets/eco%20eyes%20website%20photos%20/Room%20Photos/Advettisement%20picture%20from%20room%20(important).jpg"
+             alt="Eco Eyes glamping dome" loading="lazy" class="w-full h-full object-cover transition-transform duration-700 hover:scale-[1.03]">
+      </div>
+      <div class="absolute -bottom-5 -right-5 w-2/3 h-2/3 border border-[#967138]/15 -z-10 pointer-events-none"></div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ACCOMMODATION -->
+<section id="accommodation" class="py-32 bg-cream-mid">
+  <div class="max-w-7xl mx-auto px-6 md:px-12">
+    <div class="text-center mb-16 reveal">
+      <p class="font-sans text-gold text-[0.62rem] tracking-widest uppercase mb-5"
+         data-en="Our Accommodation" data-th="ที่พักของเรา" data-zh="我们的住宿">Our Accommodation</p>
+      <h2 class="font-display text-dark font-light" style="font-size:clamp(2.4rem,4vw,3.8rem)">
+        <span data-en="Lakeside View " data-th="โดม" data-zh="湖景">Lakeside View </span><em><span data-en="Dome" data-th="วิวทะเลสาบ" data-zh="穹顶">Dome</span></em>
+      </h2>
+      <span class="sep sep-center"></span>
+      <p class="font-sans text-dark/50 text-[0.875rem] leading-[1.85] mt-4 mx-auto" style="max-width:38rem"
+         data-en="A single, extraordinary room type. The Lakeside View Dome sits at the edge of the lake, with direct access to forest trails and the resort garden — where the line between inside and nature disappears entirely."
+         data-th="ที่พักประเภทเดียวที่พิเศษสุด โดมวิวทะเลสาบตั้งอยู่ริมทะเลสาบ พร้อมทางเข้าสู่เส้นทางป่าและสวนรีสอร์ทโดยตรง — ที่ซึ่งเส้นแบ่งระหว่างภายในและธรรมชาติหายไปโดยสิ้นเชิง"
+         data-zh="独一无二的住宿类型。湖景穹顶坐落于湖畔，可直达森林步道和度假村花园——室内与自然之间的界限在此完全消融。">A single, extraordinary room type. The Lakeside View Dome sits at the edge of the lake, with direct access to forest trails and the resort garden — where the line between inside and nature disappears entirely.</p>
+    </div>
+
+    <!-- Single room type — Lakeside View Dome -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+      <div class="room-card reveal" style="grid-row: span 2">
+        <div class="overflow-hidden" style="height:520px">
+          <img src="brand_assets/eco%20eyes%20website%20photos%20/Room%20Photos/630525041_1240272291531875_7916248610315048686_n.jpg"
+               alt="Lakeside View Dome — Eco Eyes Village" loading="lazy" class="w-full h-full object-cover">
+        </div>
+        <div class="p-8">
+          <p class="font-sans text-gold text-[0.58rem] tracking-widest uppercase mb-2"
+             data-en="Glamping Dome" data-th="โดมแคมปิ้งหรู" data-zh="豪华帐篷穹顶">Glamping Dome</p>
+          <h3 class="font-display text-dark text-3xl font-light mb-3"
+              data-en="Lakeside View Dome" data-th="โดมวิวทะเลสาบ" data-zh="湖景穹顶">Lakeside View Dome</h3>
+          <p class="font-sans text-dark/55 text-[0.875rem] leading-[1.85] mb-6"
+             data-en="Wake to a still lake and a forest that breathes with you. Each dome is positioned with a direct view of the water and easy access to both forest trails and our garden — a private sanctuary where no two mornings are the same."
+             data-th="ตื่นนอนกับทะเลสาบอันนิ่งสงบและป่าที่หายใจไปพร้อมกับคุณ โดมแต่ละหลังถูกวางตำแหน่งให้มองเห็นน้ำโดยตรงและเข้าถึงทั้งเส้นทางป่าและสวนของเราได้ง่าย — สถานที่พักผ่อนส่วนตัวที่ไม่มีเช้าไหนเหมือนกัน"
+             data-zh="在宁静的湖水和随您呼吸的森林中醒来。每个穹顶都正对水面，并可轻松进入森林步道和花园——一个私人静所，每个清晨都独一无二。">Wake to a still lake and a forest that breathes with you. Each dome is positioned with a direct view of the water and easy access to both forest trails and our garden — a private sanctuary where no two mornings are the same.</p>
+          <ul class="space-y-2 mb-6">
+            <li class="font-sans text-dark/50 text-[0.8rem] flex items-center gap-2"><span style="width:4px;height:4px;background:#967138;border-radius:50%;display:inline-block"></span><span data-en="Lakeside view from private deck" data-th="วิวทะเลสาบจากระเบียงส่วนตัว" data-zh="私人露台湖景">Lakeside view from private deck</span></li>
+            <li class="font-sans text-dark/50 text-[0.8rem] flex items-center gap-2"><span style="width:4px;height:4px;background:#967138;border-radius:50%;display:inline-block"></span><span data-en="Direct access to forest trails" data-th="ทางเข้าเส้นทางป่าโดยตรง" data-zh="直通森林步道">Direct access to forest trails</span></li>
+            <li class="font-sans text-dark/50 text-[0.8rem] flex items-center gap-2"><span style="width:4px;height:4px;background:#967138;border-radius:50%;display:inline-block"></span><span data-en="Access to resort garden" data-th="เข้าถึงสวนรีสอร์ท" data-zh="通往度假村花园">Access to resort garden</span></li>
+            <li class="font-sans text-dark/50 text-[0.8rem] flex items-center gap-2"><span style="width:4px;height:4px;background:#967138;border-radius:50%;display:inline-block"></span><span data-en="Air conditioning &amp; natural ventilation" data-th="เครื่องปรับอากาศและการระบายอากาศตามธรรมชาติ" data-zh="空调与自然通风">Air conditioning &amp; natural ventilation</span></li>
+            <li class="font-sans text-dark/50 text-[0.8rem] flex items-center gap-2"><span style="width:4px;height:4px;background:#967138;border-radius:50%;display:inline-block"></span><span data-en="En-suite bathroom with rainfall shower" data-th="ห้องน้ำในตัวพร้อมฝักบัว" data-zh="带雨淋淋浴的套间浴室">En-suite bathroom with rainfall shower</span></li>
+            <li class="font-sans text-dark/50 text-[0.8rem] flex items-center gap-2"><span style="width:4px;height:4px;background:#967138;border-radius:50%;display:inline-block"></span><span data-en="Breakfast available from Eco Café" data-th="อาหารเช้าจากอีโค่ คาเฟ่" data-zh="可从生态咖啡厅享用早餐">Breakfast available from Eco Café</span></li>
+          </ul>
+          <a href="#booking" class="btn-outline-gold"
+             data-en="Book Now" data-th="จองเลย" data-zh="立即预订">Book Now</a>
+        </div>
+      </div>
+
+      <div class="room-card reveal" style="transition-delay:0.1s">
+        <div class="overflow-hidden" style="height:280px">
+          <img src="brand_assets/eco%20eyes%20website%20photos%20/Room%20Photos/Room%20picture%201.webp"
+               alt="Lakeside View Dome Interior" loading="lazy" class="w-full h-full object-cover">
+        </div>
+        <div class="p-6">
+          <p class="font-sans text-gold text-[0.58rem] tracking-widest uppercase mb-2"
+             data-en="Inside the Dome" data-th="ภายในโดม" data-zh="穹顶内部">Inside the Dome</p>
+          <p class="font-sans text-dark/55 text-[0.82rem] leading-[1.8]"
+             data-en="Thoughtfully furnished with natural materials. Every detail — from the woven textiles to the reclaimed wood — has been chosen to bring nature in without disturbing what lies outside."
+             data-th="ตกแต่งด้วยวัสดุธรรมชาติอย่างรอบคอบ ทุกรายละเอียด — จากผ้าทอไปจนถึงไม้เก่า — ถูกเลือกมาเพื่อนำธรรมชาติเข้ามาโดยไม่รบกวนสิ่งที่อยู่ภายนอก"
+             data-zh="以天然材料精心布置。每个细节——从编织纺织品到再生木材——都经过精心挑选，将自然引入室内，同时不打扰外部的自然。">Thoughtfully furnished with natural materials. Every detail — from the woven textiles to the reclaimed wood — has been chosen to bring nature in without disturbing what lies outside.</p>
+        </div>
+      </div>
+
+      <div class="room-card reveal" style="transition-delay:0.2s">
+        <div style="height:200px;display:grid;grid-template-columns:2fr 1fr;gap:2px">
+          <div class="overflow-hidden">
+            <img src="brand_assets/eco%20eyes%20website%20photos%20/Room%20Photos/Outdoor%20patio%20picture.webp"
+                 alt="Outdoor Patio" loading="lazy" class="w-full h-full object-cover">
+          </div>
+          <div style="display:grid;grid-template-rows:1fr 1fr;gap:2px">
+            <div class="overflow-hidden">
+              <img src="brand_assets/deck%20photo.jpg"
+                   alt="Deck" loading="lazy" class="w-full h-full object-cover">
+            </div>
+            <div class="overflow-hidden">
+              <img src="brand_assets/eco%20eyes%20website%20photos%20/Advertisement%20Photos/Advertisement%20photo%20for%20outisde%20room%20balcony.jpg"
+                   alt="Room Balcony" loading="lazy" class="w-full h-full object-cover">
+            </div>
+          </div>
+        </div>
+        <div class="p-6">
+          <p class="font-sans text-gold text-[0.58rem] tracking-widest uppercase mb-2"
+             data-en="The Deck" data-th="ระเบียง" data-zh="露台">The Deck</p>
+          <p class="font-sans text-dark/55 text-[0.82rem] leading-[1.8]"
+             data-en="Your private outdoor patio — where morning coffee, evening reflection, and the sounds of the forest all converge. The perfect threshold between indoors and wild."
+             data-th="ระเบียงกลางแจ้งส่วนตัวของคุณ — ที่ซึ่งกาแฟยามเช้า การสะท้อนยามเย็น และเสียงป่าทั้งหมดมาบรรจบกัน ธรณีประตูที่สมบูรณ์แบบระหว่างภายในและธรรมชาติ"
+             data-zh="您的私人户外露台——清晨的咖啡、傍晚的沉思、森林的声音在此汇聚。室内与自然野性之间的完美过渡。">Your private outdoor patio — where morning coffee, evening reflection, and the sounds of the forest all converge. The perfect threshold between indoors and wild.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Room photo strip -->
+    <div class="grid grid-cols-4 gap-2 mt-4">
+      <div class="overflow-hidden aspect-video reveal">
+        <img src="brand_assets/eco%20eyes%20website%20photos%20/Room%20Photos/Scenic%20room%20picture%20.webp" alt="" loading="lazy" class="w-full h-full object-cover">
+      </div>
+      <div class="overflow-hidden aspect-video reveal" style="transition-delay:0.08s">
+        <img src="brand_assets/eco%20eyes%20website%20photos%20/Room%20Photos/Bathroom%20picture%201.webp" alt="" loading="lazy" class="w-full h-full object-cover">
+      </div>
+      <div class="overflow-hidden aspect-video reveal" style="transition-delay:0.16s">
+        <img src="brand_assets/eco%20eyes%20website%20photos%20/Room%20Photos/view%20from%20inside%20the%20room.jpg" alt="" loading="lazy" class="w-full h-full object-cover">
+      </div>
+      <div class="overflow-hidden aspect-video reveal" style="transition-delay:0.24s">
+        <img src="brand_assets/eco%20eyes%20website%20photos%20/Room%20Photos/outdoor%20room%20view.jpg" alt="" loading="lazy" class="w-full h-full object-cover">
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- BOOKING PLATFORMS -->
+<section id="booking" class="bg-dark py-24 px-6" style="border-top:1px solid rgba(150,113,56,0.2)">
+  <div class="max-w-5xl mx-auto">
+    <div class="text-center mb-12 reveal">
+      <p class="font-sans text-gold text-[0.58rem] tracking-widest uppercase mb-3"
+         data-en="Available On" data-th="จองได้ที่" data-zh="可在以下平台预订">Available On</p>
+      <h2 class="font-display text-white font-light" style="font-size:clamp(2rem,3.5vw,3rem)">
+        <span data-en="Book Your " data-th="จอง" data-zh="预订您的">Book Your </span><em><span data-en="Stay" data-th="ที่พักของคุณ" data-zh="住宿">Stay</span></em>
+      </h2>
+      <p class="font-sans text-white/40 text-sm mt-4"
+         data-en="Choose your preferred platform — all offer the same beautiful rooms"
+         data-th="เลือกแพลตฟอร์มที่คุณต้องการ — ทุกแพลตฟอร์มเสนอห้องพักที่สวยงามเหมือนกัน"
+         data-zh="选择您喜欢的平台——所有平台都提供相同的精美房间">Choose your preferred platform — all offer the same beautiful rooms</p>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 reveal" style="transition-delay:0.15s">
+      <a href="https://www.booking.com/hotel/th/eco-eyes-village.en-gb.html" target="_blank" rel="noopener" class="platform-card">
+        <div style="width:44px;height:44px;background:rgba(0,53,128,0.3);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Jost',sans-serif;font-weight:600;color:#5ba4f5;font-size:1.1rem">B.</div>
+        <p class="font-sans text-white/90 text-sm font-medium">Booking.com</p>
+        <p class="font-sans text-white/35 text-[0.65rem]">8.7 · Superb</p>
+        <span class="font-sans text-gold text-[0.58rem] tracking-widest uppercase" data-en="Book Now →" data-th="จองเดี๋ยวนี้ →" data-zh="立即预订 →">Book Now →</span>
+      </a>
+      <a href="https://www.agoda.com/eco-eyes-village-h50516484/hotel/nakhon-nayok-th.html" target="_blank" rel="noopener" class="platform-card">
+        <div style="width:44px;height:44px;background:rgba(232,76,61,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Jost',sans-serif;font-weight:600;color:#e88a7d;font-size:0.9rem">Ag</div>
+        <p class="font-sans text-white/90 text-sm font-medium">Agoda</p>
+        <p class="font-sans text-white/35 text-[0.65rem]">9.0 · Exceptional</p>
+        <span class="font-sans text-gold text-[0.58rem] tracking-widest uppercase" data-en="Book Now →" data-th="จองเดี๋ยวนี้ →" data-zh="立即预订 →">Book Now →</span>
+      </a>
+      <a href="https://www.tripadvisor.co.uk/HotelHighlight?detail=33216461" target="_blank" rel="noopener" class="platform-card">
+        <div style="width:44px;height:44px;background:rgba(52,168,83,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Jost',sans-serif;font-weight:600;color:#6ac97d;font-size:0.9rem">TA</div>
+        <p class="font-sans text-white/90 text-sm font-medium">Tripadvisor</p>
+        <p class="font-sans text-white/35 text-[0.65rem]">4.9 / 5 · Excellent</p>
+        <span class="font-sans text-gold text-[0.58rem] tracking-widest uppercase" data-en="Read Reviews →" data-th="อ่านรีวิว →" data-zh="查看评价 →">Read Reviews →</span>
+      </a>
+      <a href="https://www.trip.com/hotels/nakhon-nayok-hotel-detail-eco-eyes-village/" target="_blank" rel="noopener" class="platform-card">
+        <div style="width:44px;height:44px;background:rgba(0,174,198,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Jost',sans-serif;font-weight:600;color:#5dcdd8;font-size:0.9rem">TC</div>
+        <p class="font-sans text-white/90 text-sm font-medium">Trip.com</p>
+        <p class="font-sans text-white/35 text-[0.65rem]">Top Rated</p>
+        <span class="font-sans text-gold text-[0.58rem] tracking-widest uppercase" data-en="Book Now →" data-th="จองเดี๋ยวนี้ →" data-zh="立即预订 →">Book Now →</span>
+      </a>
+    </div>
+    <p class="text-center font-sans text-white/25 text-[0.65rem] tracking-wide mt-8 reveal"
+       data-en="Best rate guaranteed on all platforms · Free cancellation on most rates"
+       data-th="รับประกันราคาที่ดีที่สุดในทุกแพลตฟอร์ม · ยกเลิกฟรีสำหรับส่วนใหญ่"
+       data-zh="所有平台均提供最优惠价格保证 · 大多数房价提供免费取消">Best rate guaranteed on all platforms · Free cancellation on most rates</p>
+  </div>
+</section>
+
+
+<!-- AMENITIES -->
+<section class="py-32 bg-cream">
+  <div class="max-w-7xl mx-auto px-6 md:px-12">
+    <div class="text-center mb-16 reveal">
+      <p class="font-sans text-gold text-[0.62rem] tracking-widest uppercase mb-5"
+         data-en="Included With Your Stay" data-th="รวมกับที่พักของคุณ" data-zh="住宿包含内容">Included With Your Stay</p>
+      <h2 class="font-display text-dark font-light" style="font-size:clamp(2.4rem,4vw,3.8rem)">
+        <span data-en="Resort " data-th="สิ่งอำนวย" data-zh="度假村">Resort </span><em><span data-en="Amenities" data-th="ความสะดวก" data-zh="设施">Amenities</span></em>
+      </h2>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="amenity-card reveal">
+        <div class="w-12 h-12 mb-5 flex items-center justify-center" style="background:rgba(150,113,56,0.1);border-radius:2px">
+          <svg width="22" height="22" fill="none" stroke="#967138" stroke-width="1.4" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <p class="font-sans text-gold text-[0.58rem] tracking-widest uppercase mb-2" data-en="Wellness" data-th="สุขภาพ" data-zh="健康">Wellness</p>
+        <h3 class="font-display text-dark text-2xl font-light mb-3" data-en="Forest Spa &amp; Sauna" data-th="สปาป่าและซาวน่า" data-zh="森林水疗与桑拿">Forest Spa &amp; Sauna</h3>
+        <p class="font-sans text-dark/55 text-[0.85rem] leading-[1.8]"
+           data-en="Immerse in traditional Thai massage and forest spa treatments. Our open-air sauna sits within the trees, transforming wellness into a natural ritual."
+           data-th="จุ่มตัวในการนวดไทยแบบดั้งเดิมและการบำบัดสปาป่า ซาวน่ากลางแจ้งของเราตั้งอยู่ในหมู่ต้นไม้ ทำให้สุขภาพกลายเป็นพิธีกรรมทางธรรมชาติ"
+           data-zh="沉浸于传统泰式按摩和森林水疗护理。我们的露天桑拿置于树林之中，将健康养生转化为一种自然仪式。">Immerse in traditional Thai massage and forest spa treatments. Our open-air sauna sits within the trees, transforming wellness into a natural ritual.</p>
+      </div>
+      <div class="amenity-card reveal" style="transition-delay:0.12s">
+        <div class="w-12 h-12 mb-5 flex items-center justify-center" style="background:rgba(150,113,56,0.1);border-radius:2px">
+          <svg width="22" height="22" fill="none" stroke="#967138" stroke-width="1.4" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        </div>
+        <p class="font-sans text-gold text-[0.58rem] tracking-widest uppercase mb-2" data-en="Mindfulness" data-th="สมาธิ" data-zh="正念">Mindfulness</p>
+        <h3 class="font-display text-dark text-2xl font-light mb-3" data-en="Meditation &amp; Yoga" data-th="การทำสมาธิและโยคะ" data-zh="冥想与瑜伽">Meditation &amp; Yoga</h3>
+        <p class="font-sans text-dark/55 text-[0.85rem] leading-[1.8]"
+           data-en="Begin your mornings with guided meditation or lakeside yoga sessions. Crystal singing bowl ceremonies are available for deeper mindfulness practice."
+           data-th="เริ่มต้นเช้าด้วยการทำสมาธิแบบมีไกด์หรือโยคะริมทะเลสาบ พิธีชามคริสตัลมีไว้สำหรับการปฏิบัติสมาธิที่ลึกซึ้งยิ่งขึ้น"
+           data-zh="从有指导的冥想或湖边瑜伽课开始每个清晨。还提供水晶颂钵仪式，以便进行更深度的正念练习。">Begin your mornings with guided meditation or lakeside yoga sessions. Crystal singing bowl ceremonies are available for deeper mindfulness practice.</p>
+      </div>
+      <div class="amenity-card reveal" style="transition-delay:0.24s">
+        <div class="w-12 h-12 mb-5 flex items-center justify-center" style="background:rgba(150,113,56,0.1);border-radius:2px">
+          <svg width="22" height="22" fill="none" stroke="#967138" stroke-width="1.4" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </div>
+        <p class="font-sans text-gold text-[0.58rem] tracking-widest uppercase mb-2" data-en="Pet Friendly" data-th="รับสัตว์เลี้ยง" data-zh="欢迎宠物">Pet Friendly</p>
+        <h3 class="font-display text-dark text-2xl font-light mb-3" data-en="Pets Welcome" data-th="ยินดีต้อนรับสัตว์เลี้ยง" data-zh="欢迎您的宠物">Pets Welcome</h3>
+        <p class="font-sans text-dark/55 text-[0.85rem] leading-[1.8]"
+           data-en="Eco Eyes Village welcomes your furry companions. Our forest trails and open spaces are perfect for dogs, and we provide all the essentials for their comfort."
+           data-th="อีโค่ อายส์ วิลเลจ ยินดีต้อนรับสัตว์เลี้ยงของคุณ เส้นทางป่าและพื้นที่เปิดโล่งของเราเหมาะสำหรับสุนัข"
+           data-zh="生态眼村庄欢迎您的毛茸茸的伙伴。我们的森林步道和开放空间非常适合狗狗，我们提供所有必要设施以确保它们的舒适。">Eco Eyes Village welcomes your furry companions. Our forest trails and open spaces are perfect for dogs, and we provide all the essentials for their comfort.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SPA VISUAL -->
+<section class="overflow-hidden">
+  <div class="grid grid-cols-1 md:grid-cols-2">
+    <div class="relative overflow-hidden" style="min-height:480px">
+      <img src="brand_assets/eco%20eyes%20website%20photos%20/Spa%20Photos/yogo%20on%20lake.jpg"
+           alt="Yoga on the lake at Eco Eyes Village" class="absolute inset-0 w-full h-full object-cover" loading="lazy">
+    </div>
+    <div class="bg-forest flex items-center">
+      <div class="px-12 md:px-20 py-24 reveal">
+        <p class="font-sans text-[0.62rem] tracking-widest uppercase mb-6" style="color:#C4A36A"
+           data-en="Wellness Retreat" data-th="การพักผ่อนเพื่อสุขภาพ" data-zh="康养静修">Wellness Retreat</p>
+        <h2 class="font-display text-white font-light leading-tight mb-3" style="font-size:clamp(2rem,3.2vw,2.8rem)">
+          <span data-en="Restore Your" data-th="ฟื้นฟู" data-zh="重新连接">Restore Your</span><br><em><span data-en="Connection to Nature" data-th="การเชื่อมต่อกับธรรมชาติ" data-zh="与自然的联系">Connection to Nature</span></em>
+        </h2>
+        <span class="sep" style="background:#C4A36A;margin-bottom:1.5rem"></span>
+        <p class="font-sans text-white/60 text-[0.875rem] leading-[1.85] mb-8"
+           data-en="From sunrise yoga on the lake to evening meditation beneath the canopy, every moment at Eco Eyes is designed to restore. Our mindfulness programmes connect body, mind, and forest into a single, healing experience."
+           data-th="จากโยคะยามพระอาทิตย์ขึ้นริมทะเลสาบไปจนถึงการทำสมาธิยามเย็นใต้ร่มไม้ ทุกช่วงเวลาที่อีโค่ อายส์ถูกออกแบบมาเพื่อฟื้นฟู"
+           data-zh="从日出时的湖边瑜伽到傍晚在树冠下的冥想，生态眼的每一刻都是为了恢复。我们的正念课程将身体、心灵和森林融合为一种治愈体验。">From sunrise yoga on the lake to evening meditation beneath the canopy, every moment at Eco Eyes is designed to restore. Our mindfulness programmes connect body, mind, and forest into a single, healing experience.</p>
+        <a href="contact.html" class="btn-outline-cream" data-en="Enquire About Wellness" data-th="สอบถามเกี่ยวกับสุขภาพ" data-zh="咨询健康课程">Enquire About Wellness</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- GALLERY -->
+<section class="py-24 bg-cream-mid">
+  <div class="max-w-7xl mx-auto px-6 md:px-12">
+    <div class="text-center mb-12 reveal">
+      <p class="font-sans text-gold text-[0.62rem] tracking-widest uppercase mb-4" data-en="Gallery" data-th="แกลเลอรี" data-zh="相册">Gallery</p>
+      <h2 class="font-display text-dark font-light" style="font-size:clamp(2rem,3.5vw,3rem)">
+        <span data-en="Life at " data-th="ชีวิตที่" data-zh="生活在">Life at </span><em><span data-en="the Resort" data-th="รีสอร์ท" data-zh="度假村">the Resort</span></em>
+      </h2>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="room-gal-grid">
+      <div class="gal-cell overflow-hidden aspect-square reveal"><img loading="lazy" alt="Eco Eyes Village" class="w-full h-full object-cover transition-opacity duration-500"></div>
+      <div class="gal-cell overflow-hidden aspect-square reveal" style="transition-delay:0.08s"><img loading="lazy" alt="" class="w-full h-full object-cover transition-opacity duration-500"></div>
+      <div class="gal-cell overflow-hidden aspect-square reveal" style="transition-delay:0.16s"><img loading="lazy" alt="" class="w-full h-full object-cover transition-opacity duration-500"></div>
+      <div class="gal-cell overflow-hidden aspect-square reveal" style="transition-delay:0.24s"><img loading="lazy" alt="" class="w-full h-full object-cover transition-opacity duration-500"></div>
+      <div class="gal-cell overflow-hidden aspect-square reveal" style="transition-delay:0.1s"><img loading="lazy" alt="" class="w-full h-full object-cover transition-opacity duration-500"></div>
+      <div class="gal-cell overflow-hidden aspect-square reveal" style="transition-delay:0.18s"><img loading="lazy" alt="" class="w-full h-full object-cover transition-opacity duration-500"></div>
+      <div class="gal-cell overflow-hidden aspect-square reveal" style="transition-delay:0.26s"><img loading="lazy" alt="" class="w-full h-full object-cover transition-opacity duration-500"></div>
+      <div class="gal-cell overflow-hidden aspect-square reveal" style="transition-delay:0.34s"><img loading="lazy" alt="" class="w-full h-full object-cover transition-opacity duration-500"></div>
+    </div>
+  </div>
+</section>
+
+
+<!-- FOOTER -->
+<footer class="bg-dark py-16 px-6" style="border-top:1px solid rgba(255,255,255,0.06)">
+  <div class="max-w-7xl mx-auto">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-14">
+      <div class="md:col-span-2">
+        <a href="index.html" style="display:inline-flex;align-items:center;padding:0.25rem 0.5rem;background:rgba(250,247,239,0.05);border-radius:2px;margin-bottom:1.25rem;">
+          <img src="brand_assets/brand%20logo%20updated.png" alt="Eco Eyes Village" style="height:34px;display:block;" onerror="this.src='brand_assets/brand%20logo%20old.png';this.onerror=null">
+        </a>
+        <p class="font-sans text-white/35 text-[0.8rem] leading-[1.8]" style="max-width:26rem"
+           data-en="A private nature conservatory, luxury glamping resort, and learning centre in Nakhon Nayok, Thailand."
+           data-th="แหล่งอนุรักษ์ธรรมชาติส่วนตัว รีสอร์ทแคมปิ้งหรูหรา และศูนย์การเรียนรู้ในนครนายก ประเทศไทย"
+           data-zh="位于泰国那空那育的私人自然保育区、豪华帐篷酒店和学习中心。">A private nature conservatory, luxury glamping resort, and learning centre in Nakhon Nayok, Thailand.</p>
+      </div>
+      <div>
+        <p class="font-sans text-white/30 text-[0.58rem] tracking-widest uppercase mb-5" data-en="Explore" data-th="สำรวจ" data-zh="探索">Explore</p>
+        <nav class="flex flex-col gap-3">
+          <a href="resort.html"  class="font-sans text-white/65 text-[0.78rem]" data-en="Resort Stay" data-th="ที่พัก" data-zh="住宿">Resort Stay</a>
+          <a href="cafe.html"    class="font-sans text-white/45 text-[0.78rem] hover:text-white/75 transition-colors" data-en="Eco Café" data-th="อีโค่ คาเฟ่" data-zh="生态咖啡厅">Eco Café</a>
+          <a href="life.html"    class="font-sans text-white/45 text-[0.78rem] hover:text-white/75 transition-colors" data-en="Experiences" data-th="ประสบการณ์" data-zh="体验">Experiences</a>
+          <a href="csr.html"     class="font-sans text-white/45 text-[0.78rem] hover:text-white/75 transition-colors" data-en="Conservation" data-th="อนุรักษ์" data-zh="环保">Conservation</a>
+          <a href="explore.html" class="font-sans text-white/45 text-[0.78rem] hover:text-white/75 transition-colors" data-en="Explore Nakhon Nayok" data-th="สำรวจนครนายก" data-zh="探索那空那育">Explore Nakhon Nayok</a>
+        </nav>
+      </div>
+      <div>
+        <p class="font-sans text-white/30 text-[0.58rem] tracking-widest uppercase mb-5" data-en="Contact" data-th="ติดต่อ" data-zh="联系我们">Contact</p>
+        <div class="flex flex-col gap-3">
+          <a href="tel:+66926100560" class="font-sans text-white/45 text-[0.78rem] hover:text-white/75 transition-colors">+66 92 610 0560</a>
+          <a href="contact.html" class="font-sans text-white/45 text-[0.78rem] hover:text-white/75 transition-colors" data-en="Get Directions" data-th="รับเส้นทาง" data-zh="获取路线">Get Directions</a>
+        </div>
+        <p class="font-sans text-white/25 text-[0.72rem] leading-[1.7] mt-5">188 Moo 9, Sarika<br>Nakhon Nayok 26000</p>
+      </div>
+    </div>
+    <div class="pt-8 flex flex-col md:flex-row items-center justify-between gap-3" style="border-top:1px solid rgba(255,255,255,0.06)">
+      <p class="font-sans text-white/20 text-[0.6rem] tracking-wide"
+         data-en="© 2025 Eco Eyes Village. All rights reserved." data-th="© 2568 อีโค่ อายส์ วิลเลจ สงวนลิขสิทธิ์" data-zh="© 2025 生态眼村庄 版权所有">© 2025 Eco Eyes Village. All rights reserved.</p>
+      <p class="font-sans text-white/20 text-[0.6rem] tracking-wide" data-en="Nakhon Nayok, Thailand" data-th="นครนายก ประเทศไทย" data-zh="那空那育，泰国">Nakhon Nayok, Thailand</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+  /* --- Room gallery auto-scroll --- */
+  const ROOM_PHOTOS = [
+    'brand_assets/eco%20eyes%20website%20photos%20/Room%20Photos/630525041_1240272291531875_7916248610315048686_n.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/Room%20Photos/Room%20picture%201.webp',
+    'brand_assets/eco%20eyes%20website%20photos%20/Room%20Photos/Room%20picture%202.webp',
+    'brand_assets/eco%20eyes%20website%20photos%20/Room%20Photos/Room%20picture%203.webp',
+    'brand_assets/eco%20eyes%20website%20photos%20/Room%20Photos/Room%20picture%204.webp',
+    'brand_assets/eco%20eyes%20website%20photos%20/Room%20Photos/Room%20picture%205.webp',
+    'brand_assets/eco%20eyes%20website%20photos%20/Room%20Photos/Scenic%20room%20picture%20.webp',
+    'brand_assets/eco%20eyes%20website%20photos%20/Room%20Photos/Bathroom%20picture%201.webp',
+    'brand_assets/eco%20eyes%20website%20photos%20/Room%20Photos/bathroom%202.webp',
+    'brand_assets/eco%20eyes%20website%20photos%20/Room%20Photos/Outdoor%20patio%20picture.webp',
+    'brand_assets/eco%20eyes%20website%20photos%20/Room%20Photos/inside%20room%20table.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/Room%20Photos/outdoor%20room%20view.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/Room%20Photos/room%20scenic.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/Room%20Photos/room%20view.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/Room%20Photos/view%20from%20inside%20the%20room.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/Room%20Photos/picture%20of%20lights.webp',
+    'brand_assets/eco%20eyes%20website%20photos%20/Room%20Photos/Advettisement%20picture%20from%20room%20(important).jpg',
+  ];
+  function rShuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
+  const rCells = Array.from(document.querySelectorAll('.gal-cell img'));
+  const rPool = rShuffle(ROOM_PHOTOS);
+  rCells.forEach((img, i) => { img.src = rPool[i % rPool.length]; });
+  let rIdx = rCells.length;
+  setInterval(() => {
+    rCells.forEach(img => { img.style.opacity = '0'; });
+    setTimeout(() => {
+      rCells.forEach(img => { img.src = rPool[rIdx % rPool.length]; rIdx++; });
+      rCells.forEach(img => { img.style.opacity = '1'; });
+    }, 500);
+  }, 4000);
+
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 60);
+    document.getElementById('back-to-top').classList.toggle('visible', window.scrollY > window.innerHeight * 0.8);
+  }, { passive: true });
+  if (window.scrollY > 60) nav.classList.add('scrolled');
+  const mobileNav = document.getElementById('mobile-nav');
+  function openMenu()  { mobileNav.classList.add('open');    document.body.style.overflow = 'hidden'; }
+  function closeMenu() { mobileNav.classList.remove('open'); document.body.style.overflow = ''; }
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); } });
+  }, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+  setTimeout(() => document.querySelectorAll('section:first-of-type .reveal').forEach(el => el.classList.add('visible')), 150);
+  function setLang(lang) {
+    if (lang === 'en') { localStorage.setItem('eev-lang','en'); location.reload(); return; }
+    document.querySelectorAll('[data-en]').forEach(el => { const t = el.dataset[lang]; if (t !== undefined) el.textContent = t; });
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.getAttribute('data-lang') === lang));
+    document.documentElement.lang = lang === 'zh' ? 'zh-CN' : lang;
+    localStorage.setItem('eev-lang', lang);
+  }
+  const sl = localStorage.getItem('eev-lang') || 'en';
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.getAttribute('data-lang') === sl));
+  if (sl !== 'en') setLang(sl);
+</script>
+</body>
+</html>

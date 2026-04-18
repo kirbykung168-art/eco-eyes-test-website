@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Explore Nakhon Nayok — Eco Eyes Village</title>
+  <meta name="description" content="Discover the natural wonders of Nakhon Nayok — Sarika Waterfall, Khao Yai National Park, Haew Narok Waterfall, and Khun Dan Dam. A destination guide from Eco Eyes Village." />
+  <link rel="icon" type="image/png" href="https://eco-eyes-bucket.s3.ap-southeast-1.amazonaws.com/icon-circle.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500;1,600&family=Jost:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: {
+        colors: { cream:'#FAF7EF','cream-mid':'#F0E9D8',gold:'#967138','gold-lt':'#C4A36A',dark:'#1C1915',forest:'#2B3A20' },
+        fontFamily: { display:['"Cormorant Garamond"','serif'], sans:['Jost','sans-serif'] }
+      }}
+    }
+  </script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{background:#FAF7EF;color:#1C1915;font-family:'Jost',sans-serif;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+    body::after{content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;opacity:0.028;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");background-size:200px}
+    #nav{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:center;justify-content:space-between;padding:1.5rem 3rem;transition:background 0.7s cubic-bezier(0.16,1,0.3,1),padding 0.5s cubic-bezier(0.16,1,0.3,1)}
+    #nav.scrolled{background:rgba(28,25,21,0.96);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding:0.875rem 3rem}
+    .nav-link{font-family:'Jost',sans-serif;font-size:0.62rem;letter-spacing:0.22em;text-transform:uppercase;color:rgba(255,255,255,0.7);text-decoration:none;transition:color 0.3s ease;position:relative;white-space:nowrap}
+    .nav-link::after{content:'';position:absolute;left:0;bottom:-3px;width:0;height:1px;background:#967138;transition:width 0.35s cubic-bezier(0.16,1,0.3,1)}
+    .nav-link:hover,.nav-link.active{color:rgba(255,255,255,1)}
+    .nav-link:hover::after,.nav-link.active::after{width:100%}
+    .lang-btn{font-family:'Jost',sans-serif;font-size:0.58rem;letter-spacing:0.18em;text-transform:uppercase;color:rgba(255,255,255,0.4);background:none;border:none;cursor:pointer;padding:0.15rem 0.2rem;transition:color 0.25s ease}
+    .lang-btn:hover,.lang-btn.active{color:#C4A36A}
+    .lang-divider{color:rgba(255,255,255,0.15);font-size:0.6rem}
+    .sep{display:block;width:52px;height:1px;background:#967138;margin:1.6rem 0}
+    .sep-center{margin:1.6rem auto}
+    .reveal{opacity:0;transform:translateY(28px);transition:opacity 1s cubic-bezier(0.16,1,0.3,1),transform 1s cubic-bezier(0.16,1,0.3,1)}
+    .reveal.visible{opacity:1;transform:translateY(0)}
+    .btn-outline-gold{display:inline-block;font-family:'Jost',sans-serif;font-size:0.62rem;letter-spacing:0.25em;text-transform:uppercase;border:1px solid #967138;color:#967138;padding:0.85rem 2rem;text-decoration:none;transition:background 0.35s ease,color 0.35s ease}
+    .btn-outline-gold:hover{background:#967138;color:#FAF7EF}
+    .btn-solid-gold{display:inline-block;font-family:'Jost',sans-serif;font-size:0.62rem;letter-spacing:0.25em;text-transform:uppercase;background:#967138;color:#FAF7EF;padding:0.85rem 2.5rem;text-decoration:none;transition:background 0.35s ease}
+    .btn-solid-gold:hover{background:#6B4F22}
+    .btn-outline-cream{display:inline-block;font-family:'Jost',sans-serif;font-size:0.62rem;letter-spacing:0.25em;text-transform:uppercase;border:1px solid rgba(196,163,106,0.5);color:#C4A36A;padding:0.85rem 2rem;text-decoration:none;transition:background 0.35s ease,color 0.35s ease,border-color 0.35s ease}
+    .btn-outline-cream:hover{background:#C4A36A;color:#1C1915;border-color:#C4A36A}
+    .dest-card{overflow:hidden;position:relative;background:#1C1915;cursor:default}
+    .dest-card img{transition:transform 1s cubic-bezier(0.16,1,0.3,1);width:100%;height:100%;object-fit:cover}
+    .dest-card:hover img{transform:scale(1.06)}
+    .dest-card .overlay{position:absolute;inset:0;background:linear-gradient(to top, rgba(28,25,21,0.9) 0%, rgba(28,25,21,0.2) 60%, transparent 100%);display:flex;flex-direction:column;justify-content:flex-end;padding:2rem}
+    #mobile-nav{position:fixed;inset:0;z-index:600;background:#1C1915;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2rem;transform:translateY(-100%);transition:transform 0.6s cubic-bezier(0.16,1,0.3,1)}
+    #mobile-nav.open{transform:translateY(0)}
+    #back-to-top{position:fixed;bottom:2.5rem;right:2.5rem;z-index:400;width:44px;height:44px;border:1px solid rgba(150,113,56,0.5);background:rgba(28,25,21,0.85);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;transform:translateY(12px);transition:opacity 0.4s ease,transform 0.4s ease,background 0.3s ease;pointer-events:none}
+    #back-to-top.visible{opacity:1;transform:translateY(0);pointer-events:auto}
+    #back-to-top:hover{background:rgba(150,113,56,0.9);border-color:rgba(150,113,56,0.9)}
+    @media(max-width:1024px){#nav{padding:1.25rem 1.5rem}#nav.scrolled{padding:0.875rem 1.5rem}#back-to-top{bottom:1.5rem;right:1.5rem}}
+  </style>
+</head>
+<body>
+
+<nav id="nav">
+  <a href="index.html" style="display:inline-flex;align-items:center;padding:0.25rem 0.5rem;border-radius:2px;background:rgba(28,25,21,0.3);backdrop-filter:blur(10px);">
+    <img src="brand_assets/brand%20logo%20updated.png" alt="Eco Eyes Village" style="height:36px;display:block;"
+         onerror="this.src='brand_assets/brand%20logo%20old.png';this.onerror=null">
+  </a>
+  <div class="hidden lg:flex items-center gap-7">
+    <a href="resort.html"  class="nav-link" data-en="Stay" data-th="ที่พัก" data-zh="住宿">Stay</a>
+    <a href="cafe.html"    class="nav-link" data-en="Café" data-th="คาเฟ่" data-zh="咖啡厅">Café</a>
+    <a href="life.html"    class="nav-link" data-en="Experiences" data-th="ประสบการณ์" data-zh="体验">Experiences</a>
+    <a href="csr.html"     class="nav-link" data-en="Conservation" data-th="อนุรักษ์" data-zh="自然保护">Conservation</a>
+    <a href="explore.html" class="nav-link active" data-en="Explore" data-th="สำรวจ" data-zh="探索">Explore</a>
+    <a href="contact.html" class="nav-link" data-en="Contact" data-th="ติดต่อ" data-zh="联系">Contact</a>
+  </div>
+  <div class="hidden lg:flex items-center gap-4">
+    <div class="flex items-center gap-1">
+      <button class="lang-btn active" onclick="setLang('en')" data-lang="en">EN</button>
+      <span class="lang-divider">|</span>
+      <button class="lang-btn" onclick="setLang('th')" data-lang="th">TH</button>
+      <span class="lang-divider">|</span>
+      <button class="lang-btn" onclick="setLang('zh')" data-lang="zh">ZH</button>
+    </div>
+    <a href="resort.html" class="btn-solid-gold" style="padding:0.6rem 1.5rem;font-size:0.6rem;" data-en="Book Now" data-th="จองเลย" data-zh="立即预订">Book Now</a>
+  </div>
+  <button id="hamburger" onclick="openMenu()" class="lg:hidden flex flex-col gap-1.5 p-1" aria-label="Menu">
+    <span class="block w-6 h-px bg-white/80"></span>
+    <span class="block w-4 h-px bg-white/80"></span>
+    <span class="block w-6 h-px bg-white/80"></span>
+  </button>
+</nav>
+
+<button id="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C4A36A" stroke-width="1.5" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+</button>
+
+<div id="mobile-nav">
+  <button onclick="closeMenu()" class="absolute top-6 right-6 text-white/60 hover:text-white">
+    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+  </button>
+  <a href="index.html"   onclick="closeMenu()" class="font-display text-white text-4xl font-light italic hover:text-[#C4A36A] transition-colors" data-en="Home" data-th="หน้าหลัก" data-zh="首页">Home</a>
+  <a href="resort.html"  onclick="closeMenu()" class="font-display text-white text-4xl font-light italic hover:text-[#C4A36A] transition-colors" data-en="Stay" data-th="ที่พัก" data-zh="住宿">Stay</a>
+  <a href="cafe.html"    onclick="closeMenu()" class="font-display text-white text-4xl font-light italic hover:text-[#C4A36A] transition-colors" data-en="Café" data-th="คาเฟ่" data-zh="咖啡厅">Café</a>
+  <a href="life.html"    onclick="closeMenu()" class="font-display text-white text-4xl font-light italic hover:text-[#C4A36A] transition-colors" data-en="Experiences" data-th="ประสบการณ์" data-zh="体验">Experiences</a>
+  <a href="csr.html"     onclick="closeMenu()" class="font-display text-white text-4xl font-light italic hover:text-[#C4A36A] transition-colors" data-en="Conservation" data-th="อนุรักษ์" data-zh="自然保护">Conservation</a>
+  <a href="explore.html" onclick="closeMenu()" class="font-display text-[#C4A36A] text-4xl font-light italic" data-en="Explore" data-th="สำรวจ" data-zh="探索">Explore</a>
+  <a href="contact.html" onclick="closeMenu()" class="font-display text-white text-4xl font-light italic hover:text-[#C4A36A] transition-colors" data-en="Contact" data-th="ติดต่อ" data-zh="联系">Contact</a>
+</div>
+
+
+<!-- HERO -->
+<section class="relative h-screen overflow-hidden">
+  <img src="brand_assets/eco%20eyes%20website%20photos%20/Environment%20Photos/turtle%201.jpg"
+       alt="Nakhon Nayok, Thailand" class="absolute inset-0 w-full h-full object-cover">
+  <div class="absolute inset-0 bg-gradient-to-b from-black/50 via-black/15 to-black/65"></div>
+  <div class="absolute inset-0" style="background:radial-gradient(ellipse at center, transparent 45%, rgba(0,0,0,0.3) 100%)"></div>
+  <div class="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
+    <p class="font-sans text-white/50 text-[0.58rem] tracking-widest uppercase mb-7 reveal" style="transition-delay:0.3s"
+       data-en="Thailand's Hidden Gem" data-th="อัญมณีที่ซ่อนเร้นของไทย" data-zh="泰国隐藏的宝石">Thailand's Hidden Gem</p>
+    <h1 class="font-display text-white font-light leading-none reveal" style="font-size:clamp(2.8rem,7vw,6.5rem);transition-delay:0.5s">
+      <span data-en="Explore" data-th="สำรวจ" data-zh="探索">Explore</span><br><em data-en="Nakhon Nayok" data-th="นครนายก" data-zh="那空那育">Nakhon Nayok</em>
+    </h1>
+    <span class="sep sep-center reveal" style="transition-delay:0.75s;background:#C4A36A;"></span>
+    <p class="font-sans text-white/55 text-[0.65rem] tracking-widest uppercase reveal" style="transition-delay:0.9s"
+       data-en="Waterfalls · National Parks · Heritage · Nature" data-th="น้ำตก · อุทยานแห่งชาติ · มรดก · ธรรมชาติ" data-zh="瀑布 · 国家公园 · 文化遗产 · 自然">Waterfalls · National Parks · Heritage · Nature</p>
+    <div class="flex gap-4 mt-10 reveal pointer-events-auto" style="transition-delay:1.1s">
+      <a href="#attractions" style="display:inline-block;font-family:'Jost',sans-serif;font-size:0.62rem;letter-spacing:0.25em;text-transform:uppercase;border:1px solid rgba(255,255,255,0.4);color:rgba(255,255,255,0.85);padding:0.85rem 2.5rem;text-decoration:none;"
+         data-en="Discover" data-th="ค้นพบ" data-zh="探索">Discover</a>
+    </div>
+  </div>
+</section>
+
+
+<!-- INTRO -->
+<section class="py-24 bg-cream">
+  <div class="max-w-3xl mx-auto px-6 text-center reveal">
+    <p class="font-sans text-gold text-[0.62rem] tracking-widest uppercase mb-5"
+       data-en="The Province" data-th="จังหวัด" data-zh="省份">The Province</p>
+    <h2 class="font-display text-dark font-light mb-4" style="font-size:clamp(2.2rem,3.8vw,3.4rem)">
+      <span data-en="One of Thailand's Most" data-th="หนึ่งในจังหวัด" data-zh="泰国最美丽的">One of Thailand's Most</span><br><em data-en="Scenic Provinces" data-th="ที่สวยงามที่สุดของไทย" data-zh="省份之一">Scenic Provinces</em>
+    </h2>
+    <span class="sep sep-center"></span>
+    <p class="font-sans text-dark/60 text-[0.9rem] leading-[1.9]"
+       data-en="Just 100 km east of Bangkok, Nakhon Nayok is a province of dramatic contrasts — ancient dams and cascading waterfalls, UNESCO-listed national parks and fertile valleys. Eco Eyes Village places you in the heart of it all."
+       data-th="ห่างจากกรุงเทพฯ เพียง 100 กม. ทางทิศตะวันออก นครนายกเป็นจังหวัดที่มีความแตกต่างอย่างน่าทึ่ง — เขื่อนโบราณและน้ำตกที่ไหลลงมา อุทยานแห่งชาติที่ได้รับการขึ้นทะเบียนจาก UNESCO และหุบเขาอันอุดมสมบูรณ์ อีโค่ อายส์ วิลเลจตั้งอยู่ใจกลางของทั้งหมดนี้"
+       data-zh="距曼谷仅100公里，那空那育是一个充满戏剧性对比的省份——古老的大坝与飞流直下的瀑布，联合国教科文组织列名的国家公园与肥沃的山谷。生态眼睛村庄让您置身其中。">
+      Just 100 km east of Bangkok, Nakhon Nayok is a province of dramatic contrasts — ancient dams and cascading waterfalls, UNESCO-listed national parks and fertile valleys. Eco Eyes Village places you in the heart of it all.
+    </p>
+  </div>
+</section>
+
+
+<!-- ATTRACTIONS -->
+<section id="attractions" class="pb-32 bg-cream">
+  <div class="max-w-7xl mx-auto px-6 md:px-12">
+
+    <!-- Sarika Waterfall -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-0 mb-2 reveal">
+      <div class="dest-card" style="height:420px">
+        <img src="brand_assets/nam%20tok%20sarika.jpg"
+             alt="Sarika Waterfall" loading="lazy">
+        <div class="overlay">
+          <p class="font-sans text-white/50 text-[0.58rem] tracking-widest uppercase mb-2"
+             data-en="12 km from Eco Eyes" data-th="ห่างจากอีโค่ อายส์ 12 กม." data-zh="距生态眼睛12公里">12 km from Eco Eyes</p>
+          <h3 class="font-display text-white text-3xl font-light"
+              data-en="Sarika Waterfall" data-th="น้ำตกสาริกา" data-zh="沙利卡瀑布">Sarika Waterfall</h3>
+        </div>
+      </div>
+      <div class="bg-cream-mid flex items-center p-12 md:p-16">
+        <div>
+          <p class="font-sans text-gold text-[0.58rem] tracking-widest uppercase mb-4"
+             data-en="Natural Wonder" data-th="สิ่งมหัศจรรย์ทางธรรมชาติ" data-zh="自然奇观">Natural Wonder</p>
+          <h3 class="font-display text-dark text-3xl font-light mb-4"
+              data-en="Nam Tok Sarika" data-th="น้ำตกสาริกา" data-zh="沙利卡瀑布">Nam Tok Sarika</h3>
+          <p class="font-sans text-dark/60 text-[0.875rem] leading-[1.85] mb-4"
+             data-en="The crown jewel of Nakhon Nayok, Sarika is a magnificent multi-tiered waterfall cascading through dense tropical jungle. At its peak (June–October), the falls are a thunderous display of nature's power."
+             data-th="อัญมณีแห่งนครนายก สาริกาคือน้ำตกหลายชั้นอันงดงามที่ไหลผ่านป่าเขตร้อนหนาทึบ ในช่วงที่มีน้ำสูงสุด (มิถุนายน–ตุลาคม) น้ำตกจะแสดงพลังอันน่าทึ่งของธรรมชาติ"
+             data-zh="那空那育的王冠明珠，沙利卡是一座壮观的多层瀑布，穿越茂密的热带丛林飞泻而下。在丰水期（6月至10月），瀑布展现出大自然惊天动地的力量。">
+            The crown jewel of Nakhon Nayok, Sarika is a magnificent multi-tiered waterfall cascading through dense tropical jungle. At its peak (June–October), the falls are a thunderous display of nature's power.
+          </p>
+          <p class="font-sans text-dark/55 text-[0.875rem] leading-[1.85]"
+             data-en="Swim in natural pools, picnic on the rocks, or hike the trails above the falls for panoramic views of the valley. An easy half-day trip from Eco Eyes Village."
+             data-th="ว่ายน้ำในบ่อธรรมชาติ ปิกนิกบนหิน หรือเดินป่าไปบนเส้นทางเหนือน้ำตกเพื่อชมทิวทัศน์แบบพาโนรามาของหุบเขา ทริปครึ่งวันที่ง่ายดายจากอีโค่ อายส์ วิลเลจ"
+             data-zh="在天然水潭中游泳，在岩石上野餐，或沿瀑布上方的小径徒步，欣赏山谷的全景。从生态眼睛村庄出发，轻松的半日游。">
+            Swim in natural pools, picnic on the rocks, or hike the trails above the falls for panoramic views of the valley. An easy half-day trip from Eco Eyes Village.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Khao Yai -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-0 mb-2 reveal" style="transition-delay:0.1s">
+      <div class="bg-cream-mid flex items-center p-12 md:p-16 order-2 md:order-1">
+        <div>
+          <p class="font-sans text-gold text-[0.58rem] tracking-widest uppercase mb-4"
+             data-en="UNESCO World Heritage" data-th="มรดกโลก UNESCO" data-zh="联合国教科文组织世界遗产">UNESCO World Heritage</p>
+          <h3 class="font-display text-dark text-3xl font-light mb-4"
+              data-en="Khao Yai National Park" data-th="อุทยานแห่งชาติเขาใหญ่" data-zh="考艾国家公园">Khao Yai National Park</h3>
+          <p class="font-sans text-dark/60 text-[0.875rem] leading-[1.85] mb-4"
+             data-en="One of Asia's finest national parks, Khao Yai is a UNESCO World Heritage Site protecting over 2,000 km² of tropical forest. Home to elephants, gaur, tigers, gibbons, and over 300 bird species."
+             data-th="หนึ่งในอุทยานแห่งชาติที่ดีที่สุดในเอเชีย เขาใหญ่เป็นมรดกโลก UNESCO ที่ปกป้องป่าเขตร้อนกว่า 2,000 ตร.กม. เป็นบ้านของช้าง กระทิง เสือ ชะนี และนกกว่า 300 ชนิด"
+             data-zh="亚洲最优秀的国家公园之一，考艾是联合国教科文组织世界遗产，保护着2000多平方公里的热带森林，是大象、野牛、老虎、长臂猿和300多种鸟类的家园。">
+            One of Asia's finest national parks, Khao Yai is a UNESCO World Heritage Site protecting over 2,000 km² of tropical forest. Home to elephants, gaur, tigers, gibbons, and over 300 bird species.
+          </p>
+          <p class="font-sans text-dark/55 text-[0.875rem] leading-[1.85]"
+             data-en="Self-drive or join a guided night safari to spot nocturnal wildlife. The park entrance is 45 minutes from Eco Eyes and can be combined with a visit for an unforgettable day."
+             data-th="ขับรถด้วยตนเองหรือเข้าร่วมซาฟารีกลางคืนเพื่อพบเห็นสัตว์ป่าตอนกลางคืน ทางเข้าอุทยานอยู่ห่างจากอีโค่ อายส์ 45 นาที สามารถรวมกับการมาเยือนได้"
+             data-zh="自驾或参加夜间野生动物游猎，探索夜行动物。公园入口距生态眼睛村庄45分钟，可与参观结合，度过难忘的一天。">
+            Self-drive or join a guided night safari to spot nocturnal wildlife. The park entrance is 45 minutes from Eco Eyes and can be combined with a visit for an unforgettable day.
+          </p>
+        </div>
+      </div>
+      <div class="dest-card order-1 md:order-2" style="height:420px">
+        <img src="brand_assets/khao%20yai%20national%20park.jpg"
+             alt="Khao Yai National Park" loading="lazy">
+        <div class="overlay">
+          <p class="font-sans text-white/50 text-[0.58rem] tracking-widest uppercase mb-2"
+             data-en="45 min from Eco Eyes" data-th="ห่างจากอีโค่ อายส์ 45 นาที" data-zh="距生态眼睛45分钟">45 min from Eco Eyes</p>
+          <h3 class="font-display text-white text-3xl font-light"
+              data-en="Khao Yai National Park" data-th="อุทยานแห่งชาติเขาใหญ่" data-zh="考艾国家公园">Khao Yai National Park</h3>
+        </div>
+      </div>
+    </div>
+
+    <!-- Haew Narok -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-0 mb-2 reveal" style="transition-delay:0.2s">
+      <div class="dest-card" style="height:420px">
+        <img src="brand_assets/Haew%20Narok%20Waterfall%20.jpg"
+             alt="Haew Narok Waterfall" loading="lazy">
+        <div class="overlay">
+          <p class="font-sans text-white/50 text-[0.58rem] tracking-widest uppercase mb-2"
+             data-en="Inside Khao Yai Park" data-th="ภายในอุทยานเขาใหญ่" data-zh="考艾公园内">Inside Khao Yai Park</p>
+          <h3 class="font-display text-white text-3xl font-light"
+              data-en="Haew Narok Falls" data-th="น้ำตกแฮว นรก" data-zh="地狱峡谷瀑布">Haew Narok Falls</h3>
+        </div>
+      </div>
+      <div class="bg-cream-mid flex items-center p-12 md:p-16">
+        <div>
+          <p class="font-sans text-gold text-[0.58rem] tracking-widest uppercase mb-4"
+             data-en="Dramatic Cascade" data-th="น้ำตกอันยิ่งใหญ่" data-zh="壮观的瀑布">Dramatic Cascade</p>
+          <h3 class="font-display text-dark text-3xl font-light mb-4"
+              data-en="Haew Narok Waterfall" data-th="น้ำตกแฮว นรก" data-zh="地狱峡谷瀑布">Haew Narok Waterfall</h3>
+          <p class="font-sans text-dark/60 text-[0.875rem] leading-[1.85] mb-4"
+             data-en="Deep within Khao Yai National Park, Haew Narok (Hell's Chasm) plunges 150 metres over three dramatic tiers through pristine jungle. It is one of the most photographed waterfalls in Thailand."
+             data-th="ลึกในอุทยานแห่งชาติเขาใหญ่ น้ำตกแฮว นรก ตกลงมา 150 เมตรผ่านสามชั้นอันยิ่งใหญ่ผ่านป่าบริสุทธิ์ เป็นหนึ่งในน้ำตกที่ถูกถ่ายภาพมากที่สุดในประเทศไทย"
+             data-zh="深入考艾国家公园，地狱峡谷瀑布以三级壮观的台阶飞流150米，穿越原始丛林，是泰国拍摄最多的瀑布之一。">
+            Deep within Khao Yai National Park, Haew Narok (Hell's Chasm) plunges 150 metres over three dramatic tiers through pristine jungle. It is one of the most photographed waterfalls in Thailand.
+          </p>
+          <p class="font-sans text-dark/55 text-[0.875rem] leading-[1.85]"
+             data-en="Elephants are frequently spotted bathing near the falls — a truly wild, once-in-a-lifetime experience. Best visited in the cooler months (November–February)."
+             data-th="มักพบเห็นช้างในบริเวณใกล้เคียงน้ำตก — เป็นประสบการณ์ที่แท้จริงและหายากในชีวิต เหมาะที่จะเยี่ยมชมในช่วงอากาศเย็น (พฤศจิกายน–กุมภาพันธ์)"
+             data-zh="大象常在瀑布附近嬉戏——真正的、一生一次的体验。最佳游览时间是凉季（11月至2月）。">
+            Elephants are frequently spotted bathing near the falls — a truly wild, once-in-a-lifetime experience. Best visited in the cooler months (November–February).
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Khun Dan Dam -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-0 reveal" style="transition-delay:0.3s">
+      <div class="bg-cream-mid flex items-center p-12 md:p-16 order-2 md:order-1">
+        <div>
+          <p class="font-sans text-gold text-[0.58rem] tracking-widest uppercase mb-4"
+             data-en="Engineering Heritage" data-th="มรดกทางวิศวกรรม" data-zh="工程遗产">Engineering Heritage</p>
+          <h3 class="font-display text-dark text-3xl font-light mb-4"
+              data-en="Khun Dan Prakan Chon Dam" data-th="เขื่อนขุนด่านปราการชล" data-zh="坤丹巴卡岛大坝">Khun Dan Prakan Chon Dam</h3>
+          <p class="font-sans text-dark/60 text-[0.875rem] leading-[1.85] mb-4"
+             data-en="One of the longest roller-compacted concrete dams in the world, Khun Dan Dam is an impressive feat of engineering set against a dramatic mountain backdrop. The reservoir and surrounding landscape are strikingly beautiful."
+             data-th="หนึ่งในเขื่อนคอนกรีตบดอัดที่ยาวที่สุดในโลก เขื่อนขุนด่านฯ เป็นผลงานทางวิศวกรรมที่น่าประทับใจตั้งอยู่กับภูมิหลังภูเขาอันน่าตื่นตา อ่างเก็บน้ำและภูมิทัศน์โดยรอบสวยงามน่าทึ่ง"
+             data-zh="世界上最长的碾压混凝土大坝之一，坤丹大坝是一项令人印象深刻的工程壮举，背靠壮丽的山脉。水库及周边风景如画。">
+            One of the longest roller-compacted concrete dams in the world, Khun Dan Dam is an impressive feat of engineering set against a dramatic mountain backdrop. The reservoir and surrounding landscape are strikingly beautiful.
+          </p>
+          <p class="font-sans text-dark/55 text-[0.875rem] leading-[1.85]"
+             data-en="Walk across the dam crest for panoramic views of the Nakhon Nayok valley and mountains. Sunrise visits offer the best photography conditions and cooler temperatures."
+             data-th="เดินข้ามสันเขื่อนเพื่อชมทิวทัศน์แบบพาโนรามาของหุบเขาและเทือกเขานครนายก การเยี่ยมชมตอนรุ่งสาวให้เงื่อนไขการถ่ายภาพที่ดีที่สุดและอากาศที่เย็นกว่า"
+             data-zh="走过大坝顶部，欣赏那空那育山谷和山脉的全景。日出时分游览摄影条件最佳，气温也更为凉爽。">
+            Walk across the dam crest for panoramic views of the Nakhon Nayok valley and mountains. Sunrise visits offer the best photography conditions and cooler temperatures.
+          </p>
+        </div>
+      </div>
+      <div class="dest-card order-1 md:order-2" style="height:420px">
+        <img src="brand_assets/dam.jpg"
+             alt="Khun Dan Dam" loading="lazy">
+        <div class="overlay">
+          <p class="font-sans text-white/50 text-[0.58rem] tracking-widest uppercase mb-2"
+             data-en="20 km from Eco Eyes" data-th="ห่างจากอีโค่ อายส์ 20 กม." data-zh="距生态眼睛20公里">20 km from Eco Eyes</p>
+          <h3 class="font-display text-white text-3xl font-light"
+              data-en="Khun Dan Dam" data-th="เขื่อนขุนด่าน" data-zh="坤丹大坝">Khun Dan Dam</h3>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- HOW TO GET THERE -->
+<section class="py-24 bg-dark">
+  <div class="max-w-5xl mx-auto px-6 md:px-12">
+    <div class="text-center mb-12 reveal">
+      <p class="font-sans text-gold text-[0.62rem] tracking-widest uppercase mb-5"
+         data-en="Getting Here" data-th="การเดินทาง" data-zh="交通指南">Getting Here</p>
+      <h2 class="font-display text-white font-light" style="font-size:clamp(2rem,3.5vw,3rem)">
+        <span data-en="From Bangkok to" data-th="จากกรุงเทพฯ สู่" data-zh="从曼谷到">From Bangkok to</span><br><em data-en="Nakhon Nayok" data-th="นครนายก" data-zh="那空那育">Nakhon Nayok</em>
+      </h2>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 reveal" style="transition-delay:0.15s">
+      <div style="border:1px solid rgba(150,113,56,0.2);padding:2rem;text-align:center">
+        <svg width="28" height="28" fill="none" stroke="#C4A36A" stroke-width="1.4" viewBox="0 0 24 24" class="mx-auto mb-4"><path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v3"/><rect x="9" y="11" width="14" height="10" rx="2"/><circle cx="12" cy="21" r="1"/><circle cx="20" cy="21" r="1"/></svg>
+        <p class="font-sans text-white/70 text-[0.6rem] tracking-widest uppercase mb-2"
+           data-en="By Car" data-th="โดยรถยนต์" data-zh="自驾">By Car</p>
+        <p class="font-display text-gold text-3xl font-light mb-2"
+           data-en="~1.5h" data-th="~1.5 ชม." data-zh="约1.5小时">~1.5h</p>
+        <p class="font-sans text-white/40 text-[0.8rem] leading-[1.7]"
+           data-en="Via Highway 305 from Bangkok. Scenic drive through green hills."
+           data-th="ผ่านทางหลวงหมายเลข 305 จากกรุงเทพฯ การขับรถท่ามกลางเนินเขาสีเขียว"
+           data-zh="经曼谷305号高速公路，穿越绿色山丘的风景驾驶。">Via Highway 305 from Bangkok. Scenic drive through green hills.</p>
+      </div>
+      <div style="border:1px solid rgba(150,113,56,0.2);padding:2rem;text-align:center">
+        <svg width="28" height="28" fill="none" stroke="#C4A36A" stroke-width="1.4" viewBox="0 0 24 24" class="mx-auto mb-4"><rect x="1" y="3" width="22" height="13" rx="2" ry="2"/><path d="M16 21V17a4 4 0 0 0-4-4H4a4 4 0 0 0-4 4v4"/></svg>
+        <p class="font-sans text-white/70 text-[0.6rem] tracking-widest uppercase mb-2"
+           data-en="By Bus" data-th="โดยรถบัส" data-zh="乘公交">By Bus</p>
+        <p class="font-display text-gold text-3xl font-light mb-2"
+           data-en="~2h" data-th="~2 ชม." data-zh="约2小时">~2h</p>
+        <p class="font-sans text-white/40 text-[0.8rem] leading-[1.7]"
+           data-en="Buses from Ekkamai or Mo Chit terminal direct to Nakhon Nayok."
+           data-th="รถบัสจากเอกมัยหรือหมอชิตไปยังนครนายกโดยตรง"
+           data-zh="从Ekkamai或Mo Chit站直达那空那育的巴士。">Buses from Ekkamai or Mo Chit terminal direct to Nakhon Nayok.</p>
+      </div>
+      <div style="border:1px solid rgba(150,113,56,0.2);padding:2rem;text-align:center">
+        <svg width="28" height="28" fill="none" stroke="#C4A36A" stroke-width="1.4" viewBox="0 0 24 24" class="mx-auto mb-4"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <p class="font-sans text-white/70 text-[0.6rem] tracking-widest uppercase mb-2"
+           data-en="GPS Address" data-th="ที่อยู่ GPS" data-zh="GPS地址">GPS Address</p>
+        <p class="font-display text-gold text-3xl font-light mb-2">188</p>
+        <p class="font-sans text-white/40 text-[0.8rem] leading-[1.7]"
+           data-en="188 Moo 9, Sarika, Nakhon Nayok 26000. Search &quot;Eco Eyes Village&quot; on Google Maps."
+           data-th="188 หมู่ 9 ต.สาริกา นครนายก 26000 ค้นหา 'Eco Eyes Village' บน Google Maps"
+           data-zh="188 Moo 9, Sarika, Nakhon Nayok 26000。在谷歌地图上搜索'Eco Eyes Village'。">188 Moo 9, Sarika, Nakhon Nayok 26000. Search "Eco Eyes Village" on Google Maps.</p>
+      </div>
+    </div>
+    <div class="text-center mt-10 reveal" style="transition-delay:0.25s">
+      <a href="contact.html" class="btn-outline-cream"
+         data-en="Get Exact Directions" data-th="รับเส้นทางที่แน่นอน" data-zh="获取精确路线">Get Exact Directions</a>
+    </div>
+  </div>
+</section>
+
+
+<!-- FOOTER -->
+<footer class="bg-dark py-16 px-6" style="border-top:1px solid rgba(255,255,255,0.06)">
+  <div class="max-w-7xl mx-auto">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-14">
+      <div class="md:col-span-2">
+        <a href="index.html" style="display:inline-flex;align-items:center;padding:0.25rem 0.5rem;background:rgba(250,247,239,0.05);border-radius:2px;margin-bottom:1.25rem;">
+          <img src="brand_assets/brand%20logo%20updated.png" alt="Eco Eyes Village" style="height:34px;display:block;"
+               onerror="this.src='brand_assets/brand%20logo%20old.png';this.onerror=null">
+        </a>
+        <p class="font-sans text-white/35 text-[0.8rem] leading-[1.8]" style="max-width:26rem"
+           data-en="A private nature conservatory, luxury glamping resort, and learning centre in Nakhon Nayok, Thailand."
+           data-th="อุทยานธรรมชาติส่วนตัว สถานที่แค้มปิ้งหรูหรา และศูนย์การเรียนรู้ในนครนายก ประเทศไทย"
+           data-zh="那空那育，泰国的私人自然保护区、豪华露营度假村和学习中心。">A private nature conservatory, luxury glamping resort, and learning centre in Nakhon Nayok, Thailand.</p>
+      </div>
+      <div>
+        <p class="font-sans text-white/30 text-[0.58rem] tracking-widest uppercase mb-5"
+           data-en="Explore" data-th="สำรวจ" data-zh="探索">Explore</p>
+        <nav class="flex flex-col gap-3">
+          <a href="resort.html"  class="font-sans text-white/45 text-[0.78rem] hover:text-white/75 transition-colors" data-en="Resort Stay" data-th="ที่พักรีสอร์ท" data-zh="度假村住宿">Resort Stay</a>
+          <a href="cafe.html"    class="font-sans text-white/45 text-[0.78rem] hover:text-white/75 transition-colors" data-en="Eco Café" data-th="อีโค่ คาเฟ่" data-zh="生态咖啡厅">Eco Café</a>
+          <a href="life.html"    class="font-sans text-white/45 text-[0.78rem] hover:text-white/75 transition-colors" data-en="Experiences" data-th="ประสบการณ์" data-zh="体验">Experiences</a>
+          <a href="csr.html"     class="font-sans text-white/45 text-[0.78rem] hover:text-white/75 transition-colors" data-en="Conservation" data-th="การอนุรักษ์" data-zh="自然保护">Conservation</a>
+          <a href="explore.html" class="font-sans text-white/65 text-[0.78rem]" data-en="Explore Nakhon Nayok" data-th="สำรวจนครนายก" data-zh="探索那空那育">Explore Nakhon Nayok</a>
+        </nav>
+      </div>
+      <div>
+        <p class="font-sans text-white/30 text-[0.58rem] tracking-widest uppercase mb-5"
+           data-en="Contact" data-th="ติดต่อ" data-zh="联系">Contact</p>
+        <div class="flex flex-col gap-3">
+          <a href="tel:+66926100560" class="font-sans text-white/45 text-[0.78rem] hover:text-white/75 transition-colors">+66 92 610 0560</a>
+          <a href="contact.html" class="font-sans text-white/45 text-[0.78rem] hover:text-white/75 transition-colors"
+             data-en="Get Directions" data-th="รับเส้นทาง" data-zh="获取路线">Get Directions</a>
+        </div>
+        <p class="font-sans text-white/25 text-[0.72rem] leading-[1.7] mt-5">188 Moo 9, Sarika<br>Nakhon Nayok 26000</p>
+      </div>
+    </div>
+    <div class="pt-8 flex flex-col md:flex-row items-center justify-between gap-3" style="border-top:1px solid rgba(255,255,255,0.06)">
+      <p class="font-sans text-white/20 text-[0.6rem] tracking-wide"
+         data-en="© 2025 Eco Eyes Village. All rights reserved." data-th="© 2025 อีโค่ อายส์ วิลเลจ สงวนลิขสิทธิ์" data-zh="© 2025 生态眼睛村庄。版权所有。">© 2025 Eco Eyes Village. All rights reserved.</p>
+      <p class="font-sans text-white/20 text-[0.6rem] tracking-wide"
+         data-en="Nakhon Nayok, Thailand" data-th="นครนายก ประเทศไทย" data-zh="那空那育，泰国">Nakhon Nayok, Thailand</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 60);
+    document.getElementById('back-to-top').classList.toggle('visible', window.scrollY > window.innerHeight * 0.8);
+  }, { passive: true });
+  if (window.scrollY > 60) nav.classList.add('scrolled');
+  const mobileNav = document.getElementById('mobile-nav');
+  function openMenu()  { mobileNav.classList.add('open');    document.body.style.overflow = 'hidden'; }
+  function closeMenu() { mobileNav.classList.remove('open'); document.body.style.overflow = ''; }
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); } });
+  }, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+  setTimeout(() => document.querySelectorAll('section:first-of-type .reveal').forEach(el => el.classList.add('visible')), 150);
+  function setLang(lang) {
+    document.querySelectorAll('[data-en]').forEach(el => {
+      const t = el.dataset[lang];
+      if (t !== undefined) el.textContent = t;
+    });
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.getAttribute('data-lang') === lang));
+    document.documentElement.lang = lang === 'zh' ? 'zh-CN' : lang;
+    localStorage.setItem('eev-lang', lang);
+  }
+  const savedLang = localStorage.getItem('eev-lang') || 'en';
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.getAttribute('data-lang') === savedLang));
+  if (savedLang !== 'en') setLang(savedLang);
+</script>
+</body>
+</html>

@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Experiences — Eco Eyes Village</title>
+  <meta name="description" content="Activities and experiences at Eco Eyes Village — Segway tours, EV tours, nature walks, mindfulness sessions, and guided education in Nakhon Nayok." />
+  <link rel="icon" type="image/png" href="https://eco-eyes-bucket.s3.ap-southeast-1.amazonaws.com/icon-circle.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500;1,600&family=Jost:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: {
+        colors: { cream:'#FAF7EF','cream-mid':'#F0E9D8',gold:'#967138','gold-lt':'#C4A36A',dark:'#1C1915',forest:'#2B3A20' },
+        fontFamily: { display:['"Cormorant Garamond"','serif'], sans:['Jost','sans-serif'] }
+      }}
+    }
+  </script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{background:#FAF7EF;color:#1C1915;font-family:'Jost',sans-serif;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+    body::after{content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;opacity:0.028;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");background-size:200px}
+    #nav{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:center;justify-content:space-between;padding:1.5rem 3rem;transition:background 0.7s cubic-bezier(0.16,1,0.3,1),padding 0.5s cubic-bezier(0.16,1,0.3,1)}
+    #nav.scrolled{background:rgba(28,25,21,0.96);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding:0.875rem 3rem}
+    .nav-link{font-family:'Jost',sans-serif;font-size:0.62rem;letter-spacing:0.22em;text-transform:uppercase;color:rgba(255,255,255,0.7);text-decoration:none;transition:color 0.3s ease;position:relative;white-space:nowrap}
+    .nav-link::after{content:'';position:absolute;left:0;bottom:-3px;width:0;height:1px;background:#967138;transition:width 0.35s cubic-bezier(0.16,1,0.3,1)}
+    .nav-link:hover,.nav-link.active{color:rgba(255,255,255,1)}
+    .nav-link:hover::after,.nav-link.active::after{width:100%}
+    .lang-btn{font-family:'Jost',sans-serif;font-size:0.58rem;letter-spacing:0.18em;text-transform:uppercase;color:rgba(255,255,255,0.4);background:none;border:none;cursor:pointer;padding:0.15rem 0.2rem;transition:color 0.25s ease}
+    .lang-btn:hover,.lang-btn.active{color:#C4A36A}
+    .lang-divider{color:rgba(255,255,255,0.15);font-size:0.6rem}
+    .sep{display:block;width:52px;height:1px;background:#967138;margin:1.6rem 0}
+    .sep-center{margin:1.6rem auto}
+    .reveal{opacity:0;transform:translateY(28px);transition:opacity 1s cubic-bezier(0.16,1,0.3,1),transform 1s cubic-bezier(0.16,1,0.3,1)}
+    .reveal.visible{opacity:1;transform:translateY(0)}
+    .btn-outline-gold{display:inline-block;font-family:'Jost',sans-serif;font-size:0.62rem;letter-spacing:0.25em;text-transform:uppercase;border:1px solid #967138;color:#967138;padding:0.85rem 2rem;text-decoration:none;transition:background 0.35s ease,color 0.35s ease}
+    .btn-outline-gold:hover{background:#967138;color:#FAF7EF}
+    .btn-solid-gold{display:inline-block;font-family:'Jost',sans-serif;font-size:0.62rem;letter-spacing:0.25em;text-transform:uppercase;background:#967138;color:#FAF7EF;padding:0.85rem 2.5rem;text-decoration:none;transition:background 0.35s ease}
+    .btn-solid-gold:hover{background:#6B4F22}
+    .btn-outline-cream{display:inline-block;font-family:'Jost',sans-serif;font-size:0.62rem;letter-spacing:0.25em;text-transform:uppercase;border:1px solid rgba(196,163,106,0.5);color:#C4A36A;padding:0.85rem 2rem;text-decoration:none;transition:background 0.35s ease,color 0.35s ease,border-color 0.35s ease}
+    .btn-outline-cream:hover{background:#C4A36A;color:#1C1915;border-color:#C4A36A}
+    .act-card{overflow:hidden;background:white;border:1px solid rgba(150,113,56,0.1)}
+    .act-card img{transition:transform 0.8s cubic-bezier(0.16,1,0.3,1)}
+    .act-card:hover img{transform:scale(1.05)}
+    .price-badge{display:inline-block;background:#2B3A20;color:#C4A36A;font-family:'Jost',sans-serif;font-size:0.6rem;letter-spacing:0.2em;text-transform:uppercase;padding:0.35rem 0.85rem}
+    .pkg-card{overflow:hidden;background:white;border:1px solid rgba(150,113,56,0.12);transition:transform 0.4s cubic-bezier(0.16,1,0.3,1),box-shadow 0.4s ease}
+    .pkg-card:hover{transform:translateY(-6px);box-shadow:0 16px 44px rgba(150,113,56,0.12)}
+    .pkg-card img{transition:transform 0.8s cubic-bezier(0.16,1,0.3,1)}
+    .pkg-card:hover img{transform:scale(1.04)}
+    .gal-cell{overflow:hidden;position:relative;cursor:default}
+    .gal-cell img{width:100%;height:100%;object-fit:cover;transition:opacity 0.5s ease}
+    #mobile-nav{position:fixed;inset:0;z-index:600;background:#1C1915;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2rem;transform:translateY(-100%);transition:transform 0.6s cubic-bezier(0.16,1,0.3,1)}
+    #mobile-nav.open{transform:translateY(0)}
+    #back-to-top{position:fixed;bottom:2.5rem;right:2.5rem;z-index:400;width:44px;height:44px;border:1px solid rgba(150,113,56,0.5);background:rgba(28,25,21,0.85);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;transform:translateY(12px);transition:opacity 0.4s ease,transform 0.4s ease,background 0.3s ease;pointer-events:none}
+    #back-to-top.visible{opacity:1;transform:translateY(0);pointer-events:auto}
+    #back-to-top:hover{background:rgba(150,113,56,0.9);border-color:rgba(150,113,56,0.9)}
+    @media(max-width:1024px){#nav{padding:1.25rem 1.5rem}#nav.scrolled{padding:0.875rem 1.5rem}#back-to-top{bottom:1.5rem;right:1.5rem}}
+  </style>
+</head>
+<body>
+
+<nav id="nav">
+  <a href="index.html" style="display:inline-flex;align-items:center;padding:0.25rem 0.5rem;border-radius:2px;background:rgba(28,25,21,0.3);backdrop-filter:blur(10px);">
+    <img src="brand_assets/brand%20logo%20updated.png" alt="Eco Eyes Village" style="height:36px;display:block;" onerror="this.src='brand_assets/brand%20logo%20old.png';this.onerror=null">
+  </a>
+  <div class="hidden lg:flex items-center gap-7">
+    <a href="resort.html"  class="nav-link" data-en="Stay" data-th="พัก" data-zh="住宿">Stay</a>
+    <a href="cafe.html"    class="nav-link" data-en="Café" data-th="คาเฟ่" data-zh="咖啡厅">Café</a>
+    <a href="life.html"    class="nav-link active" data-en="Experiences" data-th="ประสบการณ์" data-zh="体验">Experiences</a>
+    <a href="csr.html"     class="nav-link" data-en="Conservation" data-th="อนุรักษ์" data-zh="环保">Conservation</a>
+    <a href="explore.html" class="nav-link" data-en="Explore" data-th="สำรวจ" data-zh="探索">Explore</a>
+    <a href="contact.html" class="nav-link" data-en="Contact" data-th="ติดต่อ" data-zh="联系">Contact</a>
+  </div>
+  <div class="hidden lg:flex items-center gap-4">
+    <div class="flex items-center gap-1">
+      <button class="lang-btn active" onclick="setLang('en')" data-lang="en">EN</button>
+      <span class="lang-divider">|</span>
+      <button class="lang-btn" onclick="setLang('th')" data-lang="th">TH</button>
+      <span class="lang-divider">|</span>
+      <button class="lang-btn" onclick="setLang('zh')" data-lang="zh">ZH</button>
+    </div>
+    <a href="resort.html" class="btn-solid-gold" style="padding:0.6rem 1.5rem;font-size:0.6rem;" data-en="Book Now" data-th="จองเดี๋ยวนี้" data-zh="立即预订">Book Now</a>
+  </div>
+  <button id="hamburger" onclick="openMenu()" class="lg:hidden flex flex-col gap-1.5 p-1" aria-label="Menu">
+    <span class="block w-6 h-px bg-white/80"></span>
+    <span class="block w-4 h-px bg-white/80"></span>
+    <span class="block w-6 h-px bg-white/80"></span>
+  </button>
+</nav>
+
+<button id="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C4A36A" stroke-width="1.5" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+</button>
+
+<div id="mobile-nav">
+  <button onclick="closeMenu()" class="absolute top-6 right-6 text-white/60 hover:text-white">
+    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+  </button>
+  <a href="index.html"   onclick="closeMenu()" class="font-display text-white text-4xl font-light italic hover:text-[#C4A36A] transition-colors" data-en="Home" data-th="หน้าแรก" data-zh="首页">Home</a>
+  <a href="resort.html"  onclick="closeMenu()" class="font-display text-white text-4xl font-light italic hover:text-[#C4A36A] transition-colors" data-en="Stay" data-th="พัก" data-zh="住宿">Stay</a>
+  <a href="cafe.html"    onclick="closeMenu()" class="font-display text-white text-4xl font-light italic hover:text-[#C4A36A] transition-colors" data-en="Café" data-th="คาเฟ่" data-zh="咖啡厅">Café</a>
+  <a href="life.html"    onclick="closeMenu()" class="font-display text-[#C4A36A] text-4xl font-light italic" data-en="Experiences" data-th="ประสบการณ์" data-zh="体验">Experiences</a>
+  <a href="csr.html"     onclick="closeMenu()" class="font-display text-white text-4xl font-light italic hover:text-[#C4A36A] transition-colors" data-en="Conservation" data-th="อนุรักษ์" data-zh="环保">Conservation</a>
+  <a href="explore.html" onclick="closeMenu()" class="font-display text-white text-4xl font-light italic hover:text-[#C4A36A] transition-colors" data-en="Explore" data-th="สำรวจ" data-zh="探索">Explore</a>
+  <a href="contact.html" onclick="closeMenu()" class="font-display text-white text-4xl font-light italic hover:text-[#C4A36A] transition-colors" data-en="Contact" data-th="ติดต่อ" data-zh="联系">Contact</a>
+</div>
+
+
+<!-- HERO -->
+<section class="relative h-screen overflow-hidden">
+  <img src="brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Resort%20Activities/woman%20doing%20yoga%20by%20the%20lake.jpg"
+       alt="Experiences at Eco Eyes Village" class="absolute inset-0 w-full h-full object-cover" style="object-position:center 30%">
+  <div class="absolute inset-0 bg-gradient-to-b from-black/55 via-black/15 to-black/65"></div>
+  <div class="absolute inset-0" style="background:radial-gradient(ellipse at center, transparent 45%, rgba(0,0,0,0.3) 100%)"></div>
+  <div class="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
+    <p class="font-sans text-white/50 text-[0.58rem] tracking-widest uppercase mb-7 reveal" style="transition-delay:0.3s"
+       data-en="Tours · Wellness · Education" data-th="ทัวร์ · สุขภาพ · การศึกษา" data-zh="游览 · 健康 · 教育">Tours · Wellness · Education</p>
+    <h1 class="font-display text-white font-light leading-none reveal" style="font-size:clamp(3.5rem,8vw,7.5rem);transition-delay:0.5s">
+      <span data-en="Life at" data-th="ชีวิตที่" data-zh="生活于">Life at</span><br>
+      <em><span data-en="Eco Eyes" data-th="อีโค่ อายส์" data-zh="生态眼">Eco Eyes</span></em>
+    </h1>
+    <span class="sep sep-center reveal" style="transition-delay:0.75s;background:#C4A36A;"></span>
+    <p class="font-sans text-white/55 text-[0.65rem] tracking-widest uppercase reveal" style="transition-delay:0.9s"
+       data-en="Explore the Forest. Reconnect with Nature." data-th="สำรวจป่า เชื่อมต่อกับธรรมชาติ" data-zh="探索森林，与自然同频">Explore the Forest. Reconnect with Nature.</p>
+    <div class="flex gap-4 mt-10 reveal pointer-events-auto" style="transition-delay:1.1s">
+      <a href="#activities" style="display:inline-block;font-family:'Jost',sans-serif;font-size:0.62rem;letter-spacing:0.25em;text-transform:uppercase;border:1px solid rgba(255,255,255,0.4);color:rgba(255,255,255,0.85);padding:0.85rem 2.5rem;text-decoration:none;"
+         data-en="View Activities" data-th="ดูกิจกรรม" data-zh="查看活动">View Activities</a>
+    </div>
+  </div>
+</section>
+
+
+<!-- ACTIVITIES -->
+<section id="activities" class="py-32 bg-cream">
+  <div class="max-w-7xl mx-auto px-6 md:px-12">
+    <div class="text-center mb-16 reveal">
+      <p class="font-sans text-gold text-[0.62rem] tracking-widest uppercase mb-5"
+         data-en="What To Do" data-th="สิ่งที่ต้องทำ" data-zh="活动体验">What To Do</p>
+      <h2 class="font-display text-dark font-light" style="font-size:clamp(2.4rem,4vw,3.8rem)">
+        <span data-en="Our " data-th="กิจกรรม" data-zh="我们的">Our </span><em><span data-en="Activities" data-th="ของเรา" data-zh="活动">Activities</span></em>
+      </h2>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+      <!-- Segway -->
+      <div class="act-card reveal group">
+        <div class="overflow-hidden" style="height:300px">
+          <img src="brand_assets/gliding%20through%20the%20forest.jpg"
+               alt="Segway Tour" loading="lazy" class="w-full h-full object-cover">
+        </div>
+        <div class="p-8">
+          <div class="flex items-center justify-between mb-4">
+            <p class="font-sans text-gold text-[0.58rem] tracking-widest uppercase"
+               data-en="Segway Tour" data-th="ทัวร์เซกเวย์" data-zh="赛格威之旅">Segway Tour</p>
+            <span class="price-badge" data-en="150 ฿ / person" data-th="150 ฿ / คน" data-zh="150铢 / 人">150 ฿ / person</span>
+          </div>
+          <h3 class="font-display text-dark text-2xl font-light mb-3"
+              data-en="Glide Through the Forest" data-th="ล่องไปในป่า" data-zh="滑行穿越森林">Glide Through the Forest</h3>
+          <p class="font-sans text-dark/55 text-[0.875rem] leading-[1.8] mb-6"
+             data-en="Explore Eco Eyes on electric Segways — effortless, silent, and completely at one with the forest. Guided tours for all skill levels. Minimum age 10."
+             data-th="สำรวจอีโค่ อายส์บนเซกเวย์ไฟฟ้า — เงียบสงบและสมกับธรรมชาติ มีไกด์นำทาง เหมาะกับทุกระดับ อายุขั้นต่ำ 10 ปี"
+             data-zh="乘坐电动赛格威探索生态眼——无声、轻松、与森林融为一体。配有导游，适合所有水平。最小年龄10岁。">Explore Eco Eyes on electric Segways — effortless, silent, and completely at one with the forest. Guided tours for all skill levels. Minimum age 10.</p>
+          <a href="contact.html" class="btn-outline-gold"
+             data-en="Enquire Now" data-th="สอบถามเพิ่มเติม" data-zh="立即咨询">Enquire Now</a>
+        </div>
+      </div>
+
+      <!-- EV Tour -->
+      <div class="act-card reveal group" style="transition-delay:0.12s">
+        <div class="overflow-hidden" style="height:300px">
+          <img src="brand_assets/Touring%20resort%20(important).jpg"
+               alt="EV Tour" loading="lazy" class="w-full h-full object-cover">
+        </div>
+        <div class="p-8">
+          <div class="flex items-center justify-between mb-4">
+            <p class="font-sans text-gold text-[0.58rem] tracking-widest uppercase"
+               data-en="EV Tour" data-th="ทัวร์รถอีวี" data-zh="电动车游览">EV Tour</p>
+            <span class="price-badge" data-en="150 ฿ / person" data-th="150 ฿ / คน" data-zh="150铢 / 人">150 ฿ / person</span>
+          </div>
+          <h3 class="font-display text-dark text-2xl font-light mb-3"
+              data-en="Silent Electric Journey" data-th="การเดินทางด้วยไฟฟ้าอย่างเงียบสงบ" data-zh="静谧电动之旅">Silent Electric Journey</h3>
+          <p class="font-sans text-dark/55 text-[0.875rem] leading-[1.8] mb-6"
+             data-en="Board our electric vehicle for a guided tour through the full conservation zone. Zero emissions, zero noise — just nature and your guide explaining the ecosystem."
+             data-th="ขึ้นรถยนต์ไฟฟ้าสำหรับทัวร์นำเที่ยวผ่านเขตอนุรักษ์ทั้งหมด ไม่มีการปล่อยมลพิษ ไม่มีเสียงรบกวน — เพียงแค่ธรรมชาติและไกด์"
+             data-zh="乘坐我们的电动车游览整个保育区。零排放、零噪音——只有大自然和向导为您解说生态系统。">Board our electric vehicle for a guided tour through the full conservation zone. Zero emissions, zero noise — just nature and your guide explaining the ecosystem.</p>
+          <a href="contact.html" class="btn-outline-gold"
+             data-en="Enquire Now" data-th="สอบถามเพิ่มเติม" data-zh="立即咨询">Enquire Now</a>
+        </div>
+      </div>
+
+      <!-- Nature Walk -->
+      <div class="act-card reveal group" style="transition-delay:0.12s">
+        <div class="overflow-hidden" style="height:300px">
+          <img src="brand_assets/Guided%20forest%20walk.jpeg"
+               alt="Guided Nature Walk" loading="lazy" class="w-full h-full object-cover">
+        </div>
+        <div class="p-8">
+          <div class="flex items-center justify-between mb-4">
+            <p class="font-sans text-gold text-[0.58rem] tracking-widest uppercase"
+               data-en="Nature Walk" data-th="เดินป่าธรรมชาติ" data-zh="自然步道">Nature Walk</p>
+            <span class="price-badge" data-en="Included" data-th="รวมอยู่แล้ว" data-zh="免费包含">Included</span>
+          </div>
+          <h3 class="font-display text-dark text-2xl font-light mb-3"
+              data-en="Guided Forest Walk" data-th="เดินป่ากับไกด์ธรรมชาติ" data-zh="向导森林徒步">Guided Forest Walk</h3>
+          <p class="font-sans text-dark/55 text-[0.875rem] leading-[1.8] mb-6"
+             data-en="Walk alongside a naturalist through the living forest. Learn to identify native trees, spot rare birds, and understand the interconnected ecosystem that makes Eco Eyes so special."
+             data-th="เดินเคียงข้างนักธรรมชาติวิทยาผ่านป่าที่มีชีวิต เรียนรู้การระบุต้นไม้พื้นเมือง สังเกตนกหายาก และทำความเข้าใจระบบนิเวศ"
+             data-zh="与自然学家一起穿越活森林。学会辨认本地树木，发现珍稀鸟类，了解生态眼的生态系统。">Walk alongside a naturalist through the living forest. Learn to identify native trees, spot rare birds, and understand the interconnected ecosystem that makes Eco Eyes so special.</p>
+          <a href="contact.html" class="btn-outline-gold"
+             data-en="Enquire Now" data-th="สอบถามเพิ่มเติม" data-zh="立即咨询">Enquire Now</a>
+        </div>
+      </div>
+
+      <!-- Mindfulness -->
+      <div class="act-card reveal group" style="transition-delay:0.24s">
+        <div class="overflow-hidden" style="height:300px">
+          <img src="brand_assets/Sound%20wellness%20session.jpg"
+               alt="Mindfulness at Eco Eyes Village" loading="lazy" class="w-full h-full object-cover">
+        </div>
+        <div class="p-8">
+          <div class="flex items-center justify-between mb-4">
+            <p class="font-sans text-gold text-[0.58rem] tracking-widest uppercase"
+               data-en="Wellness" data-th="สุขภาพ" data-zh="健康养生">Wellness</p>
+            <span class="price-badge" data-en="By Request" data-th="ตามการขอ" data-zh="可预约">By Request</span>
+          </div>
+          <h3 class="font-display text-dark text-2xl font-light mb-3"
+              data-en="Mindfulness &amp; Sound Healing" data-th="สมาธิและการบำบัดด้วยเสียง" data-zh="正念与音疗">Mindfulness &amp; Sound Healing</h3>
+          <p class="font-sans text-dark/55 text-[0.875rem] leading-[1.8] mb-6"
+             data-en="Begin at sunrise with lakeside yoga, then transition to crystal singing bowl meditation in the forest clearing. Our wellness sessions reconnect mind, body, and nature."
+             data-th="เริ่มต้นวันด้วยโยคะริมทะเลสาบ จากนั้นเปลี่ยนไปสู่การทำสมาธิด้วยชามคริสตัลในป่า โปรแกรมสุขภาพของเราเชื่อมโยงจิต กาย และธรรมชาติ"
+             data-zh="从日出时的湖边瑜伽开始，然后过渡到森林空地中的水晶颂钵冥想。我们的健康课程重新连接身心与自然。">Begin at sunrise with lakeside yoga, then transition to crystal singing bowl meditation in the forest clearing. Our wellness sessions reconnect mind, body, and nature.</p>
+          <a href="contact.html" class="btn-outline-gold"
+             data-en="Enquire Now" data-th="สอบถามเพิ่มเติม" data-zh="立即咨询">Enquire Now</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- FOREST SPA -->
+<section id="forest-spa" class="py-32 bg-dark">
+  <div class="max-w-7xl mx-auto px-6 md:px-12">
+    <div class="text-center mb-16 reveal">
+      <p class="font-sans text-gold text-[0.62rem] tracking-widest uppercase mb-5"
+         data-en="On-Site Retreat" data-th="สปาในรีสอร์ท" data-zh="度假村内水疗">On-Site Retreat</p>
+      <h2 class="font-display text-white font-light" style="font-size:clamp(2.4rem,4vw,3.8rem)">
+        <span data-en="Forest " data-th="สปา" data-zh="森林">Forest </span><em><span data-en="Spa" data-th="ป่า" data-zh="水疗">Spa</span></em>
+      </h2>
+      <span class="sep sep-center" style="background:#C4A36A"></span>
+      <p class="font-sans text-white/50 text-[0.875rem] leading-[1.85] mt-4 mx-auto" style="max-width:38rem"
+         data-en="Nestled within the living forest, our spa invites you to restore. From traditional Thai massage and sauna to specialised wellness baths and sound healing — each treatment is designed to harmonise body, mind, and nature."
+         data-th="สปาของเราตั้งอยู่ในป่าที่มีชีวิต เชิญคุณมาฟื้นฟู ตั้งแต่การนวดไทยแบบดั้งเดิมและซาวน่า ไปจนถึงบ่ออาบน้ำเพื่อสุขภาพเฉพาะทางและการบำบัดด้วยเสียง — การบำบัดแต่ละอย่างถูกออกแบบมาเพื่อประสานกาย ใจ และธรรมชาติ"
+         data-zh="我们的水疗中心隐于活森林之中，邀您在此恢复身心。从传统泰式按摩和桑拿，到特色康养浴和音疗——每项疗程都旨在协调身心与自然。">Nestled within the living forest, our spa invites you to restore. From traditional Thai massage and sauna to specialised wellness baths and sound healing — each treatment is designed to harmonise body, mind, and nature.</p>
+    </div>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-12">
+      <div class="overflow-hidden aspect-square reveal">
+        <img src="brand_assets/eco%20eyes%20website%20photos%20/Spa%20Photos/Sauna%20photo%20without%20persons.jpg" alt="Sauna at Eco Eyes Spa" loading="lazy" class="w-full h-full object-cover transition-transform duration-700 hover:scale-105">
+      </div>
+      <div class="overflow-hidden aspect-square reveal" style="transition-delay:0.08s">
+        <img src="brand_assets/eco%20eyes%20website%20photos%20/Spa%20Photos/Massages.jpg" alt="Massage at Eco Eyes Spa" loading="lazy" class="w-full h-full object-cover transition-transform duration-700 hover:scale-105">
+      </div>
+      <div class="overflow-hidden aspect-square reveal" style="transition-delay:0.16s">
+        <img src="brand_assets/eco%20eyes%20website%20photos%20/Spa%20Photos/Wellness%20bath%20.jpg" alt="Wellness Bath" loading="lazy" class="w-full h-full object-cover transition-transform duration-700 hover:scale-105">
+      </div>
+      <div class="overflow-hidden aspect-square reveal" style="transition-delay:0.24s">
+        <img src="brand_assets/eco%20eyes%20website%20photos%20/Spa%20Photos/Photo%20of%20specialised%20relaxing%20bath.jpg" alt="Specialised Bath" loading="lazy" class="w-full h-full object-cover transition-transform duration-700 hover:scale-105">
+      </div>
+      <div class="overflow-hidden aspect-square reveal" style="transition-delay:0.1s">
+        <img src="brand_assets/eco%20eyes%20website%20photos%20/Spa%20Photos/Yoga%201.jpg" alt="Yoga at Eco Eyes" loading="lazy" class="w-full h-full object-cover transition-transform duration-700 hover:scale-105">
+      </div>
+      <div class="overflow-hidden aspect-square reveal" style="transition-delay:0.18s">
+        <img src="brand_assets/eco%20eyes%20website%20photos%20/Spa%20Photos/Beauty%20services%20photo.jpg" alt="Beauty Services" loading="lazy" class="w-full h-full object-cover transition-transform duration-700 hover:scale-105">
+      </div>
+      <div class="overflow-hidden aspect-square reveal" style="transition-delay:0.26s">
+        <img src="brand_assets/eco%20eyes%20website%20photos%20/Spa%20Photos/Sauna%20photo%202.jpg" alt="Sauna" loading="lazy" class="w-full h-full object-cover transition-transform duration-700 hover:scale-105">
+      </div>
+      <div class="overflow-hidden aspect-square reveal" style="transition-delay:0.34s">
+        <img src="brand_assets/eco%20eyes%20website%20photos%20/Spa%20Photos/Wellness%20bath.jpg" alt="Wellness at Eco Eyes" loading="lazy" class="w-full h-full object-cover transition-transform duration-700 hover:scale-105">
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 reveal" style="transition-delay:0.15s">
+      <div style="border:1px solid rgba(150,113,56,0.2);padding:2rem">
+        <p class="font-sans text-gold text-[0.58rem] tracking-widest uppercase mb-3"
+           data-en="Body" data-th="กาย" data-zh="身体">Body</p>
+        <h3 class="font-display text-white text-2xl font-light mb-3"
+            data-en="Traditional Thai Massage" data-th="นวดไทยแบบดั้งเดิม" data-zh="传统泰式按摩">Traditional Thai Massage</h3>
+        <p class="font-sans text-white/45 text-[0.82rem] leading-[1.8]"
+           data-en="Ancient pressure-point techniques performed by skilled therapists, deep within the forest atmosphere."
+           data-th="เทคนิคการกดจุดโบราณโดยนักบำบัดที่มีทักษะ ท่ามกลางบรรยากาศป่า"
+           data-zh="由技艺精湛的理疗师在森林氛围中施以古老的穴位按压技术。">Ancient pressure-point techniques performed by skilled therapists, deep within the forest atmosphere.</p>
+      </div>
+      <div style="border:1px solid rgba(150,113,56,0.2);padding:2rem">
+        <p class="font-sans text-gold text-[0.58rem] tracking-widest uppercase mb-3"
+           data-en="Purify" data-th="ชำระล้าง" data-zh="净化">Purify</p>
+        <h3 class="font-display text-white text-2xl font-light mb-3"
+            data-en="Sauna &amp; Wellness Bath" data-th="ซาวน่าและบ่ออาบน้ำเพื่อสุขภาพ" data-zh="桑拿与康养浴">Sauna &amp; Wellness Bath</h3>
+        <p class="font-sans text-white/45 text-[0.82rem] leading-[1.8]"
+           data-en="Our forest sauna and specialised herbal baths draw out tension and rebalance the body through natural heat and plant medicine."
+           data-th="ซาวน่าป่าและอ่างสมุนไพรเฉพาะทางของเราช่วยคลายความตึงเครียดและสร้างสมดุลให้ร่างกายด้วยความร้อนและสมุนไพร"
+           data-zh="我们的森林桑拿和特制草药浴通过自然热力和植物疗法排解压力，恢复身体平衡。">Our forest sauna and specialised herbal baths draw out tension and rebalance the body through natural heat and plant medicine.</p>
+      </div>
+      <div style="border:1px solid rgba(150,113,56,0.2);padding:2rem">
+        <p class="font-sans text-gold text-[0.58rem] tracking-widest uppercase mb-3"
+           data-en="Mind" data-th="จิต" data-zh="心灵">Mind</p>
+        <h3 class="font-display text-white text-2xl font-light mb-3"
+            data-en="Sound &amp; Yoga Therapy" data-th="การบำบัดด้วยเสียงและโยคะ" data-zh="音疗与瑜伽">Sound &amp; Yoga Therapy</h3>
+        <p class="font-sans text-white/45 text-[0.82rem] leading-[1.8]"
+           data-en="Crystal singing bowls, forest yoga sessions, and guided breathing — each designed to quiet the mind and restore inner stillness."
+           data-th="ชามคริสตัล โยคะในป่า และการหายใจแบบมีไกด์ — แต่ละอย่างถูกออกแบบมาเพื่อสงบจิตใจและฟื้นฟูความสงบภายใน"
+           data-zh="水晶颂钵、森林瑜伽课程和引导呼吸——每项都旨在平静心灵，恢复内在宁静。">Crystal singing bowls, forest yoga sessions, and guided breathing — each designed to quiet the mind and restore inner stillness.</p>
+      </div>
+    </div>
+
+    <div class="text-center mt-10 reveal">
+      <a href="contact.html" class="btn-outline-cream"
+         data-en="Enquire About the Spa" data-th="สอบถามเกี่ยวกับสปา" data-zh="咨询水疗服务">Enquire About the Spa</a>
+    </div>
+  </div>
+</section>
+
+
+<!-- MEET YOUR GUIDE -->
+<section class="py-0 overflow-hidden">
+  <div class="grid grid-cols-1 lg:grid-cols-2">
+    <!-- Guide Photo -->
+    <div class="relative overflow-hidden" style="min-height:520px">
+      <img src="brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Resort%20Activities/eco%20tour%20showing%20forest.jpg"
+           alt="Eco Eyes Village Nature Guide" class="absolute inset-0 w-full h-full object-cover">
+      <div class="absolute inset-0 bg-gradient-to-r from-transparent to-black/10"></div>
+    </div>
+    <!-- Guide Text -->
+    <div class="bg-forest flex flex-col justify-center px-12 py-16 reveal" style="transition-delay:0.15s">
+      <p class="font-sans text-gold text-[0.62rem] tracking-widest uppercase mb-5"
+         data-en="Your Host" data-th="ไกด์ของคุณ" data-zh="您的向导">Your Host</p>
+      <h2 class="font-display text-white font-light mb-4" style="font-size:clamp(2rem,3.5vw,3rem)">
+        <span data-en="Meet Your " data-th="รู้จักกับ" data-zh="认识您的">Meet Your </span><em><span data-en="Naturalist" data-th="นักธรรมชาติวิทยา" data-zh="自然向导">Naturalist</span></em>
+      </h2>
+      <span class="sep" style="background:#C4A36A"></span>
+      <p class="font-sans text-white/70 text-[0.875rem] leading-[1.9] mb-5"
+         data-en="Our experienced naturalist guides are passionate conservationists who have lived alongside this ecosystem for years. They bring the forest to life — pointing out hidden wildlife, ancient trees, and the delicate balance that keeps this rainforest thriving."
+         data-th="ไกด์นักธรรมชาติวิทยาที่มีประสบการณ์ของเรามีความหลงใหลในการอนุรักษ์และอาศัยอยู่ในระบบนิเวศนี้มาหลายปี พวกเขาทำให้ป่ามีชีวิต — ชี้ให้เห็นสัตว์ป่าที่ซ่อนอยู่ ต้นไม้โบราณ และความสมดุลที่ละเอียดอ่อน"
+         data-zh="我们经验丰富的自然向导是充满热情的自然保育者，多年来一直与这片生态系统为伴。他们让森林焕发生机——指出隐藏的野生动物、古老的树木，以及维持这片热带雨林繁荣的微妙平衡。">Our experienced naturalist guides are passionate conservationists who have lived alongside this ecosystem for years. They bring the forest to life — pointing out hidden wildlife, ancient trees, and the delicate balance that keeps this rainforest thriving.</p>
+      <p class="font-sans text-white/50 text-[0.82rem] leading-[1.8] mb-8"
+         data-en="All tours are led by a certified guide. Group size is kept small (max 8 guests) to ensure a personal, immersive experience with minimal environmental impact."
+         data-th="ทัวร์ทั้งหมดนำโดยไกด์ที่ได้รับการรับรอง ขนาดกลุ่มถูกจำกัดไว้ที่ไม่เกิน 8 คน เพื่อประสบการณ์ที่เป็นส่วนตัวและลดผลกระทบต่อสิ่งแวดล้อม"
+         data-zh="所有游览均由持证向导带领。团队规模保持较小（最多8位客人），以确保个人化、沉浸式的体验，同时将对环境的影响降至最低。">All tours are led by a certified guide. Group size is kept small (max 8 guests) to ensure a personal, immersive experience with minimal environmental impact.</p>
+      <a href="contact.html" class="btn-outline-cream self-start"
+         data-en="Enquire Now" data-th="สอบถามเพิ่มเติม" data-zh="立即咨询">Enquire Now</a>
+    </div>
+  </div>
+</section>
+
+
+<!-- PACKAGES -->
+<section id="packages" class="py-32 bg-cream-mid">
+  <div class="max-w-7xl mx-auto px-6 md:px-12">
+    <div class="text-center mb-16 reveal">
+      <p class="font-sans text-gold text-[0.62rem] tracking-widest uppercase mb-5"
+         data-en="Tour Packages" data-th="แพ็กเกจทัวร์" data-zh="游览套餐">Tour Packages</p>
+      <h2 class="font-display text-dark font-light" style="font-size:clamp(2.2rem,4vw,3.5rem)">
+        <span data-en="Our " data-th="แพ็กเกจ" data-zh="我们的">Our </span><em><span data-en="Packages" data-th="ของเรา" data-zh="套餐">Packages</span></em>
+      </h2>
+      <span class="sep sep-center"></span>
+      <p class="font-sans text-dark/50 text-[0.875rem] leading-[1.85] mt-4 mx-auto" style="max-width:36rem"
+         data-en="Choose the experience that suits you. All packages are arranged directly with our team — no online booking required. Contact us to reserve your spot."
+         data-th="เลือกประสบการณ์ที่เหมาะกับคุณ แพ็กเกจทั้งหมดจัดทำโดยตรงกับทีมของเรา ไม่จำเป็นต้องจองออนไลน์ ติดต่อเราเพื่อจองที่นั่ง"
+         data-zh="选择适合您的体验。所有套餐均直接由我们的团队安排——无需在线预订。请联系我们预留您的位置。">Choose the experience that suits you. All packages are arranged directly with our team — no online booking required. Contact us to reserve your spot.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+
+      <!-- Private Tour -->
+      <div class="pkg-card reveal">
+        <div class="overflow-hidden" style="height:200px">
+          <img src="brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Resort%20Activities/children%20enjoying%20eco%20classroom%20activites.jpg"
+               alt="Private Tour" loading="lazy" class="w-full h-full object-cover">
+        </div>
+        <div class="p-6">
+          <p class="font-sans text-gold text-[0.58rem] tracking-widest uppercase mb-3"
+             data-en="Private Tour" data-th="ทัวร์ส่วนตัว" data-zh="私人导览">Private Tour</p>
+          <div class="flex items-baseline gap-1 mb-1">
+            <span class="font-display text-dark text-4xl font-light">300</span>
+            <span class="font-sans text-dark/50 text-sm">฿ / </span>
+            <span class="font-sans text-dark/50 text-[0.72rem]" data-en="family" data-th="ครอบครัว" data-zh="家庭">family</span>
+          </div>
+          <span class="sep" style="margin:0.8rem 0"></span>
+          <p class="font-sans text-dark/55 text-[0.82rem] leading-[1.75] mb-5"
+             data-en="A personalised guided tour of the entire property with a dedicated naturalist. Ideal for families — learn about every ecosystem at your own pace."
+             data-th="ทัวร์นำเที่ยวส่วนตัวทั่วทั้งพื้นที่กับนักธรรมชาติวิทยาเฉพาะ เหมาะสำหรับครอบครัว เรียนรู้เกี่ยวกับทุกระบบนิเวศในแบบที่คุณต้องการ"
+             data-zh="在专属自然向导的带领下，对整个园区进行个性化导览。非常适合家庭——以您自己的节奏了解每个生态系统。">A personalised guided tour of the entire property with a dedicated naturalist. Ideal for families — learn about every ecosystem at your own pace.</p>
+          <a href="contact.html" class="btn-outline-gold w-full text-center block"
+             data-en="Enquire Now" data-th="สอบถามเพิ่มเติม" data-zh="立即咨询">Enquire Now</a>
+        </div>
+      </div>
+
+      <!-- Mobile Tour -->
+      <div class="pkg-card reveal" style="transition-delay:0.1s">
+        <div class="overflow-hidden" style="height:200px">
+          <img src="brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Resort%20Activities/Picture%20of%20rentable%20bikes.jpg"
+               alt="Mobile Tour" loading="lazy" class="w-full h-full object-cover">
+        </div>
+        <div class="p-6">
+          <p class="font-sans text-gold text-[0.58rem] tracking-widest uppercase mb-3"
+             data-en="Mobile Tour" data-th="ทัวร์มือถือ" data-zh="移动导览">Mobile Tour</p>
+          <div class="flex items-baseline gap-1 mb-1">
+            <span class="font-display text-dark text-4xl font-light">100</span>
+            <span class="font-sans text-dark/50 text-sm">฿ / </span>
+            <span class="font-sans text-dark/50 text-[0.72rem]" data-en="person" data-th="คน" data-zh="人">person</span>
+          </div>
+          <span class="font-sans text-[#2B3A20] text-[0.62rem] tracking-widest uppercase" style="background:#E8F0E0;padding:0.2rem 0.6rem;display:inline-block;margin-bottom:0.5rem"
+                data-en="+ Café Coupon" data-th="+ คูปองคาเฟ่" data-zh="+ 咖啡厅优惠券">+ Café Coupon</span>
+          <span class="sep" style="margin:0.8rem 0"></span>
+          <p class="font-sans text-dark/55 text-[0.82rem] leading-[1.75] mb-5"
+             data-en="A self-guided audio tour through the forest trails using our mobile guide. Includes an Eco Café coupon — perfect for solo explorers."
+             data-th="ทัวร์นำเที่ยวด้วยตนเองผ่านเส้นทางป่าโดยใช้คู่มือมือถือของเรา รวมถึงคูปองอีโค่ คาเฟ่ เหมาะสำหรับนักสำรวจเดี่ยว"
+             data-zh="使用我们的手机导览自助游览森林步道。包含生态咖啡厅优惠券——非常适合独自探索者。">A self-guided audio tour through the forest trails using our mobile guide. Includes an Eco Café coupon — perfect for solo explorers.</p>
+          <a href="contact.html" class="btn-outline-gold w-full text-center block"
+             data-en="Enquire Now" data-th="สอบถามเพิ่มเติม" data-zh="立即咨询">Enquire Now</a>
+        </div>
+      </div>
+
+      <!-- Segway Package -->
+      <div class="pkg-card reveal" style="transition-delay:0.2s;border-color:rgba(43,58,32,0.3)">
+        <div class="overflow-hidden" style="height:200px">
+          <img src="brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20customers/gliding%20through%20the%20forest.jpg"
+               alt="Segway Tour Package" loading="lazy" class="w-full h-full object-cover">
+        </div>
+        <div class="p-6" style="background:#2B3A20">
+          <p class="font-sans text-[#C4A36A] text-[0.58rem] tracking-widest uppercase mb-3"
+             data-en="Segway Tour" data-th="ทัวร์เซกเวย์" data-zh="赛格威之旅">Segway Tour</p>
+          <div class="flex items-baseline gap-1 mb-1">
+            <span class="font-display text-white text-4xl font-light">150</span>
+            <span class="font-sans text-white/50 text-sm">฿ / </span>
+            <span class="font-sans text-white/50 text-[0.72rem]" data-en="person" data-th="คน" data-zh="人">person</span>
+          </div>
+          <span class="sep" style="margin:0.8rem 0;background:#C4A36A"></span>
+          <p class="font-sans text-white/60 text-[0.82rem] leading-[1.75] mb-5"
+             data-en="Glide through forest paths on electric Segways. See more of the reserve in less time — a unique perspective on the ecosystem."
+             data-th="ล่องไปตามเส้นทางป่าบนเซกเวย์ไฟฟ้า มองเห็นเขตสงวนได้มากขึ้นในเวลาน้อยลง"
+             data-zh="乘坐电动赛格威穿越森林小径。在更短的时间内看更多保护区——一个独特的生态系统视角。">Glide through forest paths on electric Segways. See more of the reserve in less time — a unique perspective on the ecosystem.</p>
+          <a href="contact.html" style="display:block;text-align:center;font-family:'Jost',sans-serif;font-size:0.62rem;letter-spacing:0.25em;text-transform:uppercase;border:1px solid rgba(196,163,106,0.5);color:#C4A36A;padding:0.85rem 2rem;text-decoration:none;transition:background 0.35s ease,color 0.35s ease"
+             onmouseover="this.style.background='rgba(196,163,106,0.15)'" onmouseout="this.style.background=''"
+             data-en="Enquire Now" data-th="สอบถามเพิ่มเติม" data-zh="立即咨询">Enquire Now</a>
+        </div>
+      </div>
+
+      <!-- EV Package -->
+      <div class="pkg-card reveal" style="transition-delay:0.3s">
+        <div class="overflow-hidden" style="height:200px">
+          <img src="brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20the%20resort%20/Touring%20resort%20(important).jpg"
+               alt="EV Tour Package" loading="lazy" class="w-full h-full object-cover">
+        </div>
+        <div class="p-6">
+          <p class="font-sans text-gold text-[0.58rem] tracking-widest uppercase mb-3"
+             data-en="EV Tour" data-th="ทัวร์รถอีวี" data-zh="电动车游览">EV Tour</p>
+          <div class="flex items-baseline gap-1 mb-1">
+            <span class="font-display text-dark text-4xl font-light">150</span>
+            <span class="font-sans text-dark/50 text-sm">฿ / </span>
+            <span class="font-sans text-dark/50 text-[0.72rem]" data-en="person" data-th="คน" data-zh="人">person</span>
+          </div>
+          <span class="sep" style="margin:0.8rem 0"></span>
+          <p class="font-sans text-dark/55 text-[0.82rem] leading-[1.75] mb-5"
+             data-en="A silent electric vehicle tour through nature trails and conservation zones. Zero-emission and completely at one with the environment."
+             data-th="ทัวร์รถยนต์ไฟฟ้าเงียบสงบผ่านเส้นทางธรรมชาติและเขตอนุรักษ์ ไม่มีการปล่อยมลพิษ"
+             data-zh="乘坐安静的电动车游览自然步道和保育区。零排放，与环境完全融为一体。">A silent electric vehicle tour through nature trails and conservation zones. Zero-emission and completely at one with the environment.</p>
+          <a href="contact.html" class="btn-outline-gold w-full text-center block"
+             data-en="Enquire Now" data-th="สอบถามเพิ่มเติม" data-zh="立即咨询">Enquire Now</a>
+        </div>
+      </div>
+
+    </div>
+
+    <p class="font-sans text-dark/35 text-[0.72rem] tracking-wide text-center mt-10"
+       data-en="All prices in Thai Baht (฿) · Group rates available · Children welcome"
+       data-th="ราคาทั้งหมดในบาทไทย (฿) · มีส่วนลดสำหรับกลุ่ม · ยินดีต้อนรับเด็ก"
+       data-zh="所有价格均以泰铢（฿）计算 · 提供团体优惠 · 欢迎儿童">All prices in Thai Baht (฿) · Group rates available · Children welcome</p>
+  </div>
+</section>
+
+
+<!-- ROTATING GALLERY — Life at Eco Eyes -->
+<section class="py-24 bg-cream">
+  <div class="max-w-7xl mx-auto px-6 md:px-12">
+    <div class="text-center mb-12 reveal">
+      <p class="font-sans text-gold text-[0.62rem] tracking-widest uppercase mb-4"
+         data-en="Gallery" data-th="แกลเลอรี" data-zh="相册">Gallery</p>
+      <h2 class="font-display text-dark font-light" style="font-size:clamp(2rem,3.5vw,3rem)">
+        <span data-en="Life at " data-th="ชีวิตที่" data-zh="生活在">Life at </span><em><span data-en="the Resort" data-th="อีโค่ อายส์" data-zh="生态眼">the Resort</span></em>
+      </h2>
+    </div>
+    <!-- Rotating gallery grid -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="gal-grid">
+      <div class="gal-cell aspect-square reveal"><img loading="lazy" alt="Eco Eyes Village"></div>
+      <div class="gal-cell aspect-square reveal" style="transition-delay:0.08s"><img loading="lazy" alt=""></div>
+      <div class="gal-cell aspect-square reveal" style="transition-delay:0.16s"><img loading="lazy" alt=""></div>
+      <div class="gal-cell aspect-square reveal" style="transition-delay:0.24s"><img loading="lazy" alt=""></div>
+      <div class="gal-cell aspect-square reveal" style="transition-delay:0.1s"><img loading="lazy" alt=""></div>
+      <div class="gal-cell aspect-square reveal" style="transition-delay:0.18s"><img loading="lazy" alt=""></div>
+      <div class="gal-cell aspect-square reveal" style="transition-delay:0.26s"><img loading="lazy" alt=""></div>
+      <div class="gal-cell aspect-square reveal" style="transition-delay:0.34s"><img loading="lazy" alt=""></div>
+    </div>
+  </div>
+</section>
+
+
+<!-- WELLNESS SPLIT -->
+<section class="overflow-hidden">
+  <div class="grid grid-cols-1 lg:grid-cols-2">
+    <div class="relative overflow-hidden" style="min-height:500px">
+      <img src="brand_assets/yogo%20on%20lake.jpg"
+           alt="Yoga on the lake at Eco Eyes" class="absolute inset-0 w-full h-full object-cover" loading="lazy">
+    </div>
+    <div class="bg-forest flex flex-col justify-center px-12 py-16 reveal" style="transition-delay:0.15s">
+      <p class="font-sans text-gold text-[0.62rem] tracking-widest uppercase mb-5"
+         data-en="Wellness Retreat" data-th="การพักผ่อนเพื่อสุขภาพ" data-zh="康养静修">Wellness Retreat</p>
+      <h2 class="font-display text-white font-light mb-4" style="font-size:clamp(2rem,3.5vw,3rem)">
+        <span data-en="Restore Your " data-th="ฟื้นฟู" data-zh="重新连接">Restore Your </span><em><span data-en="Connection to Nature" data-th="การเชื่อมต่อกับธรรมชาติ" data-zh="您与自然的联系">Connection to Nature</span></em>
+      </h2>
+      <span class="sep" style="background:#C4A36A"></span>
+      <p class="font-sans text-white/65 text-[0.875rem] leading-[1.9] mb-8"
+         data-en="From sunrise yoga on the lake to evening meditation beneath the canopy, every moment at Eco Eyes is designed to restore. Our mindfulness programmes connect body, mind, and forest into a single, healing experience."
+         data-th="จากโยคะตอนพระอาทิตย์ขึ้นริมทะเลสาบไปจนถึงการทำสมาธิยามเย็นใต้ร่มไม้ ทุกช่วงเวลาที่อีโค่ อายส์ถูกออกแบบมาเพื่อฟื้นฟู"
+         data-zh="从日出时的湖边瑜伽到傍晚在树冠下的冥想，生态眼的每一刻都是为了恢复身心。我们的正念课程将身体、心灵和森林融合为一种治愈体验。">From sunrise yoga on the lake to evening meditation beneath the canopy, every moment at Eco Eyes is designed to restore. Our mindfulness programmes connect body, mind, and forest into a single, healing experience.</p>
+      <a href="contact.html" class="btn-outline-cream self-start"
+         data-en="Enquire About Wellness" data-th="สอบถามเกี่ยวกับสุขภาพ" data-zh="咨询健康课程">Enquire About Wellness</a>
+    </div>
+  </div>
+</section>
+
+
+<!-- FOOTER -->
+<footer class="bg-dark py-16 px-6" style="border-top:1px solid rgba(255,255,255,0.06)">
+  <div class="max-w-7xl mx-auto">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-14">
+      <div class="md:col-span-2">
+        <a href="index.html" style="display:inline-flex;align-items:center;padding:0.25rem 0.5rem;background:rgba(250,247,239,0.05);border-radius:2px;margin-bottom:1.25rem;">
+          <img src="brand_assets/brand%20logo%20updated.png" alt="Eco Eyes Village" style="height:34px;display:block;" onerror="this.src='brand_assets/brand%20logo%20old.png';this.onerror=null">
+        </a>
+        <p class="font-sans text-white/35 text-[0.8rem] leading-[1.8]" style="max-width:26rem"
+           data-en="A private nature conservatory, luxury glamping resort, and learning centre in Nakhon Nayok, Thailand."
+           data-th="แหล่งอนุรักษ์ธรรมชาติส่วนตัว รีสอร์ทแคมปิ้งหรูหรา และศูนย์การเรียนรู้ในนครนายก ประเทศไทย"
+           data-zh="位于泰国那空那育的私人自然保育区、豪华帐篷酒店和学习中心。">A private nature conservatory, luxury glamping resort, and learning centre in Nakhon Nayok, Thailand.</p>
+      </div>
+      <div>
+        <p class="font-sans text-white/30 text-[0.58rem] tracking-widest uppercase mb-5"
+           data-en="Explore" data-th="สำรวจ" data-zh="探索">Explore</p>
+        <nav class="flex flex-col gap-3">
+          <a href="resort.html"  class="font-sans text-white/45 text-[0.78rem] hover:text-white/75 transition-colors" data-en="Resort Stay" data-th="ที่พัก" data-zh="住宿">Resort Stay</a>
+          <a href="cafe.html"    class="font-sans text-white/45 text-[0.78rem] hover:text-white/75 transition-colors" data-en="Eco Café" data-th="อีโค่ คาเฟ่" data-zh="生态咖啡厅">Eco Café</a>
+          <a href="life.html"    class="font-sans text-white/65 text-[0.78rem]" data-en="Experiences" data-th="ประสบการณ์" data-zh="体验">Experiences</a>
+          <a href="csr.html"     class="font-sans text-white/45 text-[0.78rem] hover:text-white/75 transition-colors" data-en="Conservation" data-th="อนุรักษ์" data-zh="环保">Conservation</a>
+          <a href="explore.html" class="font-sans text-white/45 text-[0.78rem] hover:text-white/75 transition-colors" data-en="Explore Nakhon Nayok" data-th="สำรวจนครนายก" data-zh="探索那空那育">Explore Nakhon Nayok</a>
+        </nav>
+      </div>
+      <div>
+        <p class="font-sans text-white/30 text-[0.58rem] tracking-widest uppercase mb-5"
+           data-en="Contact" data-th="ติดต่อ" data-zh="联系我们">Contact</p>
+        <div class="flex flex-col gap-3">
+          <a href="tel:+66926100560" class="font-sans text-white/45 text-[0.78rem] hover:text-white/75 transition-colors">+66 92 610 0560</a>
+          <a href="contact.html" class="font-sans text-white/45 text-[0.78rem] hover:text-white/75 transition-colors"
+             data-en="Get Directions" data-th="รับเส้นทาง" data-zh="获取路线">Get Directions</a>
+        </div>
+        <p class="font-sans text-white/25 text-[0.72rem] leading-[1.7] mt-5">188 Moo 9, Sarika<br>Nakhon Nayok 26000</p>
+      </div>
+    </div>
+    <div class="pt-8 flex flex-col md:flex-row items-center justify-between gap-3" style="border-top:1px solid rgba(255,255,255,0.06)">
+      <p class="font-sans text-white/20 text-[0.6rem] tracking-wide"
+         data-en="© 2025 Eco Eyes Village. All rights reserved."
+         data-th="© 2568 อีโค่ อายส์ วิลเลจ สงวนลิขสิทธิ์"
+         data-zh="© 2025 生态眼村庄 版权所有">© 2025 Eco Eyes Village. All rights reserved.</p>
+      <p class="font-sans text-white/20 text-[0.6rem] tracking-wide"
+         data-en="Nakhon Nayok, Thailand" data-th="นครนายก ประเทศไทย" data-zh="那空那育，泰国">Nakhon Nayok, Thailand</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+  /* ---------- Gallery photo pool ---------- */
+  const GAL_PHOTOS = [
+    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Customers/480573911_968549258704181_9197831482062585690_n.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Customers/498593412_1034446502114456_4492274431703170196_n.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Customers/503804604_1044051067820666_3108810073178487327_n.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Customers/528014065_1091796016379504_5415576769853420259_n.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Customers/532052636_1098008019091637_53982468948912012_n.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Customers/533404904_1101327735426332_5677602636046903597_n.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Customers/537093510_1106229754936130_1918480986265088444_n.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Customers/540680570_1113919710833801_107649291727535930_n.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Customers/552943575_1130259619199810_534224729956828959_n.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Customers/556109687_1135989495293489_7522699387726675277_n.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Customers/584984557_1179739390918499_8931179310867136163_n.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Customers/586478013_1180972477461857_8441569356010353176_n.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Customers/588016859_1181637280728710_5794987737898247759_n.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Customers/593617707_1189587786600326_4788972704341082295_n.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Customers/633461704_1240272311531873_2050326213786005447_n.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Customers/649180870_1261829916042779_8852563340290694152_n.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Resort%20Activities/Mindfulness%20session%20photo.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Resort%20Activities/outdoor%20yoga.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Resort%20Activities/eco%20tour%20showing%20forest.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Resort%20Activities/camping.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Resort%20Activities/garden%20camping%20activites%202.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Resort%20Activities/picture%20of%20resort%20activties.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Resort%20Activities/Group%20mindfullness%20activties.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Resort%20Activities/woman%20doing%20yoga%20by%20the%20lake.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Resort%20Activities/nighttime%20resort%20socializing%20activites.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Resort%20Activities/People%20enjoying%20activies%20(painting).jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Resort%20Activities/scenic%20garden%20camping%20activites.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Resort%20Activities/Sound%20wellness%20session.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/Spa%20Photos/yogo%20on%20lake.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/Spa%20Photos/Yoga%201.jpg',
+  ];
+
+  /* Shuffle and fill grid cells — all cells change simultaneously */
+  function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
+  const cells = Array.from(document.querySelectorAll('.gal-cell img'));
+  const pool = shuffle(GAL_PHOTOS);
+  cells.forEach((img, i) => { img.src = pool[i % pool.length]; });
+  let poolIdx = cells.length;
+
+  setInterval(() => {
+    cells.forEach(img => { img.style.opacity = '0'; });
+    setTimeout(() => {
+      cells.forEach(img => {
+        img.src = pool[poolIdx % pool.length];
+        poolIdx++;
+      });
+      cells.forEach(img => { img.style.opacity = '1'; });
+    }, 500);
+  }, 4000);
+
+  /* ---------- Nav + scroll ---------- */
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 60);
+    document.getElementById('back-to-top').classList.toggle('visible', window.scrollY > window.innerHeight * 0.8);
+  }, { passive: true });
+  if (window.scrollY > 60) nav.classList.add('scrolled');
+
+  /* ---------- Mobile menu ---------- */
+  const mobileNav = document.getElementById('mobile-nav');
+  function openMenu()  { mobileNav.classList.add('open');    document.body.style.overflow = 'hidden'; }
+  function closeMenu() { mobileNav.classList.remove('open'); document.body.style.overflow = ''; }
+
+  /* ---------- Scroll reveal ---------- */
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); } });
+  }, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+  setTimeout(() => document.querySelectorAll('section:first-of-type .reveal').forEach(el => el.classList.add('visible')), 150);
+
+  /* ---------- Language switcher ---------- */
+  function setLang(lang) {
+    if (lang === 'en') {
+      localStorage.setItem('eev-lang', 'en');
+      location.reload();
+      return;
+    }
+    document.querySelectorAll('[data-en]').forEach(el => {
+      const t = el.dataset[lang];
+      if (t !== undefined) el.textContent = t;
+    });
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.getAttribute('data-lang') === lang));
+    document.documentElement.lang = lang === 'zh' ? 'zh-CN' : lang;
+    localStorage.setItem('eev-lang', lang);
+  }
+  const savedLang = localStorage.getItem('eev-lang') || 'en';
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.getAttribute('data-lang') === savedLang));
+  if (savedLang !== 'en') setLang(savedLang);
+</script>
+</body>
+</html>

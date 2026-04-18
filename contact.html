@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contact — Eco Eyes Village</title>
+  <meta name="description" content="Visit Eco Eyes Village in Nakhon Nayok, Thailand. Call +66 92 610 0560, follow us on Instagram @ecoeyesvillage, or find us at 188 Moo 9, Sarika, Nakhon Nayok 26000." />
+  <link rel="icon" type="image/png" href="https://eco-eyes-bucket.s3.ap-southeast-1.amazonaws.com/icon-circle.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500;1,600&family=Jost:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: {
+        colors: { cream:'#FAF7EF','cream-mid':'#F0E9D8',gold:'#967138','gold-lt':'#C4A36A',dark:'#1C1915',forest:'#2B3A20' },
+        fontFamily: { display:['"Cormorant Garamond"','serif'], sans:['Jost','sans-serif'] }
+      }}
+    }
+  </script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{background:#FAF7EF;color:#1C1915;font-family:'Jost',sans-serif;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+    body::after{content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;opacity:0.028;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");background-size:200px}
+    #nav{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:center;justify-content:space-between;padding:1.5rem 3rem;transition:background 0.7s cubic-bezier(0.16,1,0.3,1),padding 0.5s cubic-bezier(0.16,1,0.3,1)}
+    #nav.scrolled{background:rgba(28,25,21,0.96);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding:0.875rem 3rem}
+    .nav-link{font-family:'Jost',sans-serif;font-size:0.62rem;letter-spacing:0.22em;text-transform:uppercase;color:rgba(255,255,255,0.7);text-decoration:none;transition:color 0.3s ease;position:relative;white-space:nowrap}
+    .nav-link::after{content:'';position:absolute;left:0;bottom:-3px;width:0;height:1px;background:#967138;transition:width 0.35s cubic-bezier(0.16,1,0.3,1)}
+    .nav-link:hover,.nav-link.active{color:rgba(255,255,255,1)}
+    .nav-link:hover::after,.nav-link.active::after{width:100%}
+    .lang-btn{font-family:'Jost',sans-serif;font-size:0.58rem;letter-spacing:0.18em;text-transform:uppercase;color:rgba(255,255,255,0.4);background:none;border:none;cursor:pointer;padding:0.15rem 0.2rem;transition:color 0.25s ease}
+    .lang-btn:hover,.lang-btn.active{color:#C4A36A}
+    .lang-divider{color:rgba(255,255,255,0.15);font-size:0.6rem}
+    .sep{display:block;width:52px;height:1px;background:#967138;margin:1.6rem 0}
+    .sep-center{margin:1.6rem auto}
+    .reveal{opacity:0;transform:translateY(28px);transition:opacity 1s cubic-bezier(0.16,1,0.3,1),transform 1s cubic-bezier(0.16,1,0.3,1)}
+    .reveal.visible{opacity:1;transform:translateY(0)}
+    .btn-outline-gold{display:inline-block;font-family:'Jost',sans-serif;font-size:0.62rem;letter-spacing:0.25em;text-transform:uppercase;border:1px solid #967138;color:#967138;padding:0.85rem 2rem;text-decoration:none;transition:background 0.35s ease,color 0.35s ease}
+    .btn-outline-gold:hover{background:#967138;color:#FAF7EF}
+    .btn-solid-gold{display:inline-block;font-family:'Jost',sans-serif;font-size:0.62rem;letter-spacing:0.25em;text-transform:uppercase;background:#967138;color:#FAF7EF;padding:0.85rem 2.5rem;text-decoration:none;transition:background 0.35s ease}
+    .btn-solid-gold:hover{background:#6B4F22}
+    .btn-outline-cream{display:inline-block;font-family:'Jost',sans-serif;font-size:0.62rem;letter-spacing:0.25em;text-transform:uppercase;border:1px solid rgba(196,163,106,0.5);color:#C4A36A;padding:0.85rem 2rem;text-decoration:none;transition:background 0.35s ease,color 0.35s ease,border-color 0.35s ease}
+    .btn-outline-cream:hover{background:#C4A36A;color:#1C1915;border-color:#C4A36A}
+    .contact-link{display:flex;align-items:flex-start;gap:1.1rem;padding:1.6rem 0;border-bottom:1px solid rgba(28,25,21,0.08);text-decoration:none;transition:opacity 0.3s ease}
+    .contact-link:hover{opacity:0.7}
+    .contact-link:last-child{border-bottom:none}
+    .hours-row{display:flex;justify-content:space-between;align-items:center;padding:0.75rem 0;border-bottom:1px solid rgba(28,25,21,0.07);font-family:'Jost',sans-serif;font-size:0.82rem}
+    .hours-row:last-child{border-bottom:none}
+    #mobile-nav{position:fixed;inset:0;z-index:600;background:#1C1915;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2rem;transform:translateY(-100%);transition:transform 0.6s cubic-bezier(0.16,1,0.3,1)}
+    #mobile-nav.open{transform:translateY(0)}
+    #back-to-top{position:fixed;bottom:2.5rem;right:2.5rem;z-index:400;width:44px;height:44px;border:1px solid rgba(150,113,56,0.5);background:rgba(28,25,21,0.85);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;transform:translateY(12px);transition:opacity 0.4s ease,transform 0.4s ease,background 0.3s ease;pointer-events:none}
+    #back-to-top.visible{opacity:1;transform:translateY(0);pointer-events:auto}
+    #back-to-top:hover{background:rgba(150,113,56,0.9);border-color:rgba(150,113,56,0.9)}
+    @media(max-width:1024px){#nav{padding:1.25rem 1.5rem}#nav.scrolled{padding:0.875rem 1.5rem}#back-to-top{bottom:1.5rem;right:1.5rem}}
+  </style>
+</head>
+<body>
+
+<nav id="nav">
+  <a href="index.html" style="display:inline-flex;align-items:center;padding:0.25rem 0.5rem;border-radius:2px;background:rgba(28,25,21,0.3);backdrop-filter:blur(10px);">
+    <img src="brand_assets/brand%20logo%20updated.png" alt="Eco Eyes Village" style="height:36px;display:block;"
+         onerror="this.src='brand_assets/brand%20logo%20old.png';this.onerror=null">
+  </a>
+  <div class="hidden lg:flex items-center gap-7">
+    <a href="resort.html"  class="nav-link" data-en="Stay" data-th="ที่พัก" data-zh="住宿">Stay</a>
+    <a href="cafe.html"    class="nav-link" data-en="Café" data-th="คาเฟ่" data-zh="咖啡厅">Café</a>
+    <a href="life.html"    class="nav-link" data-en="Experiences" data-th="ประสบการณ์" data-zh="体验">Experiences</a>
+    <a href="csr.html"     class="nav-link" data-en="Conservation" data-th="อนุรักษ์" data-zh="自然保护">Conservation</a>
+    <a href="explore.html" class="nav-link" data-en="Explore" data-th="สำรวจ" data-zh="探索">Explore</a>
+    <a href="contact.html" class="nav-link active" data-en="Contact" data-th="ติดต่อ" data-zh="联系">Contact</a>
+  </div>
+  <div class="hidden lg:flex items-center gap-4">
+    <div class="flex items-center gap-1">
+      <button class="lang-btn active" onclick="setLang('en')" data-lang="en">EN</button>
+      <span class="lang-divider">|</span>
+      <button class="lang-btn" onclick="setLang('th')" data-lang="th">TH</button>
+      <span class="lang-divider">|</span>
+      <button class="lang-btn" onclick="setLang('zh')" data-lang="zh">ZH</button>
+    </div>
+    <a href="resort.html" class="btn-solid-gold" style="padding:0.6rem 1.5rem;font-size:0.6rem;" data-en="Book Now" data-th="จองเลย" data-zh="立即预订">Book Now</a>
+  </div>
+  <button id="hamburger" onclick="openMenu()" class="lg:hidden flex flex-col gap-1.5 p-1" aria-label="Menu">
+    <span class="block w-6 h-px bg-white/80"></span>
+    <span class="block w-4 h-px bg-white/80"></span>
+    <span class="block w-6 h-px bg-white/80"></span>
+  </button>
+</nav>
+
+<button id="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C4A36A" stroke-width="1.5" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+</button>
+
+<div id="mobile-nav">
+  <button onclick="closeMenu()" class="absolute top-6 right-6 text-white/60 hover:text-white">
+    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+  </button>
+  <a href="index.html"   onclick="closeMenu()" class="font-display text-white text-4xl font-light italic hover:text-[#C4A36A] transition-colors" data-en="Home" data-th="หน้าหลัก" data-zh="首页">Home</a>
+  <a href="resort.html"  onclick="closeMenu()" class="font-display text-white text-4xl font-light italic hover:text-[#C4A36A] transition-colors" data-en="Stay" data-th="ที่พัก" data-zh="住宿">Stay</a>
+  <a href="cafe.html"    onclick="closeMenu()" class="font-display text-white text-4xl font-light italic hover:text-[#C4A36A] transition-colors" data-en="Café" data-th="คาเฟ่" data-zh="咖啡厅">Café</a>
+  <a href="life.html"    onclick="closeMenu()" class="font-display text-white text-4xl font-light italic hover:text-[#C4A36A] transition-colors" data-en="Experiences" data-th="ประสบการณ์" data-zh="体验">Experiences</a>
+  <a href="csr.html"     onclick="closeMenu()" class="font-display text-white text-4xl font-light italic hover:text-[#C4A36A] transition-colors" data-en="Conservation" data-th="อนุรักษ์" data-zh="自然保护">Conservation</a>
+  <a href="explore.html" onclick="closeMenu()" class="font-display text-white text-4xl font-light italic hover:text-[#C4A36A] transition-colors" data-en="Explore" data-th="สำรวจ" data-zh="探索">Explore</a>
+  <a href="contact.html" onclick="closeMenu()" class="font-display text-[#C4A36A] text-4xl font-light italic" data-en="Contact" data-th="ติดต่อ" data-zh="联系">Contact</a>
+</div>
+
+
+<!-- HERO -->
+<section class="relative overflow-hidden" style="height:60vh;min-height:380px">
+  <img src="brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20the%20resort%20/aerial%20view%20of%20whole%20resort.jpg"
+       alt="Eco Eyes Village, Nakhon Nayok" class="absolute inset-0 w-full h-full object-cover">
+  <div class="absolute inset-0 bg-gradient-to-b from-black/55 via-black/20 to-black/60"></div>
+  <div class="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
+    <p class="font-sans text-white/50 text-[0.58rem] tracking-widest uppercase mb-7 reveal" style="transition-delay:0.3s"
+       data-en="Nakhon Nayok · Thailand" data-th="นครนายก · ประเทศไทย" data-zh="那空那育 · 泰国">Nakhon Nayok · Thailand</p>
+    <h1 class="font-display text-white font-light leading-none reveal" style="font-size:clamp(2.5rem,6vw,5.5rem);transition-delay:0.5s">
+      <span data-en="Find" data-th="ค้นหา" data-zh="寻找">Find</span><br><em data-en="Eco Eyes Village" data-th="อีโค่ อายส์ วิลเลจ" data-zh="生态眼睛村庄">Eco Eyes Village</em>
+    </h1>
+    <span class="sep sep-center reveal" style="transition-delay:0.75s;background:#C4A36A;"></span>
+    <p class="font-sans text-white/55 text-[0.62rem] tracking-widest uppercase reveal" style="transition-delay:0.9s"
+       data-en="Open Tuesday – Sunday" data-th="เปิดวันอังคาร – อาทิตย์" data-zh="周二至周日营业">Open Tuesday – Sunday</p>
+  </div>
+</section>
+
+
+<!-- CONTACT SPLIT -->
+<section id="contact" class="py-24">
+  <div class="max-w-7xl mx-auto px-6 md:px-12">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24">
+
+      <!-- LEFT: info -->
+      <div class="reveal">
+        <p class="font-sans text-gold text-[0.62rem] tracking-widest uppercase mb-5"
+           data-en="Reach Us" data-th="ติดต่อเรา" data-zh="联系我们">Reach Us</p>
+        <h2 class="font-display text-dark font-light mb-3" style="font-size:clamp(2rem,3.5vw,3rem)">
+          <span data-en="We'd love to" data-th="เรายินดี" data-zh="期待">We'd love to</span><br><em data-en="hear from you" data-th="รับฟังคุณ" data-zh="您的来信">hear from you</em>
+        </h2>
+        <span class="sep"></span>
+        <p class="font-sans text-dark/55 text-[0.875rem] leading-[1.85] mb-10" style="max-width:34rem"
+           data-en="Whether you're planning a stay, have questions about our activities, or would like to arrange a private event — our team is ready to help."
+           data-th="ไม่ว่าคุณจะวางแผนการพัก มีคำถามเกี่ยวกับกิจกรรมของเรา หรือต้องการจัดงานส่วนตัว — ทีมของเราพร้อมช่วยเหลือ"
+           data-zh="无论您是在计划住宿、对我们的活动有疑问，还是想安排私人活动——我们的团队随时准备为您提供帮助。">
+          Whether you're planning a stay, have questions about our activities, or would like to arrange a private event — our team is ready to help.
+        </p>
+
+        <div>
+          <a href="tel:+66926100560" class="contact-link">
+            <div style="width:40px;height:40px;border:1px solid rgba(150,113,56,0.3);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px">
+              <svg width="17" height="17" fill="none" stroke="#967138" stroke-width="1.4" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.5 2 2 0 0 1 3.59 1.31h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.91A16 16 0 0 0 16 17l.86-.86a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7a2 2 0 0 1 1.72 2.02z"/></svg>
+            </div>
+            <div>
+              <p class="font-sans text-dark/40 text-[0.58rem] tracking-widest uppercase mb-1"
+                 data-en="Phone" data-th="โทรศัพท์" data-zh="电话">Phone</p>
+              <p class="font-display text-dark text-2xl font-light">+66 92 610 0560</p>
+            </div>
+          </a>
+
+          <a href="https://www.instagram.com/ecoeyesvillage" target="_blank" rel="noopener" class="contact-link">
+            <div style="width:40px;height:40px;border:1px solid rgba(150,113,56,0.3);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px">
+              <svg width="17" height="17" fill="none" stroke="#967138" stroke-width="1.4" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+            </div>
+            <div>
+              <p class="font-sans text-dark/40 text-[0.58rem] tracking-widest uppercase mb-1"
+                 data-en="Instagram" data-th="อินสตาแกรม" data-zh="Instagram">Instagram</p>
+              <p class="font-display text-dark text-2xl font-light">@ecoeyesvillage</p>
+            </div>
+          </a>
+
+          <a href="https://www.facebook.com/ecoeyesvillage" target="_blank" rel="noopener" class="contact-link">
+            <div style="width:40px;height:40px;border:1px solid rgba(150,113,56,0.3);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px">
+              <svg width="17" height="17" fill="none" stroke="#967138" stroke-width="1.4" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+            </div>
+            <div>
+              <p class="font-sans text-dark/40 text-[0.58rem] tracking-widest uppercase mb-1"
+                 data-en="Facebook" data-th="เฟซบุ๊ก" data-zh="Facebook">Facebook</p>
+              <p class="font-display text-dark text-2xl font-light">Eco Eyes Village</p>
+            </div>
+          </a>
+
+          <a href="https://maps.google.com/?q=Eco+Eyes+Village+Sarika+Nakhon+Nayok" target="_blank" rel="noopener" class="contact-link">
+            <div style="width:40px;height:40px;border:1px solid rgba(150,113,56,0.3);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px">
+              <svg width="17" height="17" fill="none" stroke="#967138" stroke-width="1.4" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            </div>
+            <div>
+              <p class="font-sans text-dark/40 text-[0.58rem] tracking-widest uppercase mb-1"
+                 data-en="Address" data-th="ที่อยู่" data-zh="地址">Address</p>
+              <p class="font-display text-dark text-2xl font-light">188 Moo 9, Sarika</p>
+              <p class="font-sans text-dark/50 text-[0.82rem] mt-1"
+                 data-en="Nakhon Nayok 26000, Thailand" data-th="นครนายก 26000 ประเทศไทย" data-zh="那空那育 26000，泰国">Nakhon Nayok 26000, Thailand</p>
+            </div>
+          </a>
+        </div>
+      </div>
+
+      <!-- RIGHT: hours + social -->
+      <div class="reveal" style="transition-delay:0.18s">
+        <div style="background:#F0E9D8;padding:2.5rem">
+          <p class="font-sans text-gold text-[0.62rem] tracking-widest uppercase mb-6"
+             data-en="Opening Hours" data-th="เวลาเปิดทำการ" data-zh="营业时间">Opening Hours</p>
+          <div class="hours-row">
+            <span class="text-dark/70" data-en="Monday" data-th="จันทร์" data-zh="周一">Monday</span>
+            <span class="font-sans text-dark/40 text-[0.75rem] tracking-widest uppercase"
+                  data-en="Closed" data-th="ปิดทำการ" data-zh="休息">Closed</span>
+          </div>
+          <div class="hours-row">
+            <span class="text-dark/70" data-en="Tuesday – Friday" data-th="อังคาร – ศุกร์" data-zh="周二至周五">Tuesday – Friday</span>
+            <span class="text-dark font-medium">08:30 – 16:30</span>
+          </div>
+          <div class="hours-row">
+            <span class="text-dark/70" data-en="Saturday – Sunday" data-th="เสาร์ – อาทิตย์" data-zh="周六至周日">Saturday – Sunday</span>
+            <span class="text-dark font-medium">09:00 – 17:00</span>
+          </div>
+          <div class="mt-8 pt-6" style="border-top:1px solid rgba(28,25,21,0.1)">
+            <p class="font-sans text-dark/40 text-[0.72rem] leading-[1.7]"
+               data-en="Last entry is one hour before closing. Advance booking recommended for accommodation and spa treatments."
+               data-th="เข้าชมครั้งสุดท้ายก่อนปิด 1 ชั่วโมง แนะนำให้จองล่วงหน้าสำหรับที่พักและบริการสปา"
+               data-zh="最后入场时间为关闭前一小时。住宿和水疗服务建议提前预订。">
+              Last entry is one hour before closing. Advance booking recommended for accommodation and spa treatments.
+            </p>
+          </div>
+        </div>
+
+        <div class="mt-8" style="background:#2B3A20;padding:2.5rem">
+          <p class="font-sans text-white/40 text-[0.62rem] tracking-widest uppercase mb-4"
+             data-en="Follow Our Journey" data-th="ติดตามการเดินทางของเรา" data-zh="关注我们的旅程">Follow Our Journey</p>
+          <p class="font-display text-white font-light text-2xl mb-5 italic"
+             data-en="Nature, every day" data-th="ธรรมชาติ ทุกวัน" data-zh="每天与自然同行">Nature, every day</p>
+          <p class="font-sans text-white/45 text-[0.82rem] leading-[1.8] mb-6"
+             data-en="Stay connected with our reforestation work, seasonal menus, and guest stories through Instagram and Facebook."
+             data-th="ติดตามงานปลูกป่า เมนูตามฤดูกาล และเรื่องราวของผู้เยี่ยมชมผ่าน Instagram และ Facebook"
+             data-zh="通过Instagram和Facebook关注我们的植树工作、季节性菜单和宾客故事。">
+            Stay connected with our reforestation work, seasonal menus, and guest stories through Instagram and Facebook.
+          </p>
+          <div class="flex gap-3">
+            <a href="https://www.instagram.com/ecoeyesvillage" target="_blank" rel="noopener"
+               class="btn-solid-gold" style="padding:0.7rem 1.4rem;font-size:0.6rem;"
+               data-en="Instagram" data-th="อินสตาแกรม" data-zh="Instagram">Instagram</a>
+            <a href="https://www.facebook.com/ecoeyesvillage" target="_blank" rel="noopener"
+               style="display:inline-block;font-family:'Jost',sans-serif;font-size:0.6rem;letter-spacing:0.25em;text-transform:uppercase;border:1px solid rgba(255,255,255,0.25);color:rgba(255,255,255,0.7);padding:0.7rem 1.4rem;text-decoration:none;transition:border-color 0.3s ease,color 0.3s ease"
+               onmouseover="this.style.borderColor='rgba(255,255,255,0.6)';this.style.color='rgba(255,255,255,1)'"
+               onmouseout="this.style.borderColor='rgba(255,255,255,0.25)';this.style.color='rgba(255,255,255,0.7)'"
+               data-en="Facebook" data-th="เฟซบุ๊ก" data-zh="Facebook">Facebook</a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- MAP SECTION -->
+<section id="map" style="background:#1C1915;">
+  <div class="max-w-7xl mx-auto px-6 md:px-12 pt-20 pb-4 reveal">
+    <p class="font-sans text-gold text-[0.62rem] tracking-widest uppercase mb-4"
+       data-en="Find Us" data-th="ค้นหาเรา" data-zh="找到我们">Find Us</p>
+    <h2 class="font-display text-white font-light mb-10" style="font-size:clamp(2rem,3.5vw,2.8rem)">
+      <span data-en="188 Moo 9, Sarika — " data-th="188 หมู่ 9 ต.สาริกา — " data-zh="188 Moo 9, Sarika — ">188 Moo 9, Sarika — </span><em data-en="Nakhon Nayok" data-th="นครนายก" data-zh="那空那育">Nakhon Nayok</em>
+    </h2>
+  </div>
+  <div style="height:460px;width:100%;position:relative;">
+    <iframe
+      src="https://maps.google.com/maps?q=Eco+Eyes+Village+Sarika+Nakhon+Nayok+Thailand&output=embed"
+      width="100%" height="100%" style="border:0;display:block;" allowfullscreen="" loading="lazy"
+      referrerpolicy="no-referrer-when-downgrade" title="Eco Eyes Village on Google Maps">
+    </iframe>
+  </div>
+  <div class="max-w-7xl mx-auto px-6 md:px-12 py-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 reveal">
+    <p class="font-sans text-white/35 text-[0.78rem]"
+       data-en="188 Moo 9, Tambon Sarika, Amphoe Mueang, Nakhon Nayok 26000"
+       data-th="188 หมู่ 9 ตำบลสาริกา อำเภอเมือง นครนายก 26000"
+       data-zh="188 Moo 9, Tambon Sarika, Amphoe Mueang, Nakhon Nayok 26000">188 Moo 9, Tambon Sarika, Amphoe Mueang, Nakhon Nayok 26000</p>
+    <a href="https://maps.google.com/?q=Eco+Eyes+Village+Sarika+Nakhon+Nayok" target="_blank" rel="noopener"
+       class="btn-outline-gold" style="color:#C4A36A;border-color:rgba(150,113,56,0.5);font-size:0.58rem;"
+       data-en="Open in Google Maps" data-th="เปิดใน Google Maps" data-zh="在谷歌地图中打开">Open in Google Maps</a>
+  </div>
+</section>
+
+
+<!-- RESORT MAP — path fixed: %20 encoding for folder spaces, + kept literal for filename -->
+<section class="py-24" style="background:#F0E9D8">
+  <div class="max-w-6xl mx-auto px-6 md:px-12">
+    <div class="text-center mb-12 reveal">
+      <p class="font-sans text-gold text-[0.62rem] tracking-widest uppercase mb-5"
+         data-en="Property Map" data-th="แผนที่ทรัพย์สิน" data-zh="园区地图">Property Map</p>
+      <h2 class="font-display text-dark font-light" style="font-size:clamp(2rem,3.5vw,3rem)">
+        <span data-en="The Grounds of" data-th="พื้นที่ของ" data-zh="园区">The Grounds of</span><br><em data-en="Eco Eyes Village" data-th="อีโค่ อายส์ วิลเลจ" data-zh="生态眼睛村庄">Eco Eyes Village</em>
+      </h2>
+      <span class="sep sep-center" style="margin-top:1.4rem"></span>
+      <p class="font-sans text-dark/50 text-[0.875rem] leading-[1.85] mt-4 mx-auto" style="max-width:34rem"
+         data-en="Explore the layout of our nature reserve — accommodation zones, the Eco Café, activity trails, conservation forest, and facilities."
+         data-th="สำรวจผังของเขตอนุรักษ์ธรรมชาติของเรา — โซนที่พัก อีโค่ คาเฟ่ เส้นทางกิจกรรม ป่าอนุรักษ์ และสิ่งอำนวยความสะดวก"
+         data-zh="探索我们自然保护区的布局——住宿区、生态咖啡厅、活动步道、保护森林和设施。">
+        Explore the layout of our nature reserve — accommodation zones, the Eco Café, activity trails, conservation forest, and facilities.
+      </p>
+    </div>
+    <div class="reveal" style="transition-delay:0.15s;border:1px solid rgba(150,113,56,0.2);overflow:hidden;box-shadow:0 20px 60px rgba(28,25,21,0.08)">
+      <img src="brand_assets/eco%20eyes%20website%20photos%20/Eco+Map+A2.png"
+           alt="Eco Eyes Village property map" style="width:100%;display:block;object-fit:contain;background:#FAF7EF">
+    </div>
+  </div>
+</section>
+
+
+<!-- BOOKING CTA -->
+<section class="py-24 bg-dark text-center">
+  <div class="max-w-2xl mx-auto px-6 reveal">
+    <p class="font-sans text-gold text-[0.62rem] tracking-widest uppercase mb-6"
+       data-en="Ready to Visit?" data-th="พร้อมมาเยี่ยมชมแล้วหรือ?" data-zh="准备好来访了吗？">Ready to Visit?</p>
+    <h2 class="font-display text-white font-light mb-4" style="font-size:clamp(2.2rem,4vw,3.5rem)">
+      <span data-en="Book Your Stay" data-th="จองที่พัก" data-zh="预订您的">Book Your Stay</span><br><em data-en="in Nakhon Nayok" data-th="ในนครนายก" data-zh="那空那育之旅">in Nakhon Nayok</em>
+    </h2>
+    <span class="sep sep-center" style="background:#967138;margin-bottom:1.6rem"></span>
+    <p class="font-sans text-white/45 text-[0.875rem] leading-[1.85] mb-10"
+       data-en="Reserve directly through our booking partners — Booking.com, Agoda, Tripadvisor, or Trip.com — for the best availability."
+       data-th="จองโดยตรงผ่านพันธมิตรการจองของเรา — Booking.com, Agoda, Tripadvisor หรือ Trip.com — เพื่อความพร้อมใช้งานที่ดีที่สุด"
+       data-zh="通过我们的预订合作伙伴直接预订——Booking.com、Agoda、Tripadvisor或Trip.com——获取最佳房源。">
+      Reserve directly through our booking partners — Booking.com, Agoda, Tripadvisor, or Trip.com — for the best availability.
+    </p>
+    <div class="flex flex-wrap justify-center gap-4">
+      <a href="resort.html" class="btn-solid-gold"
+         data-en="View Rooms &amp; Rates" data-th="ดูห้องและราคา" data-zh="查看房间与价格">View Rooms &amp; Rates</a>
+      <a href="tel:+66926100560" class="btn-outline-gold" style="color:#C4A36A;border-color:rgba(150,113,56,0.5);"
+         data-en="Call Us Directly" data-th="โทรหาเราโดยตรง" data-zh="直接致电我们">Call Us Directly</a>
+    </div>
+  </div>
+</section>
+
+
+<!-- FOOTER -->
+<footer class="bg-dark py-16 px-6" style="border-top:1px solid rgba(255,255,255,0.06)">
+  <div class="max-w-7xl mx-auto">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-14">
+      <div class="md:col-span-2">
+        <a href="index.html" style="display:inline-flex;align-items:center;padding:0.25rem 0.5rem;background:rgba(250,247,239,0.05);border-radius:2px;margin-bottom:1.25rem;">
+          <img src="brand_assets/brand%20logo%20updated.png" alt="Eco Eyes Village" style="height:34px;display:block;"
+               onerror="this.src='brand_assets/brand%20logo%20old.png';this.onerror=null">
+        </a>
+        <p class="font-sans text-white/35 text-[0.8rem] leading-[1.8]" style="max-width:26rem"
+           data-en="A private nature conservatory, luxury glamping resort, and learning centre in Nakhon Nayok, Thailand."
+           data-th="อุทยานธรรมชาติส่วนตัว สถานที่แค้มปิ้งหรูหรา และศูนย์การเรียนรู้ในนครนายก ประเทศไทย"
+           data-zh="那空那育，泰国的私人自然保护区、豪华露营度假村和学习中心。">A private nature conservatory, luxury glamping resort, and learning centre in Nakhon Nayok, Thailand.</p>
+      </div>
+      <div>
+        <p class="font-sans text-white/30 text-[0.58rem] tracking-widest uppercase mb-5"
+           data-en="Explore" data-th="สำรวจ" data-zh="探索">Explore</p>
+        <nav class="flex flex-col gap-3">
+          <a href="resort.html"  class="font-sans text-white/45 text-[0.78rem] hover:text-white/75 transition-colors" data-en="Resort Stay" data-th="ที่พักรีสอร์ท" data-zh="度假村住宿">Resort Stay</a>
+          <a href="cafe.html"    class="font-sans text-white/45 text-[0.78rem] hover:text-white/75 transition-colors" data-en="Eco Café" data-th="อีโค่ คาเฟ่" data-zh="生态咖啡厅">Eco Café</a>
+          <a href="life.html"    class="font-sans text-white/45 text-[0.78rem] hover:text-white/75 transition-colors" data-en="Experiences" data-th="ประสบการณ์" data-zh="体验">Experiences</a>
+          <a href="csr.html"     class="font-sans text-white/45 text-[0.78rem] hover:text-white/75 transition-colors" data-en="Conservation" data-th="การอนุรักษ์" data-zh="自然保护">Conservation</a>
+          <a href="explore.html" class="font-sans text-white/45 text-[0.78rem] hover:text-white/75 transition-colors" data-en="Explore Nakhon Nayok" data-th="สำรวจนครนายก" data-zh="探索那空那育">Explore Nakhon Nayok</a>
+        </nav>
+      </div>
+      <div>
+        <p class="font-sans text-white/30 text-[0.58rem] tracking-widest uppercase mb-5"
+           data-en="Contact" data-th="ติดต่อ" data-zh="联系">Contact</p>
+        <div class="flex flex-col gap-3">
+          <a href="tel:+66926100560" class="font-sans text-white/65 text-[0.78rem] hover:text-white/75 transition-colors">+66 92 610 0560</a>
+          <a href="https://www.instagram.com/ecoeyesvillage" target="_blank" rel="noopener" class="font-sans text-white/45 text-[0.78rem] hover:text-white/75 transition-colors">@ecoeyesvillage</a>
+        </div>
+        <p class="font-sans text-white/25 text-[0.72rem] leading-[1.7] mt-5">188 Moo 9, Sarika<br>Nakhon Nayok 26000</p>
+      </div>
+    </div>
+    <div class="pt-8 flex flex-col md:flex-row items-center justify-between gap-3" style="border-top:1px solid rgba(255,255,255,0.06)">
+      <p class="font-sans text-white/20 text-[0.6rem] tracking-wide"
+         data-en="© 2025 Eco Eyes Village. All rights reserved." data-th="© 2025 อีโค่ อายส์ วิลเลจ สงวนลิขสิทธิ์" data-zh="© 2025 生态眼睛村庄。版权所有。">© 2025 Eco Eyes Village. All rights reserved.</p>
+      <p class="font-sans text-white/20 text-[0.6rem] tracking-wide"
+         data-en="Nakhon Nayok, Thailand" data-th="นครนายก ประเทศไทย" data-zh="那空那育，泰国">Nakhon Nayok, Thailand</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 60);
+    document.getElementById('back-to-top').classList.toggle('visible', window.scrollY > window.innerHeight * 0.8);
+  }, { passive: true });
+  if (window.scrollY > 60) nav.classList.add('scrolled');
+  const mobileNav = document.getElementById('mobile-nav');
+  function openMenu()  { mobileNav.classList.add('open');    document.body.style.overflow = 'hidden'; }
+  function closeMenu() { mobileNav.classList.remove('open'); document.body.style.overflow = ''; }
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); } });
+  }, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+  setTimeout(() => document.querySelectorAll('section:first-of-type .reveal').forEach(el => el.classList.add('visible')), 150);
+  function setLang(lang) {
+    document.querySelectorAll('[data-en]').forEach(el => {
+      const t = el.dataset[lang];
+      if (t !== undefined) el.textContent = t;
+    });
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.getAttribute('data-lang') === lang));
+    document.documentElement.lang = lang === 'zh' ? 'zh-CN' : lang;
+    localStorage.setItem('eev-lang', lang);
+  }
+  const savedLang = localStorage.getItem('eev-lang') || 'en';
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.getAttribute('data-lang') === savedLang));
+  if (savedLang !== 'en') setLang(savedLang);
+</script>
+</body>
+</html>

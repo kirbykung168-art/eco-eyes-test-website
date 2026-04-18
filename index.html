@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Eco Eyes Village — Where Nature is the Luxury</title>
+  <meta name="description" content="Eco Eyes Village is a luxury eco-resort and nature conservatory in Nakhon Nayok, Thailand. Glamping, nature walks, Eco Café, and conservation in 30+ Rai of protected rainforest." />
+
+  <link rel="icon" type="image/png" href="https://eco-eyes-bucket.s3.ap-southeast-1.amazonaws.com/icon-circle.png">
+  <link rel="preload" as="image" href="https://eco-eyes-bucket.s3.ap-southeast-1.amazonaws.com/eco_eyes_photo/9.jpeg">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500;1,600&family=Jost:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            cream:       '#FAF7EF',
+            'cream-mid': '#F0E9D8',
+            'cream-dk':  '#E3D8C2',
+            gold:        '#967138',
+            'gold-lt':   '#C4A36A',
+            'gold-pale': '#E8D9BE',
+            'gold-dk':   '#6B4F22',
+            dark:        '#1C1915',
+            'dark-mid':  '#2A251E',
+            forest:      '#2B3A20',
+            'forest-lt': '#3D5230',
+            moss:        '#5C6B47',
+          },
+          fontFamily: {
+            display: ['"Cormorant Garamond"', 'serif'],
+            sans:    ['Jost', 'sans-serif'],
+          },
+          letterSpacing: {
+            widest:   '0.25em',
+            widester: '0.4em',
+          },
+        }
+      }
+    }
+  </script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: #FAF7EF;
+      color: #1C1915;
+      font-family: 'Jost', sans-serif;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+    body::after {
+      content: '';
+      position: fixed; inset: 0;
+      z-index: 9999; pointer-events: none; opacity: 0.028;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      background-size: 200px;
+    }
+
+    /* ── Navigation ── */
+    #nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 500;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.5rem 3rem;
+      transition: background 0.7s cubic-bezier(0.16,1,0.3,1), padding 0.5s cubic-bezier(0.16,1,0.3,1);
+    }
+    #nav.scrolled {
+      background: rgba(28,25,21,0.96);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      padding: 0.875rem 3rem;
+    }
+    .nav-link {
+      font-family: 'Jost', sans-serif; font-size: 0.62rem;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      color: rgba(255,255,255,0.7); text-decoration: none;
+      transition: color 0.3s ease; position: relative; white-space: nowrap;
+    }
+    .nav-link::after {
+      content: ''; position: absolute; left: 0; bottom: -3px;
+      width: 0; height: 1px; background: #967138;
+      transition: width 0.35s cubic-bezier(0.16,1,0.3,1);
+    }
+    .nav-link:hover { color: rgba(255,255,255,1); }
+    .nav-link:hover::after { width: 100%; }
+
+    /* ── Language switcher ── */
+    .lang-btn {
+      font-family: 'Jost', sans-serif; font-size: 0.58rem;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: rgba(255,255,255,0.4); background: none; border: none;
+      cursor: pointer; padding: 0.15rem 0.2rem; transition: color 0.25s ease;
+    }
+    .lang-btn:hover, .lang-btn.active { color: #C4A36A; }
+    .lang-divider { color: rgba(255,255,255,0.15); font-size: 0.6rem; }
+
+    /* ── Hero ── */
+    #hero { position: relative; height: 100vh; overflow: hidden; }
+    .hero-slide {
+      position: absolute; inset: 0;
+      background-size: cover; background-position: center;
+      opacity: 0; transform: scale(1.04);
+      transition: opacity 1.8s cubic-bezier(0.16,1,0.3,1), transform 8s cubic-bezier(0.16,1,0.3,1);
+    }
+    .hero-slide.active { opacity: 1; transform: scale(1); }
+
+    /* ── Gold separator ── */
+    .sep { display: block; width: 52px; height: 1px; background: #967138; margin: 1.6rem 0; }
+    .sep-center { margin: 1.6rem auto; }
+    .sep-light { background: #C4A36A; }
+
+    /* ── Scroll-reveal ── */
+    .reveal {
+      opacity: 0; transform: translateY(28px);
+      transition: opacity 1s cubic-bezier(0.16,1,0.3,1), transform 1s cubic-bezier(0.16,1,0.3,1);
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    /* ── Scroll cue ── */
+    .scroll-cue {
+      position: absolute; bottom: 2.5rem; left: 50%; transform: translateX(-50%);
+      display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+      color: rgba(255,255,255,0.45); font-family: 'Jost', sans-serif;
+      font-size: 0.58rem; letter-spacing: 0.3em; text-transform: uppercase;
+    }
+    .scroll-cue-line {
+      width: 1px; height: 50px;
+      background: linear-gradient(to bottom, rgba(255,255,255,0.6) 0%, transparent 100%);
+      animation: pulse-down 2s ease-in-out infinite;
+    }
+    @keyframes pulse-down {
+      0%, 100% { opacity: 1; transform-origin: top; }
+      60% { opacity: 0.3; }
+    }
+
+    /* ── Slide dots ── */
+    .slide-dot {
+      width: 24px; height: 1px; background: rgba(255,255,255,0.3);
+      cursor: pointer; transition: background 0.4s ease, width 0.4s ease;
+    }
+    .slide-dot.active { background: rgba(255,255,255,0.85); width: 40px; }
+
+    /* ── Buttons ── */
+    .btn-outline-gold {
+      display: inline-block; font-family: 'Jost', sans-serif;
+      font-size: 0.62rem; letter-spacing: 0.25em; text-transform: uppercase;
+      border: 1px solid #967138; color: #967138; padding: 0.85rem 2rem;
+      text-decoration: none; transition: background 0.35s ease, color 0.35s ease;
+    }
+    .btn-outline-gold:hover { background: #967138; color: #FAF7EF; }
+    .btn-solid-gold {
+      display: inline-block; font-family: 'Jost', sans-serif;
+      font-size: 0.62rem; letter-spacing: 0.25em; text-transform: uppercase;
+      background: #967138; color: #FAF7EF; padding: 0.85rem 2.5rem;
+      text-decoration: none; transition: background 0.35s ease;
+    }
+    .btn-solid-gold:hover { background: #6B4F22; }
+    .btn-outline-cream {
+      display: inline-block; font-family: 'Jost', sans-serif;
+      font-size: 0.62rem; letter-spacing: 0.25em; text-transform: uppercase;
+      border: 1px solid rgba(196,163,106,0.5); color: #C4A36A; padding: 0.85rem 2rem;
+      text-decoration: none; transition: background 0.35s ease, color 0.35s ease, border-color 0.35s ease;
+    }
+    .btn-outline-cream:hover { background: #C4A36A; color: #1C1915; border-color: #C4A36A; }
+    .btn-outline-white {
+      display: inline-block; font-family: 'Jost', sans-serif;
+      font-size: 0.62rem; letter-spacing: 0.25em; text-transform: uppercase;
+      border: 1px solid rgba(255,255,255,0.35); color: rgba(255,255,255,0.8); padding: 0.85rem 2rem;
+      text-decoration: none; transition: background 0.35s ease, border-color 0.35s ease, color 0.35s ease;
+    }
+    .btn-outline-white:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.6); color: white; }
+
+    /* ── Booking platform cards ── */
+    .platform-card {
+      border: 1px solid rgba(150,113,56,0.2); background: rgba(255,255,255,0.03);
+      padding: 2rem 1.75rem; text-decoration: none;
+      display: flex; flex-direction: column; align-items: center; text-align: center; gap: 1rem;
+      transition: border-color 0.3s ease, background 0.3s ease, transform 0.4s cubic-bezier(0.16,1,0.3,1);
+    }
+    .platform-card:hover { border-color: rgba(150,113,56,0.6); background: rgba(150,113,56,0.06); transform: translateY(-4px); }
+
+    /* ── Package cards ── */
+    .pkg-card {
+      background: white; border: 1px solid rgba(150,113,56,0.12);
+      padding: 2.5rem 2rem; display: flex; flex-direction: column;
+      transition: border-color 0.3s ease, box-shadow 0.4s cubic-bezier(0.16,1,0.3,1), transform 0.4s cubic-bezier(0.16,1,0.3,1);
+    }
+    .pkg-card:hover { border-color: rgba(150,113,56,0.4); box-shadow: 0 16px 48px rgba(150,113,56,0.12), 0 4px 12px rgba(0,0,0,0.06); transform: translateY(-6px); }
+    .pkg-card.featured { background: #2B3A20; border-color: #2B3A20; }
+
+    /* ── Review cards ── */
+    .review-card {
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+      padding: 2rem; transition: background 0.3s ease, border-color 0.3s ease;
+    }
+    .review-card:hover { background: rgba(255,255,255,0.07); border-color: rgba(196,163,106,0.25); }
+
+    /* ── Experience cards ── */
+    .exp-card .card-img { transition: transform 0.8s cubic-bezier(0.16,1,0.3,1); }
+    .exp-card:hover .card-img { transform: scale(1.06); }
+    .exp-card .card-overlay { opacity: 0; transition: opacity 0.5s ease; }
+    .exp-card:hover .card-overlay { opacity: 1; }
+
+    /* ── Gallery ── */
+    .gal-item img { transition: transform 0.7s cubic-bezier(0.16,1,0.3,1); }
+    .gal-item:hover img { transform: scale(1.06); }
+
+    /* ── Mobile nav ── */
+    #mobile-nav {
+      position: fixed; inset: 0; z-index: 600;
+      background: #1C1915; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 2rem;
+      transform: translateY(-100%); transition: transform 0.6s cubic-bezier(0.16,1,0.3,1);
+    }
+    #mobile-nav.open { transform: translateY(0); }
+
+    /* ── Hours ── */
+    .hours-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0.6rem 0; border-bottom: 1px solid rgba(255,255,255,0.06);
+      font-family: 'Jost', sans-serif; font-size: 0.875rem;
+    }
+
+    /* ── Scroll margin ── */
+    #about, #experiences, #conservation, #visit, #packages, #reviews { scroll-margin-top: 80px; }
+
+    /* ── Back to top ── */
+    #back-to-top {
+      position: fixed; bottom: 2.5rem; right: 2.5rem; z-index: 400;
+      width: 44px; height: 44px; border: 1px solid rgba(150,113,56,0.5);
+      background: rgba(28,25,21,0.85); backdrop-filter: blur(8px);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; opacity: 0; transform: translateY(12px);
+      transition: opacity 0.4s ease, transform 0.4s ease, background 0.3s ease;
+      pointer-events: none;
+    }
+    #back-to-top.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+    #back-to-top:hover { background: rgba(150,113,56,0.9); border-color: rgba(150,113,56,0.9); }
+
+    @media (max-width: 1024px) {
+      #nav { padding: 1.25rem 1.5rem; }
+      #nav.scrolled { padding: 0.875rem 1.5rem; }
+      #back-to-top { bottom: 1.5rem; right: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════
+     NAVIGATION
+═══════════════════════════════════════════ -->
+<nav id="nav">
+  <a href="index.html"
+     style="display:inline-flex;align-items:center;padding:0.25rem 0.5rem;border-radius:2px;background:rgba(28,25,21,0.3);backdrop-filter:blur(10px);">
+    <img src="brand_assets/brand%20logo%20updated.png" alt="Eco Eyes Village" id="nav-logo"
+         style="height:36px;display:block;transition:height 0.4s ease;"
+         onerror="this.src='brand_assets/brand%20logo%20old.png';this.onerror=null">
+  </a>
+
+  <div class="hidden lg:flex items-center gap-7">
+    <a href="resort.html"  class="nav-link" id="nl-stay">Stay</a>
+    <a href="cafe.html"    class="nav-link" id="nl-cafe">Café</a>
+    <a href="life.html"    class="nav-link" id="nl-life">Experiences</a>
+    <a href="csr.html"     class="nav-link" id="nl-csr">Conservation</a>
+    <a href="explore.html" class="nav-link" id="nl-explore">Explore</a>
+    <a href="contact.html" class="nav-link" id="nl-contact">Contact</a>
+  </div>
+
+  <div class="hidden lg:flex items-center gap-4">
+    <div class="flex items-center gap-1">
+      <button class="lang-btn active" onclick="setLang('en')" data-lang="en">EN</button>
+      <span class="lang-divider">|</span>
+      <button class="lang-btn" onclick="setLang('th')" data-lang="th">TH</button>
+      <span class="lang-divider">|</span>
+      <button class="lang-btn" onclick="setLang('zh')" data-lang="zh">ZH</button>
+    </div>
+    <a href="resort.html" class="btn-outline-white" id="nav-book" style="padding:0.6rem 1.5rem;">Book Now</a>
+  </div>
+
+  <button id="hamburger" onclick="openMenu()" class="lg:hidden flex flex-col gap-1.5 p-1" aria-label="Menu">
+    <span class="block w-6 h-px bg-white/80"></span>
+    <span class="block w-4 h-px bg-white/80"></span>
+    <span class="block w-6 h-px bg-white/80"></span>
+  </button>
+</nav>
+
+<!-- Back to top -->
+<button id="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C4A36A" stroke-width="1.5" stroke-linecap="round">
+    <path d="M12 19V5M5 12l7-7 7 7"/>
+  </svg>
+</button>
+
+<!-- Mobile menu -->
+<div id="mobile-nav">
+  <button onclick="closeMenu()" class="absolute top-6 right-6 text-white/60 hover:text-white">
+    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+      <path d="M18 6L6 18M6 6l12 12"/>
+    </svg>
+  </button>
+  <a href="resort.html"  onclick="closeMenu()" class="font-display text-white text-4xl font-light italic hover:text-[#C4A36A] transition-colors">Stay</a>
+  <a href="cafe.html"    onclick="closeMenu()" class="font-display text-white text-4xl font-light italic hover:text-[#C4A36A] transition-colors">Café</a>
+  <a href="life.html"    onclick="closeMenu()" class="font-display text-white text-4xl font-light italic hover:text-[#C4A36A] transition-colors">Experiences</a>
+  <a href="csr.html"     onclick="closeMenu()" class="font-display text-white text-4xl font-light italic hover:text-[#C4A36A] transition-colors">Conservation</a>
+  <a href="explore.html" onclick="closeMenu()" class="font-display text-white text-4xl font-light italic hover:text-[#C4A36A] transition-colors">Explore</a>
+  <a href="contact.html" onclick="closeMenu()" class="font-display text-white text-4xl font-light italic hover:text-[#C4A36A] transition-colors">Contact</a>
+  <div class="flex items-center gap-3 mt-2">
+    <button class="lang-btn active text-sm" onclick="setLang('en');closeMenu()">EN</button>
+    <span class="lang-divider">|</span>
+    <button class="lang-btn text-sm" onclick="setLang('th');closeMenu()">TH</button>
+    <span class="lang-divider">|</span>
+    <button class="lang-btn text-sm" onclick="setLang('zh');closeMenu()">ZH</button>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════
+     HERO
+═══════════════════════════════════════════ -->
+<section id="hero">
+  <div class="hero-slide active" style="background-image:url('https://eco-eyes-bucket.s3.ap-southeast-1.amazonaws.com/eco_eyes_photo/9.jpeg');background-position:center 30%"></div>
+  <div class="hero-slide"       style="background-image:url('https://eco-eyes-bucket.s3.ap-southeast-1.amazonaws.com/eco_eyes_photo/6.jpeg')"></div>
+  <div class="hero-slide"       style="background-image:url('https://eco-eyes-bucket.s3.ap-southeast-1.amazonaws.com/eco_eyes_photo/5.jpeg')"></div>
+  <div class="hero-slide"       style="background-image:url('https://eco-eyes-bucket.s3.ap-southeast-1.amazonaws.com/eco_eyes_photo/7.jpeg')"></div>
+  <div class="hero-slide"       style="background-image:url('https://eco-eyes-bucket.s3.ap-southeast-1.amazonaws.com/eco_eyes_photo/8.jpeg')"></div>
+  <div class="hero-slide"       style="background-image:url('https://eco-eyes-bucket.s3.ap-southeast-1.amazonaws.com/eco_eyes_photo/10.jpeg')"></div>
+
+  <div class="absolute inset-0 bg-gradient-to-b from-black/55 via-black/20 to-black/70 pointer-events-none"></div>
+  <div class="absolute inset-0 bg-gradient-to-r from-black/25 to-transparent pointer-events-none"></div>
+  <div class="absolute inset-0 pointer-events-none" style="background:radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.35) 100%)"></div>
+
+  <div class="absolute inset-0 flex flex-col items-center justify-center text-center px-6 pointer-events-none">
+    <p class="font-sans text-white/50 text-[0.58rem] tracking-widest uppercase mb-7 reveal"
+       style="transition-delay:0.4s" id="hero-label">Nakhon Nayok &nbsp;·&nbsp; Thailand</p>
+
+    <h1 class="font-display text-white font-light leading-none tracking-tight reveal"
+        style="font-size:clamp(4rem,10vw,9rem);transition-delay:0.65s">
+      <span id="h1-line1">Eco Eyes</span><br><em id="h1-line2">Village</em>
+    </h1>
+
+    <span class="sep sep-center reveal" style="transition-delay:0.88s;background:#C4A36A;"></span>
+
+    <p class="font-display text-white/75 font-light italic reveal"
+       style="font-size:clamp(1.2rem,2.5vw,1.8rem);transition-delay:1s;letter-spacing:0.01em"
+       id="hero-slogan">Where Nature is the Luxury</p>
+
+    <p class="font-sans text-white/50 text-[0.65rem] tracking-widest uppercase mt-4 reveal"
+       style="transition-delay:1.15s" id="hero-tagline">A Nature Classroom For All</p>
+
+    <div class="flex flex-wrap items-center justify-center gap-4 mt-10 reveal pointer-events-auto"
+         style="transition-delay:1.35s">
+      <a href="resort.html" class="btn-solid-gold" id="hero-cta1">Book Your Stay</a>
+      <a href="#about"       class="btn-outline-white" id="hero-cta2">Explore</a>
+    </div>
+  </div>
+
+  <div class="scroll-cue">
+    <div class="scroll-cue-line"></div>
+    <span id="hero-scroll">Scroll</span>
+  </div>
+  <div class="absolute bottom-8 right-8 md:right-12 flex gap-2 items-center" id="dots"></div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════
+     BOOKING PLATFORMS
+═══════════════════════════════════════════ -->
+<section class="bg-dark py-20 px-6" style="border-top:1px solid rgba(150,113,56,0.2)">
+  <div class="max-w-5xl mx-auto">
+    <div class="text-center mb-12 reveal">
+      <p class="font-sans text-gold text-[0.58rem] tracking-widest uppercase mb-3" id="book-label">Reserve Your Experience</p>
+      <h2 class="font-display text-white font-light" style="font-size:clamp(2rem,3.5vw,3rem)">
+        Book Your <em id="book-em">Stay</em>
+      </h2>
+    </div>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 reveal" style="transition-delay:0.15s">
+
+      <a href="https://www.booking.com/hotel/th/eco-eyes-village.en-gb.html"
+         target="_blank" rel="noopener" class="platform-card">
+        <div style="width:40px;height:40px;background:rgba(0,107,196,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;">
+          <svg width="20" height="20" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+            <circle cx="16" cy="16" r="16" fill="#003580" opacity="0.7"/>
+            <text x="50%" y="62%" text-anchor="middle" fill="#fff" font-size="11" font-family="sans-serif" font-weight="bold">B.</text>
+          </svg>
+        </div>
+        <p class="font-sans text-white/90 text-sm font-medium tracking-wide">Booking.com</p>
+        <p class="font-sans text-white/35 text-[0.65rem] tracking-wide">8.7 &nbsp;·&nbsp; Superb</p>
+        <span class="font-sans text-gold text-[0.58rem] tracking-widest uppercase mt-1">Book Now →</span>
+      </a>
+
+      <a href="https://www.agoda.com/eco-eyes-village-h50516484/hotel/nakhon-nayok-th.html"
+         target="_blank" rel="noopener" class="platform-card">
+        <div style="width:40px;height:40px;background:rgba(231,76,60,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;">
+          <svg width="20" height="20" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+            <circle cx="16" cy="16" r="16" fill="#E84C3D" opacity="0.7"/>
+            <text x="50%" y="62%" text-anchor="middle" fill="#fff" font-size="9" font-family="sans-serif" font-weight="bold">Ag</text>
+          </svg>
+        </div>
+        <p class="font-sans text-white/90 text-sm font-medium tracking-wide">Agoda</p>
+        <p class="font-sans text-white/35 text-[0.65rem] tracking-wide">9.0 &nbsp;·&nbsp; Exceptional</p>
+        <span class="font-sans text-gold text-[0.58rem] tracking-widest uppercase mt-1">Book Now →</span>
+      </a>
+
+      <a href="https://www.tripadvisor.co.uk/HotelHighlight?detail=33216461"
+         target="_blank" rel="noopener" class="platform-card">
+        <div style="width:40px;height:40px;background:rgba(52,168,83,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;">
+          <svg width="20" height="20" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+            <circle cx="16" cy="16" r="16" fill="#34A853" opacity="0.7"/>
+            <text x="50%" y="62%" text-anchor="middle" fill="#fff" font-size="9" font-family="sans-serif" font-weight="bold">TA</text>
+          </svg>
+        </div>
+        <p class="font-sans text-white/90 text-sm font-medium tracking-wide">Tripadvisor</p>
+        <p class="font-sans text-white/35 text-[0.65rem] tracking-wide">4.9 / 5 &nbsp;·&nbsp; Excellent</p>
+        <span class="font-sans text-gold text-[0.58rem] tracking-widest uppercase mt-1">Read Reviews →</span>
+      </a>
+
+      <a href="https://www.trip.com/hotels/nakhon-nayok-hotel-detail-eco-eyes-village/"
+         target="_blank" rel="noopener" class="platform-card">
+        <div style="width:40px;height:40px;background:rgba(0,174,198,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;">
+          <svg width="20" height="20" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+            <circle cx="16" cy="16" r="16" fill="#00AEC6" opacity="0.7"/>
+            <text x="50%" y="62%" text-anchor="middle" fill="#fff" font-size="9" font-family="sans-serif" font-weight="bold">TC</text>
+          </svg>
+        </div>
+        <p class="font-sans text-white/90 text-sm font-medium tracking-wide">Trip.com</p>
+        <p class="font-sans text-white/35 text-[0.65rem] tracking-wide">Top Rated</p>
+        <span class="font-sans text-gold text-[0.58rem] tracking-widest uppercase mt-1">Book Now →</span>
+      </a>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════
+     STATS STRIP
+═══════════════════════════════════════════ -->
+<section class="bg-dark py-16 px-6" style="border-top:1px solid rgba(150,113,56,0.2)">
+  <div class="max-w-3xl mx-auto grid grid-cols-3 gap-8 text-center">
+    <div class="reveal">
+      <p class="font-display text-gold text-5xl md:text-6xl font-light stat-30" data-target="30">30+</p>
+      <span class="sep sep-center" style="background:#967138"></span>
+      <p class="font-sans text-white/45 text-[0.58rem] tracking-widest uppercase leading-relaxed" id="stat1-label">Rai of<br>Protected Land</p>
+    </div>
+    <div class="reveal" style="transition-delay:0.12s">
+      <p class="font-display text-gold text-5xl md:text-6xl font-light stat-150" data-target="150">150+</p>
+      <span class="sep sep-center" style="background:#967138"></span>
+      <p class="font-sans text-white/45 text-[0.58rem] tracking-widest uppercase leading-relaxed" id="stat2-label">Native<br>Plant Species</p>
+    </div>
+    <div class="reveal" style="transition-delay:0.24s">
+      <p class="font-display text-gold text-5xl md:text-6xl font-light stat-300" data-target="300">300+</p>
+      <span class="sep sep-center" style="background:#967138"></span>
+      <p class="font-sans text-white/45 text-[0.58rem] tracking-widest uppercase leading-relaxed" id="stat3-label">Birds &amp;<br>Wildlife Species</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════
+     ABOUT
+═══════════════════════════════════════════ -->
+<section id="about" class="py-32 md:py-40 bg-cream overflow-hidden">
+  <div class="max-w-7xl mx-auto px-6 md:px-12 grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-24 items-center">
+
+    <div class="relative reveal">
+      <div class="aspect-[3/4] overflow-hidden">
+        <img src="https://eco-eyes-bucket.s3.ap-southeast-1.amazonaws.com/eco_eyes_photo/6.jpeg"
+             alt="The landscape of Eco Eyes Village" loading="lazy"
+             class="w-full h-full object-cover transition-transform duration-700 hover:scale-[1.03]">
+      </div>
+      <div class="absolute -bottom-5 -right-5 w-2/3 h-2/3 border border-[#967138]/20 -z-10 pointer-events-none"></div>
+      <div class="absolute -top-4 -left-4 w-16 h-16 -z-10" style="background:rgba(150,113,56,0.08)"></div>
+    </div>
+
+    <div class="reveal" style="transition-delay:0.2s">
+      <p class="font-sans text-gold text-[0.62rem] tracking-widest uppercase mb-5" id="about-label">Our Story</p>
+      <h2 class="font-display text-dark font-light leading-[1.05] mb-2" style="font-size:clamp(2.6rem,4.5vw,4rem)">
+        <span id="about-h2-line1">Where Barren Land</span><br><em id="about-h2-em">Became Forest</em>
+      </h2>
+      <span class="sep"></span>
+      <p class="font-sans text-dark/65 text-[0.9rem] leading-[1.85] mb-5">
+        Eco Eyes Village is a private nature conservatory and learning centre in Nakhon Nayok, Thailand.
+        We protect more than 30 Rai of land transformed from barren farmland into thriving forest through
+        years of dedicated reforestation.
+      </p>
+      <p class="font-sans text-dark/65 text-[0.9rem] leading-[1.85] mb-10">
+        Today, more than 150 plant species and 300 species of birds and animals call Eco Eyes home —
+        a living testament to what nature can do when given the chance to heal. Now open for glamping,
+        guided nature tours, and mindfulness retreats.
+      </p>
+      <a href="resort.html" class="btn-outline-gold" id="about-cta">Discover Our Resort</a>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════
+     PULL QUOTE
+═══════════════════════════════════════════ -->
+<section class="py-28 md:py-36 bg-cream-mid" style="border-top:1px solid rgba(150,113,56,0.15);border-bottom:1px solid rgba(150,113,56,0.15)">
+  <div class="max-w-2xl mx-auto px-6 text-center reveal">
+    <p class="font-display text-dark/80 font-light leading-snug italic"
+       style="font-size:clamp(1.6rem,3vw,2.4rem)">
+      "We aim to reconnect people back to nature<br class="hidden md:block">
+      and foster an appreciation for the planet<br class="hidden md:block">
+      earth that we call home."
+    </p>
+    <span class="sep sep-center mt-8 mb-5"></span>
+    <p class="font-sans text-gold text-[0.6rem] tracking-widest uppercase">
+      Eco Eyes Village &nbsp;·&nbsp; Our Mission
+    </p>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════
+     PACKAGES TEASER
+═══════════════════════════════════════════ -->
+<section id="packages" class="py-24 bg-cream">
+  <div class="max-w-5xl mx-auto px-6 md:px-12">
+    <div class="text-center mb-12 reveal">
+      <p class="font-sans text-gold text-[0.62rem] tracking-widest uppercase mb-5" id="pkg-label" data-en="Tour Packages" data-th="แพ็กเกจทัวร์" data-zh="游览套餐">Tour Packages</p>
+      <h2 class="font-display text-dark font-light" style="font-size:clamp(2.2rem,4vw,3.5rem)">
+        Our <em id="pkg-em" data-en="Packages" data-th="แพ็กเกจ" data-zh="套餐">Packages</em>
+      </h2>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 reveal" style="transition-delay:0.1s">
+      <div style="border:1px solid rgba(150,113,56,0.2);padding:1.75rem;text-align:center">
+        <p class="font-sans text-gold text-[0.58rem] tracking-widest uppercase mb-2" data-en="Private Tour" data-th="ทัวร์ส่วนตัว" data-zh="私人导览">Private Tour</p>
+        <p class="font-display text-dark text-4xl font-light">300฿</p>
+        <p class="font-sans text-dark/40 text-[0.65rem] mt-1" data-en="/ family" data-th="/ ครอบครัว" data-zh="/ 家庭">/ family</p>
+      </div>
+      <div style="border:1px solid rgba(150,113,56,0.2);padding:1.75rem;text-align:center">
+        <p class="font-sans text-gold text-[0.58rem] tracking-widest uppercase mb-2" data-en="Mobile Tour" data-th="ทัวร์มือถือ" data-zh="移动导览">Mobile Tour</p>
+        <p class="font-display text-dark text-4xl font-light">100฿</p>
+        <p class="font-sans text-dark/40 text-[0.65rem] mt-1" data-en="+ Café coupon" data-th="+ คูปองคาเฟ่" data-zh="+ 咖啡厅优惠券">+ Café coupon</p>
+      </div>
+      <div style="border:1px solid rgba(43,58,32,0.4);background:#2B3A20;padding:1.75rem;text-align:center">
+        <p class="font-sans text-[#C4A36A] text-[0.58rem] tracking-widest uppercase mb-2" data-en="Segway Tour" data-th="ทัวร์เซกเวย์" data-zh="赛格威之旅">Segway Tour</p>
+        <p class="font-display text-white text-4xl font-light">150฿</p>
+        <p class="font-sans text-white/40 text-[0.65rem] mt-1" data-en="/ person" data-th="/ คน" data-zh="/ 人">/ person</p>
+      </div>
+      <div style="border:1px solid rgba(150,113,56,0.2);padding:1.75rem;text-align:center">
+        <p class="font-sans text-gold text-[0.58rem] tracking-widest uppercase mb-2" data-en="EV Tour" data-th="ทัวร์รถอีวี" data-zh="电动车游览">EV Tour</p>
+        <p class="font-display text-dark text-4xl font-light">150฿</p>
+        <p class="font-sans text-dark/40 text-[0.65rem] mt-1" data-en="/ person" data-th="/ คน" data-zh="/ 人">/ person</p>
+      </div>
+    </div>
+    <div class="text-center mt-10 reveal" style="transition-delay:0.2s">
+      <a href="life.html#packages" class="btn-solid-gold" data-en="View All Packages &amp; Enquire" data-th="ดูแพ็กเกจทั้งหมด" data-zh="查看所有套餐">View All Packages &amp; Enquire</a>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════
+     EXPERIENCES
+═══════════════════════════════════════════ -->
+<section id="experiences" class="py-32 md:py-40 bg-cream-mid">
+  <div class="max-w-7xl mx-auto px-6 md:px-12">
+
+    <div class="text-center mb-20 reveal">
+      <p class="font-sans text-gold text-[0.62rem] tracking-widest uppercase mb-5" id="exp-label">What We Offer</p>
+      <h2 class="font-display text-dark font-light" style="font-size:clamp(2.4rem,4vw,3.8rem)">
+        Our <em id="exp-em">Experiences</em>
+      </h2>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-8 items-start">
+
+      <div class="exp-card group cursor-pointer reveal">
+        <div class="overflow-hidden aspect-[4/5] relative">
+          <img src="https://eco-eyes-bucket.s3.ap-southeast-1.amazonaws.com/Landing+Eco+Education.jpg"
+               alt="Eco Education" class="card-img w-full h-full object-cover" loading="lazy">
+          <div class="card-overlay absolute inset-0 flex items-end p-8" style="background:rgba(43,58,32,0.35)">
+            <a href="csr.html" class="font-sans text-white text-[0.6rem] tracking-widest uppercase border-b border-white/50 pb-0.5 hover:border-white transition-colors duration-300">
+              Learn More →
+            </a>
+          </div>
+        </div>
+        <div class="pt-6 pb-2">
+          <p class="font-sans text-gold text-[0.58rem] tracking-widest uppercase mb-2">Education</p>
+          <h3 class="font-display text-dark text-2xl font-light mb-3">Nature Classroom</h3>
+          <p class="font-sans text-dark/55 text-[0.85rem] leading-[1.8]">
+            Everyone can come and learn about the wonders of nature — its importance and what we can do to protect it together.
+          </p>
+        </div>
+      </div>
+
+      <div class="exp-card group cursor-pointer reveal md:-mt-12" style="transition-delay:0.15s">
+        <div class="overflow-hidden aspect-[4/5] relative">
+          <img src="https://eco-eyes-bucket.s3.ap-southeast-1.amazonaws.com/eco_eyes_photo/12.jpeg"
+               alt="Nature Walk" class="card-img w-full h-full object-cover" loading="lazy">
+          <div class="card-overlay absolute inset-0 flex items-end p-8" style="background:rgba(43,58,32,0.35)">
+            <a href="life.html" class="font-sans text-white text-[0.6rem] tracking-widest uppercase border-b border-white/50 pb-0.5 hover:border-white transition-colors duration-300">
+              Explore →
+            </a>
+          </div>
+        </div>
+        <div class="pt-6 pb-2">
+          <p class="font-sans text-gold text-[0.58rem] tracking-widest uppercase mb-2">Guided Walks</p>
+          <h3 class="font-display text-dark text-2xl font-light mb-3">Nature Walk</h3>
+          <p class="font-sans text-dark/55 text-[0.85rem] leading-[1.8]">
+            Stroll through living forest, feel the cool shade of the canopy, and hear hundreds of birds and animals going about their day.
+          </p>
+        </div>
+      </div>
+
+      <div class="exp-card group cursor-pointer reveal" style="transition-delay:0.3s">
+        <div class="overflow-hidden aspect-[4/5] relative">
+          <img src="https://eco-eyes-bucket.s3.ap-southeast-1.amazonaws.com/eco_eyes_photo/11.jpeg"
+               alt="Eco Café" class="card-img w-full h-full object-cover" loading="lazy">
+          <div class="card-overlay absolute inset-0 flex items-end p-8" style="background:rgba(43,58,32,0.35)">
+            <a href="cafe.html" class="font-sans text-white text-[0.6rem] tracking-widest uppercase border-b border-white/50 pb-0.5 hover:border-white transition-colors duration-300">
+              Visit Café →
+            </a>
+          </div>
+        </div>
+        <div class="pt-6 pb-2">
+          <p class="font-sans text-gold text-[0.58rem] tracking-widest uppercase mb-2">Café</p>
+          <h3 class="font-display text-dark text-2xl font-light mb-3">Eco Café</h3>
+          <p class="font-sans text-dark/55 text-[0.85rem] leading-[1.8]">
+            Sip cold-brew Eco Coffee surrounded by birdsong. Every cup comes home with a seedling — a small act of reforestation.
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════
+     CONSERVATION / MISSION
+═══════════════════════════════════════════ -->
+<section id="conservation" class="overflow-hidden">
+  <div class="grid grid-cols-1 md:grid-cols-2">
+
+    <div class="relative overflow-hidden" style="min-height:520px">
+      <img src="brand_assets/eco%20eyes%20website%20photos%20/Environment%20Photos/animal%20picture%20in%20resort%20(bird).jpg"
+           alt="Wildlife at Eco Eyes Village"
+           class="absolute inset-0 w-full h-full object-cover" style="object-position:center 20%" loading="lazy">
+      <div class="absolute inset-0" style="background:rgba(43,58,32,0.2)"></div>
+    </div>
+
+    <div class="bg-forest flex items-center">
+      <div class="px-12 md:px-20 py-24 reveal">
+        <p class="font-sans text-[0.62rem] tracking-widest uppercase mb-6" style="color:#C4A36A" id="cons-label">Our Mission</p>
+        <h2 class="font-display text-white font-light leading-tight mb-3" style="font-size:clamp(2.2rem,3.5vw,3.2rem)">
+          <span id="cons-h2-line1">Raising Awareness,</span><br><em id="cons-h2-em">One Forest at a Time</em>
+        </h2>
+        <span class="sep" style="background:#C4A36A;margin-bottom:1.5rem"></span>
+        <p class="font-sans text-white/60 text-[0.875rem] leading-[1.85] mb-5">
+          Glaciers are melting, sea levels are rising, and wildlife is scrambling to keep pace.
+          At Eco Eyes Village, we aim to educate this generation — and the next — about the threats
+          that unsustainable development poses to our shared future.
+        </p>
+        <p class="font-sans text-white/60 text-[0.875rem] leading-[1.85] mb-10">
+          Our goal is to be a role model for sustainable development — passing knowledge of
+          sustainable agriculture to children and adults alike, showing what each of us can do.
+        </p>
+        <a href="csr.html" class="btn-outline-cream" id="cons-cta">Our Conservation Work</a>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════
+     GALLERY
+═══════════════════════════════════════════ -->
+<section class="py-32 md:py-40 bg-cream-mid">
+  <div class="max-w-7xl mx-auto px-6 md:px-12">
+    <div class="text-center mb-16 reveal">
+      <p class="font-sans text-gold text-[0.62rem] tracking-widest uppercase mb-5">The Forest</p>
+      <h2 class="font-display text-dark font-light" style="font-size:clamp(2.4rem,4vw,3.8rem)">
+        Life at <em>Eco Eyes</em>
+      </h2>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="home-gal-grid">
+      <div class="home-gal-cell overflow-hidden aspect-square reveal"><img loading="lazy" alt="Eco Eyes Village" class="w-full h-full object-cover" style="transition:opacity 0.5s ease"></div>
+      <div class="home-gal-cell overflow-hidden aspect-square reveal" style="transition-delay:0.08s"><img loading="lazy" alt="" class="w-full h-full object-cover" style="transition:opacity 0.5s ease"></div>
+      <div class="home-gal-cell overflow-hidden aspect-square reveal" style="transition-delay:0.16s"><img loading="lazy" alt="" class="w-full h-full object-cover" style="transition:opacity 0.5s ease"></div>
+      <div class="home-gal-cell overflow-hidden aspect-square reveal" style="transition-delay:0.24s"><img loading="lazy" alt="" class="w-full h-full object-cover" style="transition:opacity 0.5s ease"></div>
+      <div class="home-gal-cell overflow-hidden aspect-square reveal" style="transition-delay:0.1s"><img loading="lazy" alt="" class="w-full h-full object-cover" style="transition:opacity 0.5s ease"></div>
+      <div class="home-gal-cell overflow-hidden aspect-square reveal" style="transition-delay:0.18s"><img loading="lazy" alt="" class="w-full h-full object-cover" style="transition:opacity 0.5s ease"></div>
+      <div class="home-gal-cell overflow-hidden aspect-square reveal" style="transition-delay:0.26s"><img loading="lazy" alt="" class="w-full h-full object-cover" style="transition:opacity 0.5s ease"></div>
+      <div class="home-gal-cell overflow-hidden aspect-square reveal" style="transition-delay:0.34s"><img loading="lazy" alt="" class="w-full h-full object-cover" style="transition:opacity 0.5s ease"></div>
+    </div>
+    <div class="text-center mt-12 reveal" style="transition-delay:0.3s">
+      <a href="life.html" class="btn-outline-gold" id="gallery-cta">View All Experiences</a>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════
+     REVIEWS
+═══════════════════════════════════════════ -->
+<section id="reviews" class="py-32 md:py-40 bg-dark">
+  <div class="max-w-7xl mx-auto px-6 md:px-12">
+
+    <div class="text-center mb-16 reveal">
+      <p class="font-sans text-gold text-[0.62rem] tracking-widest uppercase mb-5" id="rev-label">Guest Experiences</p>
+      <h2 class="font-display text-white font-light mb-6" style="font-size:clamp(2.4rem,4vw,3.8rem)">
+        What Our Guests <em id="rev-em">Say</em>
+      </h2>
+      <div class="flex items-center justify-center gap-4">
+        <div class="flex gap-1">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="#967138"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="#967138"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="#967138"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="#967138"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="#967138"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        </div>
+        <span class="font-display text-white text-4xl font-light">4.9</span>
+        <span class="font-sans text-white/35 text-sm">/ 5 &nbsp;·&nbsp; 123 Reviews</span>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+
+      <div class="review-card reveal">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-9 h-9 rounded-full flex items-center justify-center font-display text-lg font-light" style="background:rgba(150,113,56,0.3);color:#C4A36A">S</div>
+          <div><p class="font-sans text-white/85 text-sm">Sarah M.</p><p class="font-sans text-white/35 text-[0.65rem]">United Kingdom</p></div>
+        </div>
+        <div class="flex gap-0.5 mb-3">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="#967138"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="#967138"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="#967138"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="#967138"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="#967138"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        </div>
+        <p class="font-sans text-white/55 text-[0.82rem] leading-[1.75]">"A truly magical place. Our children learned more about nature in one afternoon than months of classroom learning. The guided tour is absolutely worth it."</p>
+      </div>
+
+      <div class="review-card reveal" style="transition-delay:0.1s">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-9 h-9 rounded-full flex items-center justify-center font-display text-lg font-light" style="background:rgba(150,113,56,0.3);color:#C4A36A">T</div>
+          <div><p class="font-sans text-white/85 text-sm">Thomas R.</p><p class="font-sans text-white/35 text-[0.65rem]">Australia</p></div>
+        </div>
+        <div class="flex gap-0.5 mb-3">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="#967138"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="#967138"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="#967138"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="#967138"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="#967138"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        </div>
+        <p class="font-sans text-white/55 text-[0.82rem] leading-[1.75]">"The forest is incredibly well-maintained and alive with wildlife. We spotted over 20 bird species in one afternoon. Staff are passionate and knowledgeable."</p>
+      </div>
+
+      <div class="review-card reveal" style="transition-delay:0.2s">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-9 h-9 rounded-full flex items-center justify-center font-display text-lg font-light" style="background:rgba(150,113,56,0.3);color:#C4A36A">M</div>
+          <div><p class="font-sans text-white/85 text-sm">Marie-Claire D.</p><p class="font-sans text-white/35 text-[0.65rem]">France</p></div>
+        </div>
+        <div class="flex gap-0.5 mb-3">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="#967138"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="#967138"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="#967138"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="#967138"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="#967138"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        </div>
+        <p class="font-sans text-white/55 text-[0.82rem] leading-[1.75]">"The Segway tour through the forest was the highlight of our entire Thailand trip. Coffee at the Eco Café surrounded by birdsong — completely unforgettable."</p>
+      </div>
+
+      <div class="review-card reveal" style="transition-delay:0.3s">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-9 h-9 rounded-full flex items-center justify-center font-display text-lg font-light" style="background:rgba(150,113,56,0.3);color:#C4A36A">J</div>
+          <div><p class="font-sans text-white/85 text-sm">Prof. James K.</p><p class="font-sans text-white/35 text-[0.65rem]">Singapore</p></div>
+        </div>
+        <div class="flex gap-0.5 mb-3">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="#967138"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="#967138"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="#967138"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="#967138"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="#967138"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        </div>
+        <p class="font-sans text-white/55 text-[0.82rem] leading-[1.75]">"As an environmental educator, I was blown away by the depth of knowledge and care shown here. A true model for sustainable conservation in Southeast Asia."</p>
+      </div>
+
+    </div>
+
+    <div class="text-center mt-12 reveal" style="transition-delay:0.35s">
+      <a href="https://www.google.com/maps/search/Eco+Eyes+Village+Sarika+Nakhon+Nayok"
+         target="_blank" rel="noopener" class="btn-outline-cream" id="rev-cta">Read All 123 Reviews</a>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════
+     STAY CONNECTED
+═══════════════════════════════════════════ -->
+<section class="py-24 bg-cream text-center">
+  <div class="max-w-xl mx-auto px-6 reveal">
+    <p class="font-sans text-gold text-[0.62rem] tracking-widest uppercase mb-5">Follow Our Journey</p>
+    <h2 class="font-display text-dark font-light mb-4" style="font-size:clamp(2rem,3.5vw,3rem)">
+      Stay <em>Connected</em>
+    </h2>
+    <span class="sep sep-center mb-6"></span>
+    <p class="font-sans text-dark/55 text-[0.9rem] leading-[1.8] mb-8">
+      Follow the forest as it grows. Updates, stories, and new arrivals on Facebook and Instagram.
+    </p>
+    <div class="flex flex-wrap justify-center gap-4">
+      <a href="https://www.facebook.com/ecoeyesvillagenakhonnayok/" target="_blank" rel="noopener"
+         class="btn-outline-gold inline-flex items-center gap-3">
+        <svg width="13" height="13" fill="currentColor" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+        Facebook
+      </a>
+      <a href="https://www.instagram.com/ecoeyesvillage/" target="_blank" rel="noopener"
+         class="btn-outline-gold inline-flex items-center gap-3">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+        @ecoeyesvillage
+      </a>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════
+     VISIT / INFO
+═══════════════════════════════════════════ -->
+<section id="visit" class="bg-dark py-32 md:py-40">
+  <div class="max-w-6xl mx-auto px-6 md:px-12 grid grid-cols-1 md:grid-cols-2 gap-20 md:gap-28 items-center">
+
+    <div class="reveal">
+      <p class="font-sans text-gold text-[0.62rem] tracking-widest uppercase mb-5" id="visit-label">Find Us</p>
+      <h2 class="font-display text-white font-light leading-tight mb-3" style="font-size:clamp(2.6rem,4.5vw,4rem)">
+        <span id="visit-h2-line1">Plan Your</span><br><em id="visit-h2-em">Visit</em>
+      </h2>
+      <span class="sep" style="background:#967138;margin-bottom:2rem"></span>
+
+      <div class="mb-8">
+        <p class="font-sans text-white/35 text-[0.58rem] tracking-widest uppercase mb-4">Opening Hours</p>
+        <div class="hours-row"><span class="text-white/75">Tuesday — Friday</span><span class="text-gold">08:30 – 16:30</span></div>
+        <div class="hours-row"><span class="text-white/75">Saturday – Sunday</span><span class="text-gold">09:00 – 17:00</span></div>
+        <div class="hours-row" style="border-bottom:none"><span class="text-white/40">Monday</span><span class="text-white/30 text-sm">Closed</span></div>
+      </div>
+
+      <div class="mb-10 space-y-3">
+        <p class="font-sans text-white/35 text-[0.58rem] tracking-widest uppercase mb-4">Contact</p>
+        <a href="tel:+66926100560" class="flex items-center gap-3 text-white/60 hover:text-gold transition-colors font-sans text-[0.875rem]">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.27h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.98a16 16 0 0 0 6.01 6.01l1.27-.87a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          +66 92 610 0560
+        </a>
+        <a href="https://www.instagram.com/ecoeyesvillage/" target="_blank" rel="noopener" class="flex items-center gap-3 text-white/60 hover:text-gold transition-colors font-sans text-[0.875rem]">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+          @ecoeyesvillage
+        </a>
+        <a href="https://www.facebook.com/ecoeyesvillagenakhonnayok/" target="_blank" rel="noopener" class="flex items-center gap-3 text-white/60 hover:text-gold transition-colors font-sans text-[0.875rem]">
+          <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+          Eco Eyes Village, Nakhon Nayok
+        </a>
+      </div>
+
+      <a href="contact.html" class="btn-solid-gold" id="visit-cta">Get Directions</a>
+    </div>
+
+    <div class="reveal" style="transition-delay:0.2s">
+      <div class="aspect-[3/4] overflow-hidden">
+        <img src="https://eco-eyes-bucket.s3.ap-southeast-1.amazonaws.com/eco_eyes_photo/8.jpeg"
+             alt="Visit Eco Eyes Village"
+             class="w-full h-full object-cover transition-transform duration-700 hover:scale-[1.03]" loading="lazy">
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════
+     FOOTER
+═══════════════════════════════════════════ -->
+<footer class="bg-dark py-16 px-6" style="border-top:1px solid rgba(255,255,255,0.06)">
+  <div class="max-w-7xl mx-auto">
+
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-14">
+
+      <div class="md:col-span-2">
+        <a href="index.html" style="display:inline-flex;align-items:center;padding:0.25rem 0.5rem;background:rgba(250,247,239,0.05);border-radius:2px;margin-bottom:1.25rem;">
+          <img src="brand_assets/brand%20logo%20updated.png" alt="Eco Eyes Village" style="height:34px;display:block;" onerror="this.src='brand_assets/brand%20logo%20old.png';this.onerror=null">
+        </a>
+        <p class="font-sans text-white/35 text-[0.8rem] leading-[1.8] mb-5" style="max-width:26rem">
+          A private nature conservatory, luxury glamping resort, and learning centre in the heart of Nakhon Nayok, Thailand.
+        </p>
+        <div class="flex gap-4">
+          <a href="https://www.facebook.com/ecoeyesvillagenakhonnayok/" target="_blank" rel="noopener" class="text-white/30 hover:text-[#C4A36A] transition-colors">
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+          </a>
+          <a href="https://www.instagram.com/ecoeyesvillage/" target="_blank" rel="noopener" class="text-white/30 hover:text-[#C4A36A] transition-colors">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <div>
+        <p class="font-sans text-white/30 text-[0.58rem] tracking-widest uppercase mb-5">Explore</p>
+        <nav class="flex flex-col gap-3">
+          <a href="resort.html"  class="font-sans text-white/45 text-[0.78rem] hover:text-white/75 transition-colors">Resort Stay</a>
+          <a href="cafe.html"    class="font-sans text-white/45 text-[0.78rem] hover:text-white/75 transition-colors">Eco Café</a>
+          <a href="life.html"    class="font-sans text-white/45 text-[0.78rem] hover:text-white/75 transition-colors">Experiences</a>
+          <a href="csr.html"     class="font-sans text-white/45 text-[0.78rem] hover:text-white/75 transition-colors">Conservation</a>
+          <a href="explore.html" class="font-sans text-white/45 text-[0.78rem] hover:text-white/75 transition-colors">Explore Nakhon Nayok</a>
+        </nav>
+      </div>
+
+      <div>
+        <p class="font-sans text-white/30 text-[0.58rem] tracking-widest uppercase mb-5">Information</p>
+        <nav class="flex flex-col gap-3 mb-6">
+          <a href="contact.html" class="font-sans text-white/45 text-[0.78rem] hover:text-white/75 transition-colors">Contact Us</a>
+          <a href="resort.html"  class="font-sans text-white/45 text-[0.78rem] hover:text-white/75 transition-colors">Book Now</a>
+          <a href="tel:+66926100560" class="font-sans text-white/30 text-[0.78rem] hover:text-white/55 transition-colors">+66 92 610 0560</a>
+        </nav>
+        <p class="font-sans text-white/25 text-[0.72rem] leading-[1.7]">
+          188 Moo 9, Sarika<br>Nakhon Nayok 26000<br>Thailand
+        </p>
+      </div>
+
+    </div>
+
+    <div class="pt-8 flex flex-col md:flex-row items-center justify-between gap-3" style="border-top:1px solid rgba(255,255,255,0.06)">
+      <p class="font-sans text-white/20 text-[0.6rem] tracking-wide">© 2025 Eco Eyes Village. All rights reserved.</p>
+      <p class="font-sans text-white/20 text-[0.6rem] tracking-wide">Nakhon Nayok, Thailand</p>
+    </div>
+
+  </div>
+</footer>
+
+
+<!-- ═══════════════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════════════ -->
+<script>
+  // ── Hero slideshow ──────────────────────────
+  const slides = document.querySelectorAll('.hero-slide');
+  let current = 0, timer;
+
+  const dotsEl = document.getElementById('dots');
+  slides.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'slide-dot' + (i === 0 ? ' active' : '');
+    d.onclick = () => goTo(i);
+    dotsEl.appendChild(d);
+  });
+
+  function goTo(n) {
+    slides[current].classList.remove('active');
+    dotsEl.children[current].classList.remove('active');
+    current = n;
+    slides[current].classList.add('active');
+    dotsEl.children[current].classList.add('active');
+    clearInterval(timer);
+    timer = setInterval(advance, 6500);
+  }
+  function advance() { goTo((current + 1) % slides.length); }
+  timer = setInterval(advance, 6500);
+
+  // ── Touch swipe ──────────────────────────────
+  let touchStartX = 0;
+  document.getElementById('hero').addEventListener('touchstart', e => {
+    touchStartX = e.touches[0].clientX;
+  }, { passive: true });
+  document.getElementById('hero').addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    if (Math.abs(dx) > 50) goTo(dx < 0
+      ? (current + 1) % slides.length
+      : (current - 1 + slides.length) % slides.length);
+  }, { passive: true });
+
+  // ── Keyboard nav ─────────────────────────────
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight') advance();
+    if (e.key === 'ArrowLeft')  goTo((current - 1 + slides.length) % slides.length);
+  });
+
+  // ── Scroll / nav ─────────────────────────────
+  const nav = document.getElementById('nav');
+  function updateScroll() {
+    const y = window.scrollY;
+    nav.classList.toggle('scrolled', y > 60);
+    document.getElementById('back-to-top').classList.toggle('visible', y > window.innerHeight * 0.8);
+  }
+  window.addEventListener('scroll', updateScroll, { passive: true });
+  updateScroll();
+
+  // ── Mobile menu ──────────────────────────────
+  const mobileNav = document.getElementById('mobile-nav');
+  function openMenu()  { mobileNav.classList.add('open');    document.body.style.overflow = 'hidden'; }
+  function closeMenu() { mobileNav.classList.remove('open'); document.body.style.overflow = ''; }
+
+  // ── Scroll-reveal ────────────────────────────
+  setTimeout(() => {
+    document.querySelectorAll('#hero .reveal').forEach(el => el.classList.add('visible'));
+  }, 200);
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) { entry.target.classList.add('visible'); io.unobserve(entry.target); }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
+  document.querySelectorAll('.reveal').forEach(el => {
+    if (!el.closest('#hero')) io.observe(el);
+  });
+
+  // ── Count-up ─────────────────────────────────
+  const easeOut = t => 1 - Math.pow(1 - t, 3);
+  function animateCount(el, target, duration = 1600) {
+    const start = performance.now();
+    function frame(now) {
+      const t = Math.min((now - start) / duration, 1);
+      el.textContent = Math.round(easeOut(t) * target) + '+';
+      if (t < 1) requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+  const statObs = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        animateCount(entry.target, parseInt(entry.target.dataset.target));
+        statObs.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.6 });
+  document.querySelectorAll('[data-target]').forEach(el => statObs.observe(el));
+
+  // ── Language switcher ────────────────────────
+  // Translations map: elementId → { en, th, zh }
+  // All values are plain text — no HTML injection
+  const T = {
+    'hero-label':    { en: 'Nakhon Nayok · Thailand',              th: 'นครนายก · ประเทศไทย',          zh: '那空那育 · 泰国' },
+    'h1-line1':      { en: 'Eco Eyes',                             th: 'อีโค่ อายส์',                  zh: '生态眼' },
+    'h1-line2':      { en: 'Village',                              th: 'วิลเลจ',                       zh: '村庄' },
+    'hero-slogan':   { en: 'Where Nature is the Luxury',           th: 'ที่ซึ่งธรรมชาติคือความหรูหรา', zh: '以自然为奢华' },
+    'hero-tagline':  { en: 'A Nature Classroom For All',           th: 'ห้องเรียนธรรมชาติสำหรับทุกคน', zh: '自然课堂，人人共享' },
+    'hero-scroll':   { en: 'Scroll',                               th: 'เลื่อน',                       zh: '滚动' },
+    'hero-cta1':     { en: 'Book Your Stay',                       th: 'จองที่พัก',                    zh: '预订住宿' },
+    'hero-cta2':     { en: 'Explore',                              th: 'สำรวจ',                        zh: '探索' },
+    'book-label':    { en: 'Reserve Your Experience',              th: 'สำรองที่พักของคุณ',             zh: '预订您的体验' },
+    'book-em':       { en: 'Stay',                                 th: 'ที่พัก',                       zh: '住宿' },
+    'stat1-label':   { en: 'Rai of Protected Land',               th: 'ไร่ที่ดินอนุรักษ์',             zh: '莱保护土地' },
+    'stat2-label':   { en: 'Native Plant Species',                 th: 'สายพันธุ์พืชพื้นเมือง',         zh: '原生植物种类' },
+    'stat3-label':   { en: 'Birds & Wildlife Species',             th: 'สายพันธุ์นกและสัตว์ป่า',        zh: '鸟类与野生动物种类' },
+    'about-label':   { en: 'Our Story',                            th: 'เรื่องราวของเรา',               zh: '我们的故事' },
+    'about-h2-line1':{ en: 'Where Barren Land',                   th: 'ที่ดินรกร้างกลายเป็น',          zh: '荒地变成' },
+    'about-h2-em':   { en: 'Became Forest',                       th: 'ผืนป่า',                       zh: '森林的故事' },
+    'about-cta':     { en: 'Discover Our Resort',                  th: 'ค้นพบรีสอร์ทของเรา',            zh: '了解我们的度假村' },
+    'pkg-label':     { en: 'Choose Your Adventure',               th: 'เลือกการผจญภัยของคุณ',          zh: '选择您的体验' },
+    'pkg-em':        { en: 'Packages',                            th: 'แพ็กเกจ',                      zh: '套餐' },
+    'exp-label':     { en: 'What We Offer',                       th: 'สิ่งที่เรานำเสนอ',              zh: '我们提供的服务' },
+    'exp-em':        { en: 'Experiences',                         th: 'ประสบการณ์',                   zh: '体验' },
+    'cons-label':    { en: 'Our Mission',                         th: 'พันธกิจของเรา',                 zh: '我们的使命' },
+    'cons-h2-line1': { en: 'Raising Awareness,',                  th: 'สร้างความตระหนักรู้',            zh: '提高意识，' },
+    'cons-h2-em':    { en: 'One Forest at a Time',                th: 'ทีละหนึ่งผืนป่า',               zh: '一片森林一片森林地' },
+    'cons-cta':      { en: 'Our Conservation Work',               th: 'งานอนุรักษ์ของเรา',             zh: '我们的保育工作' },
+    'gallery-cta':   { en: 'View All Experiences',                th: 'ดูประสบการณ์ทั้งหมด',           zh: '查看所有体验' },
+    'rev-label':     { en: 'Guest Experiences',                   th: 'ประสบการณ์ของแขก',              zh: '宾客体验' },
+    'rev-em':        { en: 'Say',                                 th: 'พูด',                          zh: '评价' },
+    'rev-cta':       { en: 'Read All 123 Reviews',                th: 'อ่านรีวิวทั้งหมด 123 รายการ',   zh: '查看全部123条评价' },
+    'visit-label':   { en: 'Find Us',                             th: 'หาเราได้ที่',                   zh: '找到我们' },
+    'visit-h2-line1':{ en: 'Plan Your',                           th: 'วางแผน',                       zh: '规划您的' },
+    'visit-h2-em':   { en: 'Visit',                               th: 'การเยือน',                     zh: '行程' },
+    'visit-cta':     { en: 'Get Directions',                      th: 'รับเส้นทาง',                   zh: '获取路线' },
+    'nav-book':      { en: 'Book Now',                            th: 'จองที่พัก',                    zh: '立即预订' },
+    'nl-stay':       { en: 'Stay',                                th: 'ที่พัก',                       zh: '住宿' },
+    'nl-cafe':       { en: 'Café',                                th: 'คาเฟ่',                        zh: '咖啡厅' },
+    'nl-life':       { en: 'Experiences',                         th: 'ประสบการณ์',                   zh: '体验活动' },
+    'nl-csr':        { en: 'Conservation',                        th: 'อนุรักษ์',                     zh: '生态保育' },
+    'nl-explore':    { en: 'Explore',                             th: 'สำรวจ',                        zh: '探索' },
+    'nl-contact':    { en: 'Contact',                             th: 'ติดต่อ',                       zh: '联系我们' },
+  };
+
+  function setLang(lang) {
+    if (lang === 'en') {
+      localStorage.setItem('eev-lang', 'en');
+      location.reload();
+      return;
+    }
+    Object.entries(T).forEach(([id, values]) => {
+      const el = document.getElementById(id);
+      if (el && values[lang] !== undefined) el.textContent = values[lang];
+    });
+    document.querySelectorAll('[data-en]').forEach(el => {
+      const t = el.dataset[lang];
+      if (t !== undefined) el.textContent = t;
+    });
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
+    });
+    document.documentElement.lang = lang === 'zh' ? 'zh-CN' : lang;
+    localStorage.setItem('eev-lang', lang);
+  }
+
+  const savedLang = localStorage.getItem('eev-lang') || 'en';
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-lang') === savedLang);
+  });
+  if (savedLang !== 'en') setLang(savedLang);
+
+  // ── Home gallery auto-scroll ──────────────────
+  const HOME_PHOTOS = [
+    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Resort%20Activities/Mindfulness%20session%20photo.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Resort%20Activities/outdoor%20yoga.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Resort%20Activities/eco%20tour%20showing%20forest.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Resort%20Activities/camping.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Resort%20Activities/garden%20camping%20activites%202.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Resort%20Activities/picture%20of%20resort%20activties.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Resort%20Activities/Group%20mindfullness%20activties.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Resort%20Activities/woman%20doing%20yoga%20by%20the%20lake.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Resort%20Activities/nighttime%20resort%20socializing%20activites.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Resort%20Activities/scenic%20garden%20camping%20activites.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Resort%20Activities/Sound%20wellness%20session.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Resort%20Activities/People%20enjoying%20activies%20(painting).jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/Advertisement%20Photos/Lakeside%20view%20of%20rooms.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/Advertisement%20Photos/Pet%20friendly%20.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/Advertisement%20Photos/Picture%20of%20reception%20house.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/Advertisement%20Photos/Room%20promotional%20pic%20of%20outdoor%20tbale.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/Advertisement%20Photos/Two%20girls%20sipping%20on%20coffee%20outside%20eco%20cafe%20good%20photo.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/Advertisement%20Photos/advertisement%20photo%20of%20entrance%20to%20eco%20eyes%20.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/Advertisement%20Photos/Advertisement%20photo%20for%20outisde%20room%20balcony.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/Advertisement%20Photos/597933999_1196598075899297_7015008611099947661_n.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/Advertisement%20Photos/599005559_1196597985899306_8332139074048892777_n.jpg',
+  ];
+  function hShuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
+  const hCells = Array.from(document.querySelectorAll('.home-gal-cell img'));
+  const hPool = hShuffle(HOME_PHOTOS);
+  hCells.forEach((img, i) => { img.src = hPool[i % hPool.length]; });
+  let hIdx = hCells.length;
+  setInterval(() => {
+    hCells.forEach(img => { img.style.opacity = '0'; });
+    setTimeout(() => {
+      hCells.forEach(img => { img.src = hPool[hIdx % hPool.length]; hIdx++; });
+      hCells.forEach(img => { img.style.opacity = '1'; });
+    }, 500);
+  }, 4000);
+</script>
+</body>
+</html>

@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Conservation &amp; CSR — Eco Eyes Village</title>
+  <meta name="description" content="Eco Eyes Village conservation mission — reforestation, community education, and sustainable development in Nakhon Nayok, Thailand." />
+  <link rel="icon" type="image/png" href="https://eco-eyes-bucket.s3.ap-southeast-1.amazonaws.com/icon-circle.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500;1,600&family=Jost:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: {
+        colors: { cream:'#FAF7EF','cream-mid':'#F0E9D8',gold:'#967138','gold-lt':'#C4A36A',dark:'#1C1915',forest:'#2B3A20' },
+        fontFamily: { display:['"Cormorant Garamond"','serif'], sans:['Jost','sans-serif'] }
+      }}
+    }
+  </script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{background:#FAF7EF;color:#1C1915;font-family:'Jost',sans-serif;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+    body::after{content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;opacity:0.028;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");background-size:200px}
+    #nav{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:center;justify-content:space-between;padding:1.5rem 3rem;transition:background 0.7s cubic-bezier(0.16,1,0.3,1),padding 0.5s cubic-bezier(0.16,1,0.3,1)}
+    #nav.scrolled{background:rgba(28,25,21,0.96);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding:0.875rem 3rem}
+    .nav-link{font-family:'Jost',sans-serif;font-size:0.62rem;letter-spacing:0.22em;text-transform:uppercase;color:rgba(255,255,255,0.7);text-decoration:none;transition:color 0.3s ease;position:relative;white-space:nowrap}
+    .nav-link::after{content:'';position:absolute;left:0;bottom:-3px;width:0;height:1px;background:#967138;transition:width 0.35s cubic-bezier(0.16,1,0.3,1)}
+    .nav-link:hover,.nav-link.active{color:rgba(255,255,255,1)}
+    .nav-link:hover::after,.nav-link.active::after{width:100%}
+    .lang-btn{font-family:'Jost',sans-serif;font-size:0.58rem;letter-spacing:0.18em;text-transform:uppercase;color:rgba(255,255,255,0.4);background:none;border:none;cursor:pointer;padding:0.15rem 0.2rem;transition:color 0.25s ease}
+    .lang-btn:hover,.lang-btn.active{color:#C4A36A}
+    .lang-divider{color:rgba(255,255,255,0.15);font-size:0.6rem}
+    .sep{display:block;width:52px;height:1px;background:#967138;margin:1.6rem 0}
+    .sep-center{margin:1.6rem auto}
+    .reveal{opacity:0;transform:translateY(28px);transition:opacity 1s cubic-bezier(0.16,1,0.3,1),transform 1s cubic-bezier(0.16,1,0.3,1)}
+    .reveal.visible{opacity:1;transform:translateY(0)}
+    .btn-outline-gold{display:inline-block;font-family:'Jost',sans-serif;font-size:0.62rem;letter-spacing:0.25em;text-transform:uppercase;border:1px solid #967138;color:#967138;padding:0.85rem 2rem;text-decoration:none;transition:background 0.35s ease,color 0.35s ease}
+    .btn-outline-gold:hover{background:#967138;color:#FAF7EF}
+    .btn-solid-gold{display:inline-block;font-family:'Jost',sans-serif;font-size:0.62rem;letter-spacing:0.25em;text-transform:uppercase;background:#967138;color:#FAF7EF;padding:0.85rem 2.5rem;text-decoration:none;transition:background 0.35s ease}
+    .btn-solid-gold:hover{background:#6B4F22}
+    .btn-outline-cream{display:inline-block;font-family:'Jost',sans-serif;font-size:0.62rem;letter-spacing:0.25em;text-transform:uppercase;border:1px solid rgba(196,163,106,0.5);color:#C4A36A;padding:0.85rem 2rem;text-decoration:none;transition:background 0.35s ease,color 0.35s ease,border-color 0.35s ease}
+    .btn-outline-cream:hover{background:#C4A36A;color:#1C1915;border-color:#C4A36A}
+    .pillar-card{background:white;border:1px solid rgba(43,58,32,0.1);padding:2.5rem 2rem;transition:border-color 0.3s ease,transform 0.35s cubic-bezier(0.16,1,0.3,1)}
+    .pillar-card:hover{border-color:rgba(43,58,32,0.3);transform:translateY(-4px)}
+    .gal-item img{transition:transform 0.7s cubic-bezier(0.16,1,0.3,1)}
+    .gal-item:hover img{transform:scale(1.05)}
+    #mobile-nav{position:fixed;inset:0;z-index:600;background:#1C1915;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2rem;transform:translateY(-100%);transition:transform 0.6s cubic-bezier(0.16,1,0.3,1)}
+    #mobile-nav.open{transform:translateY(0)}
+    #back-to-top{position:fixed;bottom:2.5rem;right:2.5rem;z-index:400;width:44px;height:44px;border:1px solid rgba(150,113,56,0.5);background:rgba(28,25,21,0.85);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;transform:translateY(12px);transition:opacity 0.4s ease,transform 0.4s ease,background 0.3s ease;pointer-events:none}
+    #back-to-top.visible{opacity:1;transform:translateY(0);pointer-events:auto}
+    #back-to-top:hover{background:rgba(150,113,56,0.9);border-color:rgba(150,113,56,0.9)}
+    @media(max-width:1024px){#nav{padding:1.25rem 1.5rem}#nav.scrolled{padding:0.875rem 1.5rem}#back-to-top{bottom:1.5rem;right:1.5rem}}
+  </style>
+</head>
+<body>
+
+<nav id="nav">
+  <a href="index.html" style="display:inline-flex;align-items:center;padding:0.25rem 0.5rem;border-radius:2px;background:rgba(28,25,21,0.3);backdrop-filter:blur(10px);">
+    <img src="brand_assets/brand%20logo%20updated.png" alt="Eco Eyes Village" style="height:36px;display:block;"
+         onerror="this.src='brand_assets/brand%20logo%20old.png';this.onerror=null">
+  </a>
+  <div class="hidden lg:flex items-center gap-7">
+    <a href="resort.html"  class="nav-link" data-en="Stay" data-th="ที่พัก" data-zh="住宿">Stay</a>
+    <a href="cafe.html"    class="nav-link" data-en="Café" data-th="คาเฟ่" data-zh="咖啡厅">Café</a>
+    <a href="life.html"    class="nav-link" data-en="Experiences" data-th="ประสบการณ์" data-zh="体验">Experiences</a>
+    <a href="csr.html"     class="nav-link active" data-en="Conservation" data-th="อนุรักษ์" data-zh="自然保护">Conservation</a>
+    <a href="explore.html" class="nav-link" data-en="Explore" data-th="สำรวจ" data-zh="探索">Explore</a>
+    <a href="contact.html" class="nav-link" data-en="Contact" data-th="ติดต่อ" data-zh="联系">Contact</a>
+  </div>
+  <div class="hidden lg:flex items-center gap-4">
+    <div class="flex items-center gap-1">
+      <button class="lang-btn active" onclick="setLang('en')" data-lang="en">EN</button>
+      <span class="lang-divider">|</span>
+      <button class="lang-btn" onclick="setLang('th')" data-lang="th">TH</button>
+      <span class="lang-divider">|</span>
+      <button class="lang-btn" onclick="setLang('zh')" data-lang="zh">ZH</button>
+    </div>
+    <a href="contact.html" class="btn-solid-gold" style="padding:0.6rem 1.5rem;font-size:0.6rem;" data-en="Enquire Now" data-th="สอบถามเลย" data-zh="立即咨询">Enquire Now</a>
+  </div>
+  <button id="hamburger" onclick="openMenu()" class="lg:hidden flex flex-col gap-1.5 p-1" aria-label="Menu">
+    <span class="block w-6 h-px bg-white/80"></span>
+    <span class="block w-4 h-px bg-white/80"></span>
+    <span class="block w-6 h-px bg-white/80"></span>
+  </button>
+</nav>
+
+<button id="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C4A36A" stroke-width="1.5" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+</button>
+
+<div id="mobile-nav">
+  <button onclick="closeMenu()" class="absolute top-6 right-6 text-white/60 hover:text-white">
+    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+  </button>
+  <a href="index.html"   onclick="closeMenu()" class="font-display text-white text-4xl font-light italic hover:text-[#C4A36A] transition-colors" data-en="Home" data-th="หน้าหลัก" data-zh="首页">Home</a>
+  <a href="resort.html"  onclick="closeMenu()" class="font-display text-white text-4xl font-light italic hover:text-[#C4A36A] transition-colors" data-en="Stay" data-th="ที่พัก" data-zh="住宿">Stay</a>
+  <a href="cafe.html"    onclick="closeMenu()" class="font-display text-white text-4xl font-light italic hover:text-[#C4A36A] transition-colors" data-en="Café" data-th="คาเฟ่" data-zh="咖啡厅">Café</a>
+  <a href="life.html"    onclick="closeMenu()" class="font-display text-white text-4xl font-light italic hover:text-[#C4A36A] transition-colors" data-en="Experiences" data-th="ประสบการณ์" data-zh="体验">Experiences</a>
+  <a href="csr.html"     onclick="closeMenu()" class="font-display text-[#C4A36A] text-4xl font-light italic" data-en="Conservation" data-th="อนุรักษ์" data-zh="自然保护">Conservation</a>
+  <a href="explore.html" onclick="closeMenu()" class="font-display text-white text-4xl font-light italic hover:text-[#C4A36A] transition-colors" data-en="Explore" data-th="สำรวจ" data-zh="探索">Explore</a>
+  <a href="contact.html" onclick="closeMenu()" class="font-display text-white text-4xl font-light italic hover:text-[#C4A36A] transition-colors" data-en="Contact" data-th="ติดต่อ" data-zh="联系">Contact</a>
+</div>
+
+
+<!-- HERO -->
+<section class="relative h-screen overflow-hidden">
+  <img src="brand_assets/eco%20eyes%20website%20photos%20/CSR%20photos/Working%20with%20organisations%201.jpg"
+       alt="Conservation at Eco Eyes Village" class="absolute inset-0 w-full h-full object-cover" style="object-position:center 40%">
+  <div class="absolute inset-0 bg-gradient-to-b from-black/55 via-black/20 to-black/65"></div>
+  <div class="absolute inset-0" style="background:radial-gradient(ellipse at center, transparent 45%, rgba(0,0,0,0.3) 100%)"></div>
+  <div class="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
+    <p class="font-sans text-white/50 text-[0.58rem] tracking-widest uppercase mb-7 reveal" style="transition-delay:0.3s"
+       data-en="Reforestation · Education · Community" data-th="การปลูกป่า · การศึกษา · ชุมชน" data-zh="植树造林 · 教育 · 社区">Reforestation · Education · Community</p>
+    <h1 class="font-display text-white font-light leading-none reveal" style="font-size:clamp(3rem,7.5vw,7rem);transition-delay:0.5s">
+      <span data-en="Conservation" data-th="การอนุรักษ์" data-zh="自然保护">Conservation</span><br><em data-en="&amp; CSR" data-th="และ CSR" data-zh="与企业责任">&amp; CSR</em>
+    </h1>
+    <span class="sep sep-center reveal" style="transition-delay:0.75s;background:#C4A36A;"></span>
+    <p class="font-sans text-white/55 text-[0.65rem] tracking-widest uppercase reveal" style="transition-delay:0.9s"
+       data-en="Raising Awareness, One Forest at a Time" data-th="สร้างความตระหนัก ทีละหนึ่งป่า" data-zh="一片森林一片心，唤起环保意识">Raising Awareness, One Forest at a Time</p>
+  </div>
+</section>
+
+
+<!-- MISSION STATEMENT — unified, fully translatable -->
+<section class="py-32 bg-cream">
+  <div class="max-w-7xl mx-auto px-6 md:px-12 grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-24 items-center">
+    <div class="relative reveal">
+      <div class="aspect-[3/4] overflow-hidden">
+        <img src="brand_assets/eco%20eyes%20website%20photos%20/CSR%20photos/eco%20classroom%2C%20.jpg"
+             alt="Eco Eyes conservation" loading="lazy" class="w-full h-full object-cover transition-transform duration-700 hover:scale-[1.03]">
+      </div>
+      <div class="absolute -bottom-5 -right-5 w-2/3 h-2/3 border border-[#2B3A20]/15 -z-10 pointer-events-none"></div>
+    </div>
+    <div class="reveal" style="transition-delay:0.2s">
+      <p class="font-sans text-gold text-[0.62rem] tracking-widest uppercase mb-5"
+         data-en="Our Mission" data-th="พันธกิจของเรา" data-zh="我们的使命">Our Mission</p>
+      <h2 class="font-display text-dark font-light leading-[1.05] mb-2" style="font-size:clamp(2.4rem,4vw,3.8rem)">
+        <span data-en="A Role Model for" data-th="ต้นแบบสำหรับ" data-zh="可持续发展">A Role Model for</span><br><em data-en="Sustainable Development" data-th="การพัฒนาอย่างยั่งยืน" data-zh="的典范">Sustainable Development</em>
+      </h2>
+      <span class="sep"></span>
+      <p class="font-sans text-dark/65 text-[0.9rem] leading-[1.85] mb-5"
+         data-en="Eco Eyes Village began as a single vision: to transform barren farmland into a living forest and prove that sustainable development is not only possible, but essential."
+         data-th="อีโค่ อายส์ วิลเลจ เริ่มต้นจากวิสัยทัศน์เดียว: เปลี่ยนที่ดินเกษตรที่척척척เป็นป่าที่มีชีวิตและพิสูจน์ว่าการพัฒนาอย่างยั่งยืนไม่ใช่แค่เป็นไปได้ แต่มีความจำเป็น"
+         data-zh="生态眼睛村庄始于一个愿景：将贫瘠的农田变成生机勃勃的森林，证明可持续发展不仅可能，而且至关重要。">
+        Eco Eyes Village began as a single vision: to transform barren farmland into a living forest and prove that sustainable development is not only possible, but essential.
+      </p>
+      <p class="font-sans text-dark/65 text-[0.9rem] leading-[1.85] mb-5"
+         data-en="Today, that vision has become a thriving ecosystem — a sanctuary for over 300 species of wildlife and a classroom for thousands of visitors. We believe that protecting the environment and developing our communities are not competing goals, but two sides of the same mission."
+         data-th="วันนี้ วิสัยทัศน์นั้นได้กลายเป็นระบบนิเวศที่เจริญรุ่งเรือง — เป็นที่หลบภัยสำหรับสัตว์ป่ากว่า 300 ชนิด และเป็นห้องเรียนสำหรับผู้เยี่ยมชมหลายพันคน เราเชื่อว่าการปกป้องสิ่งแวดล้อมและการพัฒนาชุมชนเป็นสองด้านของภารกิจเดียวกัน"
+         data-zh="今天，这个愿景已成为一个繁荣的生态系统——300多种野生动物的庇护所，也是数千名访客的课堂。我们相信保护环境与发展社区不是相互竞争的目标，而是同一使命的两面。">
+        Today, that vision has become a thriving ecosystem — a sanctuary for over 300 species of wildlife and a classroom for thousands of visitors. We believe that protecting the environment and developing our communities are not competing goals, but two sides of the same mission.
+      </p>
+      <p class="font-sans text-dark/65 text-[0.9rem] leading-[1.85] mb-10"
+         data-en="Our CSR programme partners with schools, corporations, and community organisations to plant trees, build environmental awareness, and share the knowledge that sustainable living is within everyone's reach."
+         data-th="โปรแกรม CSR ของเราร่วมมือกับโรงเรียน บริษัท และองค์กรชุมชนเพื่อปลูกต้นไม้ สร้างความตระหนักด้านสิ่งแวดล้อม และแบ่งปันความรู้ว่าการดำรงชีวิตอย่างยั่งยืนเป็นสิ่งที่ทุกคนทำได้"
+         data-zh="我们的企业社会责任计划与学校、企业和社区组织合作，种植树木，培养环保意识，分享可持续生活触手可及的知识。">
+        Our CSR programme partners with schools, corporations, and community organisations to plant trees, build environmental awareness, and share the knowledge that sustainable living is within everyone's reach.
+      </p>
+      <a href="contact.html" class="btn-outline-gold"
+         data-en="Join Our Mission" data-th="ร่วมภารกิจของเรา" data-zh="加入我们的使命">Join Our Mission</a>
+    </div>
+  </div>
+</section>
+
+
+<!-- CSR PILLARS -->
+<section class="py-32 bg-cream-mid">
+  <div class="max-w-7xl mx-auto px-6 md:px-12">
+    <div class="text-center mb-16 reveal">
+      <p class="font-sans text-gold text-[0.62rem] tracking-widest uppercase mb-5"
+         data-en="What We Do" data-th="สิ่งที่เราทำ" data-zh="我们的工作">What We Do</p>
+      <h2 class="font-display text-dark font-light" style="font-size:clamp(2.4rem,4vw,3.8rem)">
+        <span data-en="Our CSR " data-th="เสาหลัก " data-zh="我们的企业">Our CSR </span><em data-en="Pillars" data-th="CSR ของเรา" data-zh="责任支柱">Pillars</em>
+      </h2>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+      <div class="pillar-card reveal">
+        <div class="w-12 h-12 mb-5 flex items-center justify-center" style="background:rgba(43,58,32,0.08);border-radius:2px">
+          <svg width="22" height="22" fill="none" stroke="#2B3A20" stroke-width="1.4" viewBox="0 0 24 24"><path d="M12 22V12M12 12C12 6 7 3 3 4M12 12C12 6 17 3 21 4"/></svg>
+        </div>
+        <p class="font-sans text-gold text-[0.58rem] tracking-widest uppercase mb-2"
+           data-en="Reforestation" data-th="การปลูกป่า" data-zh="植树造林">Reforestation</p>
+        <h3 class="font-display text-dark text-2xl font-light mb-3"
+            data-en="Plant a Tree" data-th="ปลูกต้นไม้" data-zh="种一棵树">Plant a Tree</h3>
+        <p class="font-sans text-dark/55 text-[0.85rem] leading-[1.8]"
+           data-en="Since 2015, Eco Eyes Village has planted over 10,000 trees on its property and in surrounding communities. We offer tree-planting experiences for corporate groups, schools, and families who want to make a lasting contribution."
+           data-th="ตั้งแต่ปี 2558 อีโค่ อายส์ วิลเลจได้ปลูกต้นไม้กว่า 10,000 ต้นในพื้นที่และชุมชนโดยรอบ เราเสนอประสบการณ์การปลูกต้นไม้สำหรับกลุ่มองค์กร โรงเรียน และครอบครัวที่ต้องการมีส่วนร่วมอย่างยั่งยืน"
+           data-zh="自2015年以来，生态眼睛村庄已在园区内及周边社区种植了10,000多棵树木。我们为企业团体、学校和家庭提供植树体验，让他们留下持久的贡献。">
+          Since 2015, Eco Eyes Village has planted over 10,000 trees on its property and in surrounding communities. We offer tree-planting experiences for corporate groups, schools, and families who want to make a lasting contribution.
+        </p>
+      </div>
+
+      <div class="pillar-card reveal" style="transition-delay:0.12s">
+        <div class="w-12 h-12 mb-5 flex items-center justify-center" style="background:rgba(43,58,32,0.08);border-radius:2px">
+          <svg width="22" height="22" fill="none" stroke="#2B3A20" stroke-width="1.4" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <p class="font-sans text-gold text-[0.58rem] tracking-widest uppercase mb-2"
+           data-en="Education" data-th="การศึกษา" data-zh="教育">Education</p>
+        <h3 class="font-display text-dark text-2xl font-light mb-3"
+            data-en="Nature Classroom" data-th="ห้องเรียนธรรมชาติ" data-zh="自然课堂">Nature Classroom</h3>
+        <p class="font-sans text-dark/55 text-[0.85rem] leading-[1.8]"
+           data-en="Our education programme has welcomed over 5,000 students from schools across Thailand. We teach environmental science, sustainable agriculture, and conservation through hands-on, immersive learning in the forest."
+           data-th="โปรแกรมการศึกษาของเราต้อนรับนักเรียนกว่า 5,000 คนจากโรงเรียนทั่วประเทศไทย เราสอนวิทยาศาสตร์สิ่งแวดล้อม เกษตรยั่งยืน และการอนุรักษ์ผ่านการเรียนรู้เชิงปฏิบัติในป่า"
+           data-zh="我们的教育项目已接待来自全泰国学校的5,000多名学生。我们通过森林中的实践沉浸式学习，教授环境科学、可持续农业和自然保护。">
+          Our education programme has welcomed over 5,000 students from schools across Thailand. We teach environmental science, sustainable agriculture, and conservation through hands-on, immersive learning in the forest.
+        </p>
+      </div>
+
+      <div class="pillar-card reveal" style="transition-delay:0.24s">
+        <div class="w-12 h-12 mb-5 flex items-center justify-center" style="background:rgba(43,58,32,0.08);border-radius:2px">
+          <svg width="22" height="22" fill="none" stroke="#2B3A20" stroke-width="1.4" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </div>
+        <p class="font-sans text-gold text-[0.58rem] tracking-widest uppercase mb-2"
+           data-en="Community" data-th="ชุมชน" data-zh="社区">Community</p>
+        <h3 class="font-display text-dark text-2xl font-light mb-3"
+            data-en="Local Partnerships" data-th="ความร่วมมือในท้องถิ่น" data-zh="本地合作">Local Partnerships</h3>
+        <p class="font-sans text-dark/55 text-[0.85rem] leading-[1.8]"
+           data-en="We collaborate with local farmers, suppliers, and community organisations to create a sustainable economy around conservation. When the forest thrives, the community thrives — that is the Eco Eyes model."
+           data-th="เราร่วมมือกับเกษตรกรในท้องถิ่น ผู้ส่งมอบ และองค์กรชุมชนเพื่อสร้างเศรษฐกิจที่ยั่งยืนรอบการอนุรักษ์ เมื่อป่าเจริญ ชุมชนก็เจริญ — นั่นคือโมเดลอีโค่ อายส์"
+           data-zh="我们与当地农民、供应商和社区组织合作，围绕自然保护创建可持续经济。森林繁荣，社区就繁荣——这就是生态眼睛模式。">
+          We collaborate with local farmers, suppliers, and community organisations to create a sustainable economy around conservation. When the forest thrives, the community thrives — that is the Eco Eyes model.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- CSR GALLERY -->
+<section class="py-24 bg-cream">
+  <div class="max-w-7xl mx-auto px-6 md:px-12">
+    <div class="text-center mb-12 reveal">
+      <p class="font-sans text-gold text-[0.62rem] tracking-widest uppercase mb-4"
+         data-en="In Action" data-th="ในการปฏิบัติ" data-zh="行动中">In Action</p>
+      <h2 class="font-display text-dark font-light" style="font-size:clamp(2rem,3.5vw,3rem)">
+        <span data-en="Conservation at " data-th="การอนุรักษ์" data-zh="保护工作">Conservation at </span><em data-en="Work" data-th="ในการปฏิบัติ" data-zh="实践">Work</em>
+      </h2>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="csr-gal-grid">
+      <div class="csr-gal-cell overflow-hidden aspect-square reveal"><img loading="lazy" alt="Conservation" class="w-full h-full object-cover" style="transition:opacity 0.5s ease"></div>
+      <div class="csr-gal-cell overflow-hidden aspect-square reveal" style="transition-delay:0.08s"><img loading="lazy" alt="" class="w-full h-full object-cover" style="transition:opacity 0.5s ease"></div>
+      <div class="csr-gal-cell overflow-hidden aspect-square reveal" style="transition-delay:0.16s"><img loading="lazy" alt="" class="w-full h-full object-cover" style="transition:opacity 0.5s ease"></div>
+      <div class="csr-gal-cell overflow-hidden aspect-square reveal" style="transition-delay:0.24s"><img loading="lazy" alt="" class="w-full h-full object-cover" style="transition:opacity 0.5s ease"></div>
+      <div class="csr-gal-cell overflow-hidden aspect-square reveal" style="transition-delay:0.1s"><img loading="lazy" alt="" class="w-full h-full object-cover" style="transition:opacity 0.5s ease"></div>
+      <div class="csr-gal-cell overflow-hidden aspect-square reveal" style="transition-delay:0.18s"><img loading="lazy" alt="" class="w-full h-full object-cover" style="transition:opacity 0.5s ease"></div>
+      <div class="csr-gal-cell overflow-hidden aspect-square reveal" style="transition-delay:0.26s"><img loading="lazy" alt="" class="w-full h-full object-cover" style="transition:opacity 0.5s ease"></div>
+      <div class="csr-gal-cell overflow-hidden aspect-square reveal" style="transition-delay:0.34s"><img loading="lazy" alt="" class="w-full h-full object-cover" style="transition:opacity 0.5s ease"></div>
+    </div>
+  </div>
+</section>
+
+
+<!-- CTA -->
+<section class="py-24 bg-dark text-center">
+  <div class="max-w-xl mx-auto px-6 reveal">
+    <p class="font-sans text-gold text-[0.62rem] tracking-widest uppercase mb-5"
+       data-en="Partner With Us" data-th="เป็นพันธมิตรกับเรา" data-zh="与我们合作">Partner With Us</p>
+    <h2 class="font-display text-white font-light mb-4" style="font-size:clamp(2rem,3.5vw,3rem)">
+      <span data-en="Bring Your Team" data-th="พาทีมของคุณ" data-zh="带您的团队">Bring Your Team</span><br><em data-en="to the Forest" data-th="สู่ป่า" data-zh="走进森林">to the Forest</em>
+    </h2>
+    <span class="sep sep-center mb-6" style="background:#C4A36A"></span>
+    <p class="font-sans text-white/50 text-[0.9rem] leading-[1.8] mb-8"
+       data-en="We offer CSR packages for corporations, schools, and community groups — combining tree planting, environmental education, and a forest retreat experience that your team will never forget."
+       data-th="เราเสนอแพ็คเกจ CSR สำหรับบริษัท โรงเรียน และกลุ่มชุมชน — ผสมผสานการปลูกต้นไม้ การศึกษาด้านสิ่งแวดล้อม และประสบการณ์ท่องเที่ยวป่า ที่ทีมของคุณจะไม่มีวันลืม"
+       data-zh="我们为企业、学校和社区团体提供企业社会责任套餐——将植树、环境教育和森林度假体验相结合，让您的团队永生难忘。">
+      We offer CSR packages for corporations, schools, and community groups — combining tree planting, environmental education, and a forest retreat experience that your team will never forget.
+    </p>
+    <a href="contact.html" class="btn-outline-cream"
+       data-en="Get in Touch" data-th="ติดต่อเรา" data-zh="联系我们">Get in Touch</a>
+  </div>
+</section>
+
+
+<!-- FOOTER -->
+<footer class="bg-dark py-16 px-6" style="border-top:1px solid rgba(255,255,255,0.06)">
+  <div class="max-w-7xl mx-auto">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-14">
+      <div class="md:col-span-2">
+        <a href="index.html" style="display:inline-flex;align-items:center;padding:0.25rem 0.5rem;background:rgba(250,247,239,0.05);border-radius:2px;margin-bottom:1.25rem;">
+          <img src="brand_assets/brand%20logo%20updated.png" alt="Eco Eyes Village" style="height:34px;display:block;"
+               onerror="this.src='brand_assets/brand%20logo%20old.png';this.onerror=null">
+        </a>
+        <p class="font-sans text-white/35 text-[0.8rem] leading-[1.8]" style="max-width:26rem"
+           data-en="A private nature conservatory, luxury glamping resort, and learning centre in Nakhon Nayok, Thailand."
+           data-th="อุทยานธรรมชาติส่วนตัว สถานที่แค้มปิ้งหรูหรา และศูนย์การเรียนรู้ในนครนายก ประเทศไทย"
+           data-zh="那空那育，泰国的私人自然保护区、豪华露营度假村和学习中心。">A private nature conservatory, luxury glamping resort, and learning centre in Nakhon Nayok, Thailand.</p>
+      </div>
+      <div>
+        <p class="font-sans text-white/30 text-[0.58rem] tracking-widest uppercase mb-5"
+           data-en="Explore" data-th="สำรวจ" data-zh="探索">Explore</p>
+        <nav class="flex flex-col gap-3">
+          <a href="resort.html"  class="font-sans text-white/45 text-[0.78rem] hover:text-white/75 transition-colors" data-en="Resort Stay" data-th="ที่พักรีสอร์ท" data-zh="度假村住宿">Resort Stay</a>
+          <a href="cafe.html"    class="font-sans text-white/45 text-[0.78rem] hover:text-white/75 transition-colors" data-en="Eco Café" data-th="อีโค่ คาเฟ่" data-zh="生态咖啡厅">Eco Café</a>
+          <a href="life.html"    class="font-sans text-white/45 text-[0.78rem] hover:text-white/75 transition-colors" data-en="Experiences" data-th="ประสบการณ์" data-zh="体验">Experiences</a>
+          <a href="csr.html"     class="font-sans text-white/65 text-[0.78rem]" data-en="Conservation" data-th="การอนุรักษ์" data-zh="自然保护">Conservation</a>
+          <a href="explore.html" class="font-sans text-white/45 text-[0.78rem] hover:text-white/75 transition-colors" data-en="Explore Nakhon Nayok" data-th="สำรวจนครนายก" data-zh="探索那空那育">Explore Nakhon Nayok</a>
+        </nav>
+      </div>
+      <div>
+        <p class="font-sans text-white/30 text-[0.58rem] tracking-widest uppercase mb-5"
+           data-en="Contact" data-th="ติดต่อ" data-zh="联系">Contact</p>
+        <div class="flex flex-col gap-3">
+          <a href="tel:+66926100560" class="font-sans text-white/45 text-[0.78rem] hover:text-white/75 transition-colors">+66 92 610 0560</a>
+          <a href="contact.html" class="font-sans text-white/45 text-[0.78rem] hover:text-white/75 transition-colors"
+             data-en="Get Directions" data-th="รับเส้นทาง" data-zh="获取路线">Get Directions</a>
+        </div>
+        <p class="font-sans text-white/25 text-[0.72rem] leading-[1.7] mt-5">188 Moo 9, Sarika<br>Nakhon Nayok 26000</p>
+      </div>
+    </div>
+    <div class="pt-8 flex flex-col md:flex-row items-center justify-between gap-3" style="border-top:1px solid rgba(255,255,255,0.06)">
+      <p class="font-sans text-white/20 text-[0.6rem] tracking-wide"
+         data-en="© 2025 Eco Eyes Village. All rights reserved." data-th="© 2025 อีโค่ อายส์ วิลเลจ สงวนลิขสิทธิ์" data-zh="© 2025 生态眼睛村庄。版权所有。">© 2025 Eco Eyes Village. All rights reserved.</p>
+      <p class="font-sans text-white/20 text-[0.6rem] tracking-wide"
+         data-en="Nakhon Nayok, Thailand" data-th="นครนายก ประเทศไทย" data-zh="那空那育，泰国">Nakhon Nayok, Thailand</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+  /* --- CSR gallery auto-scroll --- */
+  const CSR_PHOTOS = [
+    'brand_assets/eco%20eyes%20website%20photos%20/CSR%20photos/136052758_2371572452989603_4038112411876138632_n.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/CSR%20photos/474562180_951045970454510_49028934588022310_n.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/CSR%20photos/480557056_969213945304379_7292100520190570590_n.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/CSR%20photos/480794661_968799582012482_5716479667762885152_n.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/CSR%20photos/CSr%20activities.jpeg',
+    'brand_assets/eco%20eyes%20website%20photos%20/CSR%20photos/Csr%20pic%201%20(education.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/CSR%20photos/Educaiton%205.jpeg',
+    'brand_assets/eco%20eyes%20website%20photos%20/CSR%20photos/Education%204.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/CSR%20photos/Working%20with%20organisations%201.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/CSR%20photos/csr%20education%202.jpeg',
+    'brand_assets/eco%20eyes%20website%20photos%20/CSR%20photos/eco%20classroom%20activities%20(drawing).jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/CSR%20photos/eco%20classroom%2C%20.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/CSR%20photos/education%203.jpeg',
+    'brand_assets/eco%20eyes%20website%20photos%20/CSR%20photos/education%206.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/CSR%20photos/education%207.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/CSR%20photos/education%208.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/CSR%20photos/education%209.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/CSR%20photos/working%20with%20organisations%202.jpg',
+    'brand_assets/eco%20eyes%20website%20photos%20/CSR%20photos/working%20with%20students%201.jpg',
+  ];
+  function csrShuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
+  const csrCells = Array.from(document.querySelectorAll('.csr-gal-cell img'));
+  const csrPool = csrShuffle(CSR_PHOTOS);
+  csrCells.forEach((img, i) => { img.src = csrPool[i % csrPool.length]; });
+  let csrIdx = csrCells.length;
+  setInterval(() => {
+    csrCells.forEach(img => { img.style.opacity = '0'; });
+    setTimeout(() => {
+      csrCells.forEach(img => { img.src = csrPool[csrIdx % csrPool.length]; csrIdx++; });
+      csrCells.forEach(img => { img.style.opacity = '1'; });
+    }, 500);
+  }, 4000);
+
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 60);
+    document.getElementById('back-to-top').classList.toggle('visible', window.scrollY > window.innerHeight * 0.8);
+  }, { passive: true });
+  if (window.scrollY > 60) nav.classList.add('scrolled');
+  const mobileNav = document.getElementById('mobile-nav');
+  function openMenu()  { mobileNav.classList.add('open');    document.body.style.overflow = 'hidden'; }
+  function closeMenu() { mobileNav.classList.remove('open'); document.body.style.overflow = ''; }
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); } });
+  }, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+  setTimeout(() => document.querySelectorAll('section:first-of-type .reveal').forEach(el => el.classList.add('visible')), 150);
+  function setLang(lang) {
+    document.querySelectorAll('[data-en]').forEach(el => {
+      const t = el.dataset[lang];
+      if (t !== undefined) el.textContent = t;
+    });
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.getAttribute('data-lang') === lang));
+    document.documentElement.lang = lang === 'zh' ? 'zh-CN' : lang;
+    localStorage.setItem('eev-lang', lang);
+  }
+  const savedLang = localStorage.getItem('eev-lang') || 'en';
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.getAttribute('data-lang') === savedLang));
+  if (savedLang !== 'en') setLang(savedLang);
+</script>
+</body>
+</html>
