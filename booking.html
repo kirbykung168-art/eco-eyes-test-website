@@ -532,21 +532,36 @@
   let someBookedSet   = new Set();
   let fullyBlockedSet = new Set();
 
+  // Stamps fp-some-booked / fp-fully-booked on every currently-rendered day cell.
+  // Called after data loads AND on every calendar open/month-change so dots always show.
+  function applyBlockedClasses() {
+    document.querySelectorAll('.flatpickr-day').forEach(dayElem => {
+      const d = dayElem.dateObj;
+      if (!d) return;
+      const iso = d.getFullYear() + '-' +
+        String(d.getMonth() + 1).padStart(2, '0') + '-' +
+        String(d.getDate()).padStart(2, '0');
+      dayElem.classList.remove('fp-some-booked', 'fp-fully-booked');
+      if (fullyBlockedSet.has(iso))      dayElem.classList.add('fp-fully-booked');
+      else if (someBookedSet.has(iso))   dayElem.classList.add('fp-some-booked');
+    });
+  }
+
   async function loadBlockedDates() {
     try {
       const data = await fetch('/api/blocked-dates').then(r => r.json());
       someBookedSet   = new Set(data.someBooked   || []);
       fullyBlockedSet = new Set(data.fullyBlocked  || []);
 
-      // Only disable future fully-booked dates (past dates don't matter with minDate:today)
       const today = new Date().toISOString().split('T')[0];
       const futureFull = [...fullyBlockedSet].filter(d => d >= today);
 
-      // Update existing pickers without destroying them — preserves any already-selected dates
+      // Update disable array on existing pickers without destroying them
       if (fpCheckin)  fpCheckin.set('disable', futureFull);
       if (fpCheckout) fpCheckout.set('disable', futureFull);
-      // onDayCreate closes over someBookedSet/fullyBlockedSet by reference;
-      // next time user opens the calendar the dots will render automatically.
+
+      // Stamp classes on any day cells already visible in the DOM right now
+      applyBlockedClasses();
     } catch { /* non-fatal */ }
   }
 
@@ -700,23 +715,15 @@
 
   // ── Flatpickr init ────────────────────────────
   function initFlatpickr(fullyBlockedDates) {
-    const onDayCreate = (dObj, dStr, fp, dayElem) => {
-      const d = dayElem.dateObj;
-      if (!d) return;
-      const iso = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
-      if (fullyBlockedSet.has(iso)) {
-        dayElem.classList.add('fp-fully-booked');
-      } else if (someBookedSet.has(iso)) {
-        dayElem.classList.add('fp-some-booked');
-      }
-    };
-
     const shared = {
       dateFormat: 'd M Y', minDate: 'today',
       disable: fullyBlockedDates || [],
       disableMobile: true,
       locale: { firstDayOfWeek: 1 },
-      onDayCreate,
+      // Apply dot classes whenever the calendar renders or navigates
+      onOpen:        () => setTimeout(applyBlockedClasses, 0),
+      onMonthChange: () => setTimeout(applyBlockedClasses, 0),
+      onYearChange:  () => setTimeout(applyBlockedClasses, 0),
     };
     fpCheckin = flatpickr('#checkin', {
       ...shared,
