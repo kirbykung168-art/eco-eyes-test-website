@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Booking Confirmed — Eco Eyes Village</title>
+  <meta name="description" content="Your booking request at Eco Eyes Village has been received." />
+
+  <link rel="icon" type="image/png" href="https://eco-eyes-bucket.s3.ap-southeast-1.amazonaws.com/icon-circle.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500;1,600&family=Jost:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            cream:       '#FAF7EF',
+            'cream-mid': '#F0E9D8',
+            gold:        '#967138',
+            'gold-lt':   '#C4A36A',
+            'gold-dk':   '#6B4F22',
+            dark:        '#1C1915',
+            'dark-mid':  '#2A251E',
+            forest:      '#2B3A20',
+          },
+          fontFamily: {
+            display: ['"Cormorant Garamond"', 'serif'],
+            sans:    ['Jost', 'sans-serif'],
+          },
+        }
+      }
+    }
+  </script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: #FAF7EF;
+      color: #1C1915;
+      font-family: 'Jost', sans-serif;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+    }
+    body::after {
+      content: '';
+      position: fixed; inset: 0;
+      z-index: 9999; pointer-events: none; opacity: 0.028;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      background-size: 200px;
+    }
+
+    #nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 500;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.5rem 3rem;
+      background: rgba(28,25,21,0.96);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    }
+    .nav-link {
+      font-family: 'Jost', sans-serif; font-size: 0.62rem;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      color: rgba(255,255,255,0.7); text-decoration: none;
+      transition: color 0.3s ease; position: relative;
+    }
+    .nav-link:hover { color: white; }
+    .lang-btn {
+      font-family: 'Jost', sans-serif; font-size: 0.58rem;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: rgba(255,255,255,0.4); background: none; border: none;
+      cursor: pointer; padding: 0.15rem 0.2rem; transition: color 0.25s ease;
+    }
+    .lang-btn:hover, .lang-btn.active { color: #C4A36A; }
+    .lang-divider { color: rgba(255,255,255,0.15); font-size: 0.6rem; }
+    .btn-nav-book {
+      display: inline-block; font-family: 'Jost', sans-serif;
+      font-size: 0.62rem; letter-spacing: 0.25em; text-transform: uppercase;
+      border: 1px solid rgba(255,255,255,0.35); color: rgba(255,255,255,0.8);
+      padding: 0.6rem 1.5rem; text-decoration: none;
+      transition: background 0.35s ease, border-color 0.35s ease, color 0.35s ease;
+    }
+    .btn-nav-book:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.6); color: white; }
+
+    .sep { display: block; width: 52px; height: 1px; background: #967138; margin: 1.6rem 0; }
+    .sep-center { margin: 1.6rem auto; }
+
+    .reveal {
+      opacity: 0; transform: translateY(24px);
+      transition: opacity 0.9s cubic-bezier(0.16,1,0.3,1), transform 0.9s cubic-bezier(0.16,1,0.3,1);
+    }
+    .reveal.visible { opacity: 1; transform: none; }
+
+    #mobile-nav {
+      position: fixed; inset: 0; z-index: 600;
+      background: rgba(20,18,14,0.98); backdrop-filter: blur(20px);
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2.5rem;
+      transform: translateX(100%); transition: transform 0.5s cubic-bezier(0.16,1,0.3,1);
+    }
+    #mobile-nav.open { transform: translateX(0); }
+
+    /* Animated checkmark */
+    .check-circle {
+      width: 72px; height: 72px; border-radius: 50%;
+      background: rgba(43,58,32,0.12); border: 1.5px solid rgba(43,58,32,0.3);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 2rem;
+      animation: pop-in 0.6s cubic-bezier(0.16,1,0.3,1) 0.2s both;
+    }
+    @keyframes pop-in {
+      from { transform: scale(0.5); opacity: 0; }
+      to   { transform: scale(1);   opacity: 1; }
+    }
+
+    /* Reference badge */
+    .ref-badge {
+      display: inline-block;
+      font-family: 'Jost', sans-serif; font-size: 1.05rem;
+      letter-spacing: 0.25em; font-weight: 500;
+      color: #967138; background: rgba(150,113,56,0.08);
+      border: 1px solid rgba(150,113,56,0.25);
+      padding: 0.6rem 1.75rem; margin: 0.5rem 0 1.5rem;
+    }
+
+    /* Detail rows */
+    .detail-row {
+      display: flex; justify-content: space-between; align-items: baseline;
+      padding: 0.7rem 0; border-bottom: 1px solid rgba(150,113,56,0.1);
+    }
+    .detail-row:last-child { border-bottom: none; }
+    .detail-row.total {
+      padding-top: 1rem; border-top: 1px solid rgba(150,113,56,0.3);
+      border-bottom: none;
+    }
+
+    /* Next step cards */
+    .next-card {
+      background: white; border: 1px solid rgba(150,113,56,0.15);
+      padding: 1.5rem; display: flex; gap: 1rem; align-items: flex-start;
+    }
+
+    @media (max-width: 1024px) {
+      #nav { padding: 1.25rem 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════
+     NAVIGATION
+═══════════════════════════════════════════ -->
+<nav id="nav">
+  <a href="index.html"
+     style="display:inline-flex;align-items:center;padding:0.25rem 0.5rem;border-radius:2px;background:rgba(28,25,21,0.3);backdrop-filter:blur(10px);">
+    <img src="brand_assets/brand%20logo%20updated.png" alt="Eco Eyes Village" style="height:36px;display:block;"
+         onerror="this.src='brand_assets/brand%20logo%20old.png';this.onerror=null">
+  </a>
+  <div class="hidden lg:flex items-center gap-7">
+    <a href="resort.html"  class="nav-link" id="nl-stay">Stay</a>
+    <a href="cafe.html"    class="nav-link" id="nl-cafe">Café</a>
+    <a href="life.html"    class="nav-link" id="nl-life">Experiences</a>
+    <a href="csr.html"     class="nav-link" id="nl-csr">Conservation</a>
+    <a href="explore.html" class="nav-link" id="nl-explore">Explore</a>
+    <a href="contact.html" class="nav-link" id="nl-contact">Contact</a>
+  </div>
+  <div class="hidden lg:flex items-center gap-4">
+    <div class="flex items-center gap-1">
+      <button class="lang-btn active" onclick="setLang('en')" data-lang="en">EN</button>
+      <span class="lang-divider">|</span>
+      <button class="lang-btn" onclick="setLang('th')" data-lang="th">TH</button>
+      <span class="lang-divider">|</span>
+      <button class="lang-btn" onclick="setLang('zh')" data-lang="zh">ZH</button>
+    </div>
+    <a href="booking.html" class="btn-nav-book" id="nav-book">Book Now</a>
+  </div>
+  <button id="hamburger" onclick="openMenu()" class="lg:hidden flex flex-col gap-1.5 p-1" aria-label="Menu">
+    <span class="block w-6 h-px bg-white/80"></span>
+    <span class="block w-4 h-px bg-white/80"></span>
+    <span class="block w-6 h-px bg-white/80"></span>
+  </button>
+</nav>
+
+<!-- Mobile menu -->
+<div id="mobile-nav">
+  <button onclick="closeMenu()" class="absolute top-6 right-6 text-white/60 hover:text-white">
+    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+      <path d="M18 6L6 18M6 6l12 12"/>
+    </svg>
+  </button>
+  <a href="resort.html"  onclick="closeMenu()" class="font-display text-white text-4xl font-light italic hover:text-[#C4A36A] transition-colors">Stay</a>
+  <a href="cafe.html"    onclick="closeMenu()" class="font-display text-white text-4xl font-light italic hover:text-[#C4A36A] transition-colors">Café</a>
+  <a href="life.html"    onclick="closeMenu()" class="font-display text-white text-4xl font-light italic hover:text-[#C4A36A] transition-colors">Experiences</a>
+  <a href="csr.html"     onclick="closeMenu()" class="font-display text-white text-4xl font-light italic hover:text-[#C4A36A] transition-colors">Conservation</a>
+  <a href="explore.html" onclick="closeMenu()" class="font-display text-white text-4xl font-light italic hover:text-[#C4A36A] transition-colors">Explore</a>
+  <a href="contact.html" onclick="closeMenu()" class="font-display text-white text-4xl font-light italic hover:text-[#C4A36A] transition-colors">Contact</a>
+  <div class="flex items-center gap-3 mt-2">
+    <button class="lang-btn active text-sm" onclick="setLang('en');closeMenu()" data-lang="en">EN</button>
+    <span class="lang-divider">|</span>
+    <button class="lang-btn text-sm" onclick="setLang('th');closeMenu()" data-lang="th">TH</button>
+    <span class="lang-divider">|</span>
+    <button class="lang-btn text-sm" onclick="setLang('zh');closeMenu()" data-lang="zh">ZH</button>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════
+     CONFIRMATION CONTENT
+═══════════════════════════════════════════ -->
+<main style="padding-top:8rem;padding-bottom:6rem;">
+  <div class="max-w-2xl mx-auto px-6">
+
+    <!-- Success icon + heading -->
+    <div class="text-center reveal" style="transition-delay:0.05s">
+      <div class="check-circle">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#2B3A20" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </div>
+
+      <p class="font-sans text-[0.58rem] tracking-widest uppercase mb-3" style="color:#C4A36A" id="confirm-label">Booking Request Received</p>
+      <h1 class="font-display font-light" style="font-size:clamp(2.5rem,6vw,4rem);line-height:1.1">
+        <span id="confirm-h1a">Thank You,</span><br>
+        <em id="confirm-name" style="color:#967138">Guest</em>
+      </h1>
+      <span class="sep sep-center" style="background:#C4A36A;"></span>
+      <p class="font-display font-light italic" style="font-size:1.1rem;color:rgba(28,25,21,0.55);margin-bottom:1rem" id="confirm-sub">
+        Your request has been sent. We will confirm within 24 hours.
+      </p>
+
+      <p class="font-sans text-[0.58rem] tracking-widest uppercase" style="color:rgba(28,25,21,0.4)" id="confirm-ref-label">Your Booking Reference</p>
+      <div class="ref-badge" id="confirm-ref">EEV-??????</div>
+      <p class="font-sans" style="font-size:0.72rem;color:rgba(28,25,21,0.4)" id="confirm-email-note">A confirmation has been sent to your email address.</p>
+    </div>
+
+    <!-- Booking details card -->
+    <div class="reveal mt-10" style="transition-delay:0.15s;background:white;border:1px solid rgba(150,113,56,0.18);padding:2rem;">
+      <p class="font-sans text-[0.58rem] tracking-widests uppercase mb-4" style="color:#967138;letter-spacing:0.2em" id="details-title">Stay Details</p>
+
+      <div class="detail-row" id="det-room-row" style="display:none;">
+        <span class="font-sans" style="font-size:0.75rem;color:rgba(28,25,21,0.5)" id="det-room-label">Room</span>
+        <span class="font-sans font-medium" style="font-size:0.8rem" id="det-room-val">—</span>
+      </div>
+      <div class="detail-row">
+        <span class="font-sans" style="font-size:0.75rem;color:rgba(28,25,21,0.5)" id="det-checkin-label">Check-in</span>
+        <span class="font-sans font-medium" style="font-size:0.8rem" id="det-checkin-val">—</span>
+      </div>
+      <div class="detail-row">
+        <span class="font-sans" style="font-size:0.75rem;color:rgba(28,25,21,0.5)" id="det-checkout-label">Check-out</span>
+        <span class="font-sans font-medium" style="font-size:0.8rem" id="det-checkout-val">—</span>
+      </div>
+      <div class="detail-row">
+        <span class="font-sans" style="font-size:0.75rem;color:rgba(28,25,21,0.5)" id="det-nights-label">Duration</span>
+        <span class="font-sans font-medium" style="font-size:0.8rem" id="det-nights-val">—</span>
+      </div>
+      <div class="detail-row total">
+        <span class="font-sans font-medium" style="font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;color:#967138" id="det-total-label">Total</span>
+        <span class="font-display font-light" style="font-size:1.6rem;letter-spacing:-0.01em" id="det-total-val">—</span>
+      </div>
+    </div>
+
+    <!-- Next steps -->
+    <div class="reveal mt-6" style="transition-delay:0.25s">
+      <p class="font-sans text-[0.58rem] tracking-widest uppercase mb-4" style="color:rgba(28,25,21,0.4)" id="next-title">Next Steps</p>
+      <div style="display:flex;flex-direction:column;gap:0.75rem;">
+        <div class="next-card">
+          <span style="font-family:'Jost',sans-serif;font-size:0.6rem;letter-spacing:0.1em;background:#2B3A20;color:#FAF7EF;width:20px;height:20px;min-width:20px;display:flex;align-items:center;justify-content:center;">1</span>
+          <span class="font-sans" style="font-size:0.78rem;color:rgba(28,25,21,0.65);line-height:1.65" id="next-1">Check your inbox for a confirmation email from us.</span>
+        </div>
+        <div class="next-card">
+          <span style="font-family:'Jost',sans-serif;font-size:0.6rem;letter-spacing:0.1em;background:#2B3A20;color:#FAF7EF;width:20px;height:20px;min-width:20px;display:flex;align-items:center;justify-content:center;">2</span>
+          <span class="font-sans" style="font-size:0.78rem;color:rgba(28,25,21,0.65);line-height:1.65" id="next-2">Our team will contact you within 24 hours to confirm availability and finalise your stay.</span>
+        </div>
+        <div class="next-card">
+          <span style="font-family:'Jost',sans-serif;font-size:0.6rem;letter-spacing:0.1em;background:#2B3A20;color:#FAF7EF;width:20px;height:20px;min-width:20px;display:flex;align-items:center;justify-content:center;">3</span>
+          <span class="font-sans" style="font-size:0.78rem;color:rgba(28,25,21,0.65);line-height:1.65" id="next-3">Payment details will be shared once your booking is confirmed.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CTAs -->
+    <div class="reveal mt-10 flex flex-wrap gap-4 justify-center" style="transition-delay:0.35s">
+      <a href="index.html"
+         style="display:inline-block;font-family:'Jost',sans-serif;font-size:0.62rem;letter-spacing:0.25em;text-transform:uppercase;background:#967138;color:#FAF7EF;padding:0.9rem 2.25rem;text-decoration:none;transition:background 0.35s ease;"
+         onmouseover="this.style.background='#6B4F22'" onmouseout="this.style.background='#967138'"
+         id="cta-home">Return to Home</a>
+      <a href="life.html"
+         style="display:inline-block;font-family:'Jost',sans-serif;font-size:0.62rem;letter-spacing:0.25em;text-transform:uppercase;border:1px solid rgba(150,113,56,0.4);color:#967138;padding:0.9rem 2.25rem;text-decoration:none;transition:background 0.35s ease,color 0.35s ease;"
+         onmouseover="this.style.background='#967138';this.style.color='#FAF7EF'" onmouseout="this.style.background='';this.style.color='#967138'"
+         id="cta-exp">Explore Experiences</a>
+    </div>
+
+    <!-- Help -->
+    <p class="font-sans mt-8 text-center" style="font-size:0.7rem;color:rgba(28,25,21,0.35);line-height:1.9">
+      <span id="help-pre">Need help?</span>
+      <br>
+      <a href="tel:+66926100560" style="color:#967138">+66 92 610 0560</a>
+      &nbsp;·&nbsp;
+      <a href="mailto:ecoeyesvillagenaec@gmail.com" style="color:#967138">ecoeyesvillagenaec@gmail.com</a>
+    </p>
+
+  </div>
+</main>
+
+
+<!-- ═══════════════════════════════════════════
+     FOOTER
+═══════════════════════════════════════════ -->
+<footer class="bg-dark py-16 px-6" style="border-top:1px solid rgba(255,255,255,0.06)">
+  <div class="max-w-7xl mx-auto">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-14">
+      <div class="md:col-span-2">
+        <a href="index.html" style="display:inline-flex;align-items:center;padding:0.25rem 0.5rem;background:rgba(250,247,239,0.05);border-radius:2px;margin-bottom:1.25rem;">
+          <img src="brand_assets/brand%20logo%20updated.png" alt="Eco Eyes Village" style="height:34px;display:block;" onerror="this.src='brand_assets/brand%20logo%20old.png';this.onerror=null">
+        </a>
+        <p class="font-sans text-white/35 text-[0.8rem] leading-[1.8] mb-5" style="max-width:26rem">
+          A private nature conservatory, luxury glamping resort, and learning centre in the heart of Nakhon Nayok, Thailand.
+        </p>
+      </div>
+      <div>
+        <p class="font-sans text-white/30 text-[0.58rem] tracking-widest uppercase mb-5">Explore</p>
+        <nav class="flex flex-col gap-3">
+          <a href="resort.html"  class="font-sans text-white/45 text-[0.78rem] hover:text-white/75 transition-colors">Resort Stay</a>
+          <a href="cafe.html"    class="font-sans text-white/45 text-[0.78rem] hover:text-white/75 transition-colors">Eco Café</a>
+          <a href="life.html"    class="font-sans text-white/45 text-[0.78rem] hover:text-white/75 transition-colors">Experiences</a>
+          <a href="csr.html"     class="font-sans text-white/45 text-[0.78rem] hover:text-white/75 transition-colors">Conservation</a>
+          <a href="explore.html" class="font-sans text-white/45 text-[0.78rem] hover:text-white/75 transition-colors">Explore Nakhon Nayok</a>
+        </nav>
+      </div>
+      <div>
+        <p class="font-sans text-white/30 text-[0.58rem] tracking-widest uppercase mb-5">Information</p>
+        <nav class="flex flex-col gap-3 mb-6">
+          <a href="contact.html" class="font-sans text-white/45 text-[0.78rem] hover:text-white/75 transition-colors">Contact Us</a>
+          <a href="booking.html" class="font-sans text-white/45 text-[0.78rem] hover:text-white/75 transition-colors">Book Now</a>
+          <a href="tel:+66926100560" class="font-sans text-white/30 text-[0.78rem] hover:text-white/55 transition-colors">+66 92 610 0560</a>
+        </nav>
+        <p class="font-sans text-white/25 text-[0.72rem] leading-[1.7]">
+          188 Moo 9, Sarika<br>Nakhon Nayok 26000<br>Thailand
+        </p>
+      </div>
+    </div>
+    <div class="pt-8 flex flex-col md:flex-row items-center justify-between gap-3" style="border-top:1px solid rgba(255,255,255,0.06)">
+      <p class="font-sans text-white/20 text-[0.6rem] tracking-wide">© 2025 Eco Eyes Village. All rights reserved.</p>
+      <p class="font-sans text-white/20 text-[0.6rem] tracking-wide">Nakhon Nayok, Thailand</p>
+    </div>
+  </div>
+</footer>
+
+
+<!-- ═══════════════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════════════ -->
+<script>
+  // ── Mobile menu ──────────────────────────────
+  const mobileNav = document.getElementById('mobile-nav');
+  function openMenu()  { mobileNav.classList.add('open');    document.body.style.overflow = 'hidden'; }
+  function closeMenu() { mobileNav.classList.remove('open'); document.body.style.overflow = ''; }
+
+  // ── Scroll-reveal ────────────────────────────
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); } });
+  }, { threshold: 0.05 });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+  setTimeout(() => document.querySelectorAll('.reveal').forEach(el => el.classList.add('visible')), 200);
+
+  // ── Read query params ─────────────────────────
+  const params   = new URLSearchParams(window.location.search);
+  const ref      = params.get('ref')     || 'EEV-??????';
+  const checkIn  = params.get('checkIn') || '';
+  const checkOut = params.get('checkOut')|| '';
+  const nights   = parseInt(params.get('nights') || '0', 10);
+  const total    = parseInt(params.get('total')  || '0', 10);
+  const name     = params.get('name')    || 'Guest';
+  const room     = params.get('room')    || '';
+
+  function formatDateParam(dateStr) {
+    if (!dateStr) return '—';
+    const d = new Date(dateStr + 'T00:00:00');
+    return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
+  }
+
+  document.getElementById('confirm-ref').textContent  = ref;
+  document.getElementById('confirm-name').textContent = name;
+  document.getElementById('det-checkin-val').textContent  = formatDateParam(checkIn);
+  document.getElementById('det-checkout-val').textContent = formatDateParam(checkOut);
+  document.getElementById('det-nights-val').textContent   = nights + ' night' + (nights !== 1 ? 's' : '');
+  document.getElementById('det-total-val').textContent    = total.toLocaleString() + ' ฿';
+  if (room) {
+    document.getElementById('det-room-val').textContent = room;
+    document.getElementById('det-room-row').style.display = 'flex';
+  }
+
+  // ── Language ──────────────────────────────────
+  const T = {
+    'nl-stay':           { en:'Stay',              th:'ที่พัก',           zh:'住宿' },
+    'nl-cafe':           { en:'Café',              th:'คาเฟ่',            zh:'咖啡厅' },
+    'nl-life':           { en:'Experiences',       th:'ประสบการณ์',       zh:'体验活动' },
+    'nl-csr':            { en:'Conservation',      th:'อนุรักษ์',         zh:'生态保育' },
+    'nl-explore':        { en:'Explore',           th:'สำรวจ',            zh:'探索' },
+    'nl-contact':        { en:'Contact',           th:'ติดต่อ',           zh:'联系我们' },
+    'nav-book':          { en:'Book Now',          th:'จองที่พัก',        zh:'立即预订' },
+    'confirm-label':     { en:'Booking Request Received', th:'ได้รับคำขอจองแล้ว', zh:'预订申请已收到' },
+    'confirm-h1a':       { en:'Thank You,',        th:'ขอบคุณ,',          zh:'感谢您，' },
+    'confirm-sub':       { en:'Your request has been sent. We will confirm within 24 hours.', th:'ส่งคำขอของคุณแล้ว เราจะยืนยันภายใน 24 ชั่วโมง', zh:'您的申请已发送，我们将在24小时内确认。' },
+    'confirm-ref-label': { en:'Your Booking Reference', th:'หมายเลขการจองของคุณ', zh:'您的预订编号' },
+    'confirm-email-note':{ en:'A confirmation has been sent to your email address.', th:'ส่งการยืนยันไปยังอีเมลของคุณแล้ว', zh:'确认邮件已发送至您的邮箱。' },
+    'details-title':     { en:'Stay Details',      th:'รายละเอียดการเข้าพัก', zh:'住宿详情' },
+    'det-room-label':    { en:'Room',              th:'ห้องพัก',          zh:'房间' },
+    'det-checkin-label': { en:'Check-in',          th:'เช็คอิน',          zh:'入住' },
+    'det-checkout-label':{ en:'Check-out',         th:'เช็คเอาท์',        zh:'退房' },
+    'det-nights-label':  { en:'Duration',          th:'ระยะเวลา',         zh:'住宿时长' },
+    'det-total-label':   { en:'Total',             th:'รวม',             zh:'合计' },
+    'next-title':        { en:'Next Steps',        th:'ขั้นตอนต่อไป',     zh:'后续步骤' },
+    'next-1':            { en:'Check your inbox for a confirmation email from us.', th:'ตรวจสอบกล่องจดหมายสำหรับอีเมลยืนยันจากเรา', zh:'请查看您的收件箱，查收我们的确认邮件。' },
+    'next-2':            { en:'Our team will contact you within 24 hours to confirm availability and finalise your stay.', th:'ทีมงานจะติดต่อคุณภายใน 24 ชั่วโมงเพื่อยืนยันและสรุปการเข้าพัก', zh:'我们的团队将在24小时内与您联系，确认预订并安排后续事宜。' },
+    'next-3':            { en:'Payment details will be shared once your booking is confirmed.', th:'รายละเอียดการชำระเงินจะแจ้งให้ทราบเมื่อการจองได้รับการยืนยัน', zh:'预订确认后，我们将向您提供付款方式。' },
+    'cta-home':          { en:'Return to Home',    th:'กลับสู่หน้าหลัก',  zh:'返回首页' },
+    'cta-exp':           { en:'Explore Experiences', th:'ดูประสบการณ์',   zh:'探索体验' },
+    'help-pre':          { en:'Need help?',        th:'ต้องการความช่วยเหลือ?', zh:'需要帮助？' },
+  };
+
+  let currentLang = 'en';
+
+  function setLang(lang) {
+    currentLang = lang;
+    // Re-format the nights label in the correct language
+    document.getElementById('det-nights-val').textContent = nights + (lang==='th' ? ' คืน' : lang==='zh' ? ' 晚' : (' night' + (nights !== 1 ? 's' : '')));
+
+    Object.entries(T).forEach(([id, vals]) => {
+      const el = document.getElementById(id);
+      if (el && vals[lang] !== undefined) el.textContent = vals[lang];
+    });
+    // Re-set the guest name (setLang overwrites confirm-h1a but not confirm-name)
+    document.getElementById('confirm-name').textContent = name;
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
+    });
+    document.documentElement.lang = lang;
+    localStorage.setItem('eev-lang', lang);
+  }
+
+  const savedLang = localStorage.getItem('eev-lang') || 'en';
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-lang') === savedLang);
+  });
+  currentLang = savedLang;
+  if (savedLang !== 'en') setLang(savedLang);
+</script>
+
+</body>
+</html>

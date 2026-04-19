@@ -183,6 +183,33 @@
       transition: border-color 0.3s ease, background 0.3s ease, transform 0.4s cubic-bezier(0.16,1,0.3,1);
     }
     .platform-card:hover { border-color: rgba(150,113,56,0.6); background: rgba(150,113,56,0.06); transform: translateY(-4px); }
+    /* ── Direct booking hero card ── */
+    .direct-book-card {
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 2rem;
+      background: linear-gradient(135deg, rgba(150,113,56,0.15) 0%, rgba(107,79,34,0.08) 100%);
+      border: 1px solid rgba(196,163,106,0.4); padding: 2.5rem 3rem; margin-bottom: 2rem;
+      text-decoration: none; transition: border-color 0.3s ease, background 0.3s ease;
+      position: relative; overflow: hidden;
+    }
+    .direct-book-card::before {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(90deg, rgba(196,163,106,0.04) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .direct-book-card:hover { border-color: rgba(196,163,106,0.7); background: linear-gradient(135deg, rgba(150,113,56,0.22) 0%, rgba(107,79,34,0.12) 100%); }
+    .direct-badge {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      background: rgba(196,163,106,0.18); border: 1px solid rgba(196,163,106,0.35);
+      padding: 0.25rem 0.8rem; font-family: 'Jost', sans-serif;
+      font-size: 0.55rem; letter-spacing: 0.2em; text-transform: uppercase; color: #C4A36A;
+    }
+    .direct-book-btn {
+      display: inline-flex; align-items: center; gap: 0.6rem;
+      font-family: 'Jost', sans-serif; font-size: 0.62rem; letter-spacing: 0.22em; text-transform: uppercase;
+      background: #967138; color: #FAF7EF; padding: 0.9rem 2.25rem; white-space: nowrap;
+      transition: background 0.3s ease;
+    }
+    .direct-book-btn:hover { background: #6B4F22; }
 
     /* ── Package cards ── */
     .pkg-card {
@@ -279,7 +306,7 @@
       <span class="lang-divider">|</span>
       <button class="lang-btn" onclick="setLang('zh')" data-lang="zh">ZH</button>
     </div>
-    <a href="resort.html" class="btn-outline-white" id="nav-book" style="padding:0.6rem 1.5rem;">Book Now</a>
+    <a href="booking.html" class="btn-outline-white" id="nav-book" style="padding:0.6rem 1.5rem;">Book Now</a>
   </div>
 
   <button id="hamburger" onclick="openMenu()" class="lg:hidden flex flex-col gap-1.5 p-1" aria-label="Menu">
@@ -354,7 +381,7 @@
 
     <div class="flex flex-wrap items-center justify-center gap-4 mt-10 reveal pointer-events-auto"
          style="transition-delay:1.35s">
-      <a href="resort.html" class="btn-solid-gold" id="hero-cta1">Book Your Stay</a>
+      <a href="booking.html" class="btn-solid-gold" id="hero-cta1">Book Your Stay</a>
       <a href="#about"       class="btn-outline-white" id="hero-cta2">Explore</a>
     </div>
   </div>
@@ -378,6 +405,37 @@
         Book Your <em id="book-em">Stay</em>
       </h2>
     </div>
+
+    <!-- Direct booking — featured primary option -->
+    <a href="booking.html" class="direct-book-card reveal" style="transition-delay:0.05s">
+      <div style="display:flex;flex-direction:column;gap:1rem;">
+        <span class="direct-badge">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <span id="direct-badge-text">Lowest Rate Guaranteed · Book Direct</span>
+        </span>
+        <div>
+          <p class="font-sans text-white/40 text-[0.6rem] tracking-widest uppercase mb-1" id="direct-label">Official Website</p>
+          <h3 class="font-display text-white font-light" style="font-size:clamp(1.6rem,3vw,2.4rem)" id="direct-heading">Reserve Directly with <em>Eco Eyes Village</em></h3>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:1.5rem;margin-top:0.25rem;">
+          <span style="display:flex;align-items:center;gap:0.5rem;font-family:'Jost',sans-serif;font-size:0.7rem;color:rgba(250,247,239,0.5);">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#C4A36A" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            <span id="direct-perk1">No booking fees</span>
+          </span>
+          <span style="display:flex;align-items:center;gap:0.5rem;font-family:'Jost',sans-serif;font-size:0.7rem;color:rgba(250,247,239,0.5);">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#C4A36A" stroke-width="1.5"><path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="1"/></svg>
+            <span id="direct-perk2">Pay directly to us</span>
+          </span>
+          <span style="display:flex;align-items:center;gap:0.5rem;font-family:'Jost',sans-serif;font-size:0.7rem;color:rgba(250,247,239,0.5);">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#C4A36A" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <span id="direct-perk3">Direct contact with our team</span>
+          </span>
+        </div>
+      </div>
+      <span class="direct-book-btn" id="direct-btn">Book Now →</span>
+    </a>
+
+    <p class="font-sans text-white/25 text-[0.6rem] tracking-widest uppercase text-center mb-5" id="also-on">Also available on</p>
 
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 reveal" style="transition-delay:0.15s">
 
@@ -979,7 +1037,7 @@
         <p class="font-sans text-white/30 text-[0.58rem] tracking-widest uppercase mb-5">Information</p>
         <nav class="flex flex-col gap-3 mb-6">
           <a href="contact.html" class="font-sans text-white/45 text-[0.78rem] hover:text-white/75 transition-colors">Contact Us</a>
-          <a href="resort.html"  class="font-sans text-white/45 text-[0.78rem] hover:text-white/75 transition-colors">Book Now</a>
+          <a href="booking.html" class="font-sans text-white/45 text-[0.78rem] hover:text-white/75 transition-colors">Book Now</a>
           <a href="tel:+66926100560" class="font-sans text-white/30 text-[0.78rem] hover:text-white/55 transition-colors">+66 92 610 0560</a>
         </nav>
         <p class="font-sans text-white/25 text-[0.72rem] leading-[1.7]">
@@ -1105,8 +1163,16 @@
     'hero-scroll':   { en: 'Scroll',                               th: 'เลื่อน',                       zh: '滚动' },
     'hero-cta1':     { en: 'Book Your Stay',                       th: 'จองที่พัก',                    zh: '预订住宿' },
     'hero-cta2':     { en: 'Explore',                              th: 'สำรวจ',                        zh: '探索' },
-    'book-label':    { en: 'Reserve Your Experience',              th: 'สำรองที่พักของคุณ',             zh: '预订您的体验' },
-    'book-em':       { en: 'Stay',                                 th: 'ที่พัก',                       zh: '住宿' },
+    'book-label':         { en: 'Reserve Your Experience',              th: 'สำรองที่พักของคุณ',             zh: '预订您的体验' },
+    'book-em':            { en: 'Stay',                                 th: 'ที่พัก',                       zh: '住宿' },
+    'direct-badge-text':  { en: 'Lowest Rate Guaranteed · Book Direct', th: 'ราคาถูกที่สุด · จองโดยตรง',     zh: '最低价格保证 · 直接预订' },
+    'direct-label':       { en: 'Official Website',                     th: 'เว็บไซต์อย่างเป็นทางการ',        zh: '官方网站' },
+    'direct-heading':     { en: 'Reserve Directly with Eco Eyes Village', th: 'จองตรงกับ Eco Eyes Village',  zh: '直接在生态之眼村预订' },
+    'direct-perk1':       { en: 'No booking fees',                      th: 'ไม่มีค่าธรรมเนียม',              zh: '零预订费' },
+    'direct-perk2':       { en: 'Pay directly to us',                   th: 'ชำระตรงให้เรา',                  zh: '直接付款给我们' },
+    'direct-perk3':       { en: 'Direct contact with our team',         th: 'ติดต่อทีมงานโดยตรง',              zh: '直接联系我们团队' },
+    'direct-btn':         { en: 'Book Now →',                           th: 'จองเลย →',                       zh: '立即预订 →' },
+    'also-on':            { en: 'Also available on',                    th: 'หรือจองผ่าน',                     zh: '也可通过以下平台预订' },
     'stat1-label':   { en: 'Rai of Protected Land',               th: 'ไร่ที่ดินอนุรักษ์',             zh: '莱保护土地' },
     'stat2-label':   { en: 'Native Plant Species',                 th: 'สายพันธุ์พืชพื้นเมือง',         zh: '原生植物种类' },
     'stat3-label':   { en: 'Birds & Wildlife Species',             th: 'สายพันธุ์นกและสัตว์ป่า',        zh: '鸟类与野生动物种类' },

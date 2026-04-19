@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Book Your Stay — Eco Eyes Village</title>
+  <meta name="description" content="Reserve your stay at Eco Eyes Village. Choose from 10 unique rooms named after celestial bodies, set in 30+ Rai of protected rainforest in Nakhon Nayok, Thailand." />
+
+  <link rel="icon" type="image/png" href="https://eco-eyes-bucket.s3.ap-southeast-1.amazonaws.com/icon-circle.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500;1,600&family=Jost:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            cream: '#FAF7EF', 'cream-mid': '#F0E9D8', 'cream-dk': '#E3D8C2',
+            gold: '#967138', 'gold-lt': '#C4A36A', 'gold-pale': '#E8D9BE', 'gold-dk': '#6B4F22',
+            dark: '#1C1915', 'dark-mid': '#2A251E', forest: '#2B3A20', 'forest-lt': '#3D5230', moss: '#5C6B47',
+          },
+          fontFamily: { display: ['"Cormorant Garamond"', 'serif'], sans: ['Jost', 'sans-serif'] },
+          letterSpacing: { widest: '0.25em', widester: '0.4em' },
+        }
+      }
+    }
+  </script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { background: #FAF7EF; color: #1C1915; font-family: 'Jost', sans-serif; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+    body::after {
+      content: ''; position: fixed; inset: 0; z-index: 9999; pointer-events: none; opacity: 0.028;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      background-size: 200px;
+    }
+
+    /* ── Nav ── */
+    #nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 500;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.5rem 3rem;
+      background: rgba(28,25,21,0.97); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    }
+    .nav-link { font-family: 'Jost', sans-serif; font-size: 0.62rem; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(255,255,255,0.7); text-decoration: none; transition: color 0.3s ease; position: relative; white-space: nowrap; }
+    .nav-link::after { content: ''; position: absolute; left: 0; bottom: -3px; width: 0; height: 1px; background: #967138; transition: width 0.35s cubic-bezier(0.16,1,0.3,1); }
+    .nav-link:hover { color: white; }
+    .nav-link:hover::after { width: 100%; }
+    .lang-btn { font-family: 'Jost', sans-serif; font-size: 0.58rem; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(255,255,255,0.4); background: none; border: none; cursor: pointer; padding: 0.15rem 0.2rem; transition: color 0.25s ease; }
+    .lang-btn:hover, .lang-btn.active { color: #C4A36A; }
+    .lang-divider { color: rgba(255,255,255,0.15); font-size: 0.6rem; }
+    .btn-nav-book { display: inline-block; font-family: 'Jost', sans-serif; font-size: 0.62rem; letter-spacing: 0.25em; text-transform: uppercase; border: 1px solid rgba(255,255,255,0.35); color: rgba(255,255,255,0.8); padding: 0.6rem 1.5rem; text-decoration: none; transition: background 0.35s ease, border-color 0.35s ease, color 0.35s ease; }
+    .btn-nav-book:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.6); color: white; }
+    #mobile-nav { position: fixed; inset: 0; z-index: 600; background: rgba(20,18,14,0.98); backdrop-filter: blur(20px); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2.5rem; transform: translateX(100%); transition: transform 0.5s cubic-bezier(0.16,1,0.3,1); }
+    #mobile-nav.open { transform: translateX(0); }
+
+    /* ── Utilities ── */
+    .sep { display: block; width: 52px; height: 1px; background: #967138; margin: 1.6rem 0; }
+    .sep-center { margin: 1.6rem auto; }
+    .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.9s cubic-bezier(0.16,1,0.3,1), transform 0.9s cubic-bezier(0.16,1,0.3,1); }
+    .reveal.visible { opacity: 1; transform: none; }
+    #back-to-top { position: fixed; bottom: 2rem; right: 2rem; z-index: 400; width: 44px; height: 44px; border: 1px solid rgba(196,163,106,0.35); background: rgba(28,25,21,0.85); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; cursor: pointer; opacity: 0; transform: translateY(10px); transition: opacity 0.4s ease, transform 0.4s ease; }
+    #back-to-top.visible { opacity: 1; transform: none; }
+
+    /* ── Date bar ── */
+    #date-bar {
+      background: #1C1915; border-bottom: 1px solid rgba(196,163,106,0.2);
+      padding: 1.25rem 3rem; display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;
+    }
+    .date-field-wrap { display: flex; flex-direction: column; gap: 0.3rem; flex: 1; min-width: 140px; }
+    .date-label { font-family: 'Jost', sans-serif; font-size: 0.55rem; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(196,163,106,0.6); }
+    .date-input-styled {
+      font-family: 'Jost', sans-serif; font-size: 0.85rem; color: #FAF7EF;
+      background: transparent; border: none; border-bottom: 1px solid rgba(196,163,106,0.3);
+      padding: 0.3rem 0; cursor: pointer; outline: none; width: 100%;
+      transition: border-color 0.3s ease;
+    }
+    .date-input-styled:focus { border-color: #C4A36A; }
+    .date-input-styled::placeholder { color: rgba(250,247,239,0.3); }
+    .date-sep { width: 1px; height: 40px; background: rgba(255,255,255,0.1); flex-shrink: 0; }
+    .nights-pill { font-family: 'Jost', sans-serif; font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: #C4A36A; background: rgba(196,163,106,0.1); border: 1px solid rgba(196,163,106,0.2); padding: 0.35rem 0.9rem; white-space: nowrap; }
+    .btn-check { font-family: 'Jost', sans-serif; font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; background: #967138; color: #FAF7EF; border: none; padding: 0.7rem 1.5rem; cursor: pointer; white-space: nowrap; transition: background 0.3s ease; margin-left: auto; }
+    .btn-check:hover { background: #6B4F22; }
+    .btn-check:disabled { background: rgba(150,113,56,0.3); cursor: not-allowed; }
+
+    /* ── Flatpickr ── */
+    .flatpickr-calendar { background: #1C1915 !important; border: 1px solid rgba(196,163,106,0.25) !important; border-radius: 2px !important; box-shadow: 0 20px 60px rgba(0,0,0,0.5) !important; font-family: 'Jost', sans-serif !important; }
+    .flatpickr-months .flatpickr-month, .flatpickr-current-month, .flatpickr-monthDropdown-months, .numInputWrapper { color: #FAF7EF !important; fill: #FAF7EF !important; }
+    .flatpickr-current-month .flatpickr-monthDropdown-months { color: #FAF7EF !important; }
+    .flatpickr-day { color: rgba(250,247,239,0.7) !important; border-radius: 2px !important; }
+    .flatpickr-day.selected, .flatpickr-day.startRange, .flatpickr-day.endRange { background: #967138 !important; border-color: #967138 !important; color: #FAF7EF !important; }
+    .flatpickr-day.inRange { background: rgba(150,113,56,0.18) !important; border-color: transparent !important; color: #FAF7EF !important; }
+    .flatpickr-day.disabled, .flatpickr-day.flatpickr-disabled { color: rgba(250,247,239,0.18) !important; text-decoration: line-through; }
+    .flatpickr-day:hover:not(.disabled):not(.flatpickr-disabled) { background: rgba(150,113,56,0.25) !important; }
+    .flatpickr-weekday { color: rgba(196,163,106,0.6) !important; font-size: 0.65rem !important; }
+    .flatpickr-months .flatpickr-prev-month, .flatpickr-months .flatpickr-next-month { fill: rgba(250,247,239,0.5) !important; }
+    .flatpickr-months .flatpickr-prev-month:hover svg, .flatpickr-months .flatpickr-next-month:hover svg { fill: #C4A36A !important; }
+    .numInput { color: #FAF7EF !important; background: transparent !important; }
+
+    /* ── Room cards ── */
+    .room-card {
+      border: 1px solid rgba(150,113,56,0.18); background: white;
+      display: grid; grid-template-columns: 340px 1fr;
+      transition: border-color 0.3s ease, box-shadow 0.4s ease;
+    }
+    .room-card:hover { border-color: rgba(150,113,56,0.4); box-shadow: 0 8px 40px rgba(150,113,56,0.1); }
+    .room-card.selected { border-color: #967138; box-shadow: 0 0 0 2px rgba(150,113,56,0.2); }
+    .room-card.unavailable { opacity: 0.5; pointer-events: none; }
+
+    /* Photo carousel */
+    .room-photo-wrap { position: relative; height: 260px; overflow: hidden; background: #E3D8C2; flex-shrink: 0; }
+    .room-photo-wrap img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0.5s ease; }
+    .room-photo-wrap img.active { opacity: 1; }
+    .photo-nav { position: absolute; inset: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 0.75rem; pointer-events: none; }
+    .photo-btn { width: 30px; height: 30px; background: rgba(28,25,21,0.6); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; pointer-events: all; transition: background 0.2s ease; flex-shrink: 0; }
+    .photo-btn:hover { background: rgba(28,25,21,0.85); }
+    .photo-counter { position: absolute; bottom: 0.6rem; right: 0.75rem; font-family: 'Jost', sans-serif; font-size: 0.6rem; letter-spacing: 0.08em; color: rgba(255,255,255,0.85); background: rgba(0,0,0,0.45); padding: 0.18rem 0.5rem; pointer-events: none; }
+
+    /* ── Calendar booked-date indicators ── */
+    .flatpickr-day.fp-some-booked { position: relative; }
+    .flatpickr-day.fp-some-booked::after {
+      content: ''; position: absolute; bottom: 3px; left: 50%; transform: translateX(-50%);
+      width: 4px; height: 4px; border-radius: 50%; background: rgba(196,163,106,0.7);
+    }
+    .flatpickr-day.fp-fully-booked {
+      background: rgba(90,30,20,0.25) !important;
+      color: rgba(250,247,239,0.25) !important;
+      text-decoration: line-through !important;
+    }
+
+    /* Room info side */
+    .room-info { padding: 1.75rem 2rem; display: flex; flex-direction: column; justify-content: space-between; }
+    .room-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
+    .room-number { font-family: 'Jost', sans-serif; font-size: 0.6rem; letter-spacing: 0.2em; color: rgba(28,25,21,0.4); border: 1px solid rgba(150,113,56,0.3); padding: 0.2rem 0.5rem; }
+    .avail-badge { font-family: 'Jost', sans-serif; font-size: 0.55rem; letter-spacing: 0.15em; text-transform: uppercase; padding: 0.2rem 0.6rem; margin-left: auto; }
+    .avail-ok    { background: rgba(43,58,32,0.1);  color: #2B3A20;  border: 1px solid rgba(43,58,32,0.2); }
+    .avail-no    { background: rgba(180,50,40,0.08); color: #9B3020; border: 1px solid rgba(180,50,40,0.15); }
+    .avail-tbd   { background: rgba(150,113,56,0.08); color: #6B4F22; border: 1px solid rgba(150,113,56,0.2); }
+    .room-name-text { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; font-weight: 300; color: #1C1915; }
+
+    /* Amenities icons */
+    .amenities { display: flex; flex-wrap: wrap; gap: 0.6rem 1.25rem; margin: 0.85rem 0; }
+    .amenity { display: flex; align-items: center; gap: 0.4rem; font-family: 'Jost', sans-serif; font-size: 0.68rem; color: rgba(28,25,21,0.55); }
+
+    /* Price row */
+    .room-price-row { display: flex; align-items: flex-end; justify-content: space-between; margin-top: auto; padding-top: 1rem; border-top: 1px solid rgba(150,113,56,0.12); }
+    .rate-amount { font-family: 'Cormorant Garamond', serif; font-size: 1.8rem; font-weight: 400; color: #1C1915; line-height: 1; }
+    .rate-unit { font-family: 'Jost', sans-serif; font-size: 0.65rem; color: rgba(28,25,21,0.45); letter-spacing: 0.08em; margin-left: 0.25rem; }
+    .btn-select { font-family: 'Jost', sans-serif; font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; background: #967138; color: #FAF7EF; border: none; padding: 0.75rem 1.5rem; cursor: pointer; transition: background 0.3s ease; }
+    .btn-select:hover { background: #6B4F22; }
+    .btn-selected { background: #2B3A20 !important; }
+    .btn-unavail { background: rgba(150,113,56,0.2) !important; color: rgba(28,25,21,0.4) !important; cursor: not-allowed !important; }
+
+    /* ── Booking form ── */
+    .form-input { width: 100%; font-family: 'Jost', sans-serif; font-size: 0.85rem; color: #1C1915; background: white; border: 1px solid rgba(150,113,56,0.2); padding: 0.85rem 1rem; outline: none; transition: border-color 0.3s ease, box-shadow 0.3s ease; }
+    .form-input:focus { border-color: #967138; box-shadow: 0 0 0 3px rgba(150,113,56,0.08); }
+    .form-input::placeholder { color: rgba(28,25,21,0.3); }
+    textarea.form-input { resize: vertical; min-height: 90px; }
+    select.form-input { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23967138' stroke-width='1.5' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 1rem center; padding-right: 2.5rem; }
+    .form-label { display: block; font-family: 'Jost', sans-serif; font-size: 0.58rem; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(28,25,21,0.5); margin-bottom: 0.5rem; }
+
+    /* Price summary */
+    .price-row { display: flex; justify-content: space-between; align-items: baseline; padding: 0.7rem 0; border-bottom: 1px solid rgba(150,113,56,0.1); }
+    .price-row:last-child { border-bottom: none; }
+    .price-row.total { padding-top: 1rem; border-top: 1px solid rgba(150,113,56,0.3); border-bottom: none; }
+
+    /* Submit */
+    .btn-submit { width: 100%; font-family: 'Jost', sans-serif; font-size: 0.62rem; letter-spacing: 0.25em; text-transform: uppercase; background: #967138; color: #FAF7EF; border: none; padding: 1.1rem 2rem; cursor: pointer; transition: background 0.35s ease; }
+    .btn-submit:hover:not(:disabled) { background: #6B4F22; }
+    .btn-submit:disabled { background: rgba(150,113,56,0.3); cursor: not-allowed; }
+
+    /* Notices */
+    .notice { padding: 0.85rem 1.25rem; font-family: 'Jost', sans-serif; font-size: 0.78rem; line-height: 1.6; border-radius: 2px; }
+    .notice-error   { background: rgba(180,50,40,0.07);  border: 1px solid rgba(180,50,40,0.2);  color: #9B3020; }
+    .notice-loading { background: rgba(150,113,56,0.07); border: 1px solid rgba(150,113,56,0.2); color: #6B4F22; }
+    .notice-info    { background: rgba(43,58,32,0.07);   border: 1px solid rgba(43,58,32,0.18);  color: #2B3A20; }
+
+    /* Selected room banner */
+    #selected-room-banner { background: rgba(43,58,32,0.08); border: 1px solid rgba(43,58,32,0.2); padding: 0.9rem 1.25rem; display: none; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+    #selected-room-banner.show { display: flex; }
+
+    /* Form section animation */
+    #booking-form-section { display: none; animation: fadeSlideUp 0.5s ease both; }
+    #booking-form-section.show { display: block; }
+    @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: none; } }
+
+    @media (max-width: 1024px) {
+      #nav { padding: 1.25rem 1.5rem; }
+      #date-bar { padding: 1rem 1.5rem; }
+      .room-card { grid-template-columns: 1fr; }
+      .room-photo-wrap { height: 220px; }
+    }
+    @media (max-width: 640px) {
+      .date-sep { display: none; }
+      .btn-check { margin-left: 0; width: 100%; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════
+     NAVIGATION
+═══════════════════════════════════════════ -->
+<nav id="nav">
+  <a href="index.html" style="display:inline-flex;align-items:center;padding:0.25rem 0.5rem;border-radius:2px;background:rgba(28,25,21,0.3);backdrop-filter:blur(10px);">
+    <img src="brand_assets/brand%20logo%20updated.png" alt="Eco Eyes Village" style="height:36px;display:block;" onerror="this.src='brand_assets/brand%20logo%20old.png';this.onerror=null">
+  </a>
+  <div class="hidden lg:flex items-center gap-7">
+    <a href="resort.html"  class="nav-link" id="nl-stay">Stay</a>
+    <a href="cafe.html"    class="nav-link" id="nl-cafe">Café</a>
+    <a href="life.html"    class="nav-link" id="nl-life">Experiences</a>
+    <a href="csr.html"     class="nav-link" id="nl-csr">Conservation</a>
+    <a href="explore.html" class="nav-link" id="nl-explore">Explore</a>
+    <a href="contact.html" class="nav-link" id="nl-contact">Contact</a>
+  </div>
+  <div class="hidden lg:flex items-center gap-4">
+    <div class="flex items-center gap-1">
+      <button class="lang-btn active" onclick="setLang('en')" data-lang="en">EN</button>
+      <span class="lang-divider">|</span>
+      <button class="lang-btn" onclick="setLang('th')" data-lang="th">TH</button>
+      <span class="lang-divider">|</span>
+      <button class="lang-btn" onclick="setLang('zh')" data-lang="zh">ZH</button>
+    </div>
+    <a href="booking.html" class="btn-nav-book" id="nav-book">Book Now</a>
+  </div>
+  <button id="hamburger" onclick="openMenu()" class="lg:hidden flex flex-col gap-1.5 p-1" aria-label="Menu">
+    <span class="block w-6 h-px bg-white/80"></span>
+    <span class="block w-4 h-px bg-white/80"></span>
+    <span class="block w-6 h-px bg-white/80"></span>
+  </button>
+</nav>
+
+<button id="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C4A36A" stroke-width="1.5" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+</button>
+
+<div id="mobile-nav">
+  <button onclick="closeMenu()" class="absolute top-6 right-6 text-white/60 hover:text-white">
+    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+  </button>
+  <a href="resort.html"  onclick="closeMenu()" class="font-display text-white text-4xl font-light italic hover:text-[#C4A36A] transition-colors">Stay</a>
+  <a href="cafe.html"    onclick="closeMenu()" class="font-display text-white text-4xl font-light italic hover:text-[#C4A36A] transition-colors">Café</a>
+  <a href="life.html"    onclick="closeMenu()" class="font-display text-white text-4xl font-light italic hover:text-[#C4A36A] transition-colors">Experiences</a>
+  <a href="csr.html"     onclick="closeMenu()" class="font-display text-white text-4xl font-light italic hover:text-[#C4A36A] transition-colors">Conservation</a>
+  <a href="explore.html" onclick="closeMenu()" class="font-display text-white text-4xl font-light italic hover:text-[#C4A36A] transition-colors">Explore</a>
+  <a href="contact.html" onclick="closeMenu()" class="font-display text-white text-4xl font-light italic hover:text-[#C4A36A] transition-colors">Contact</a>
+  <div class="flex items-center gap-3 mt-2">
+    <button class="lang-btn active text-sm" onclick="setLang('en');closeMenu()" data-lang="en">EN</button>
+    <span class="lang-divider">|</span>
+    <button class="lang-btn text-sm" onclick="setLang('th');closeMenu()" data-lang="th">TH</button>
+    <span class="lang-divider">|</span>
+    <button class="lang-btn text-sm" onclick="setLang('zh');closeMenu()" data-lang="zh">ZH</button>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════
+     PAGE HEADER
+═══════════════════════════════════════════ -->
+<section style="padding-top:6rem;padding-bottom:3rem;background:linear-gradient(180deg,#1C1915 0%,#2A251E 100%);position:relative;overflow:hidden;">
+  <div style="position:absolute;inset:0;opacity:0.06;background-image:url('brand_assets/eco%20eyes%20website%20photos%20/Room%20Photos/Room%20picture%201.webp');background-size:cover;background-position:center;"></div>
+  <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(28,25,21,0.6) 0%,rgba(28,25,21,0.97) 100%);"></div>
+  <div class="max-w-3xl mx-auto px-6 text-center" style="position:relative;">
+    <p class="font-sans text-[0.58rem] tracking-widest uppercase mb-4" style="color:#C4A36A" id="page-label">Nakhon Nayok · Thailand</p>
+    <h1 class="font-display text-white font-light leading-none" style="font-size:clamp(2.8rem,7vw,5rem)">
+      <span id="page-h1a">Choose Your</span><br><em id="page-h1b">Room</em>
+    </h1>
+    <span class="sep sep-center" style="background:#C4A36A;"></span>
+    <p class="font-display font-light italic" style="color:rgba(255,255,255,0.5);font-size:1.1rem" id="page-sub">10 rooms · Each one unique · All in the heart of the forest</p>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════
+     DATE SELECTION BAR
+═══════════════════════════════════════════ -->
+<div id="date-bar">
+  <div class="date-field-wrap">
+    <span class="date-label" id="label-checkin">Check-in</span>
+    <input type="text" id="checkin" class="date-input-styled" placeholder="DD MMM YYYY" readonly autocomplete="off">
+  </div>
+  <div class="date-sep"></div>
+  <div class="date-field-wrap">
+    <span class="date-label" id="label-checkout">Check-out</span>
+    <input type="text" id="checkout" class="date-input-styled" placeholder="DD MMM YYYY" readonly autocomplete="off">
+  </div>
+  <div class="date-sep"></div>
+  <span class="nights-pill" id="nights-pill" style="display:none"></span>
+  <button class="btn-check" id="check-avail-btn" onclick="checkAvailability()" disabled id="check-btn-text">
+    <span id="check-btn-text">Check Availability</span>
+  </button>
+</div>
+
+
+<!-- ═══════════════════════════════════════════
+     ROOMS LIST
+═══════════════════════════════════════════ -->
+<section class="py-12 px-6" style="background:#FAF7EF;">
+  <div class="max-w-5xl mx-auto">
+
+    <div id="rooms-notice" class="notice notice-info mb-6" style="display:none;"></div>
+
+    <!-- Rooms are injected here by JS -->
+    <div id="rooms-container" style="display:flex;flex-direction:column;gap:1rem;"></div>
+
+    <!-- Booking form (shown after room selection) -->
+    <div id="booking-form-section" class="mt-10">
+
+      <!-- Selected room banner -->
+      <div id="selected-room-banner">
+        <div>
+          <p class="font-sans" style="font-size:0.55rem;letter-spacing:0.2em;text-transform:uppercase;color:rgba(28,25,21,0.45);margin-bottom:0.2rem" id="banner-label">Selected Room</p>
+          <p class="font-display font-light" style="font-size:1.2rem;color:#1C1915" id="banner-room-name">—</p>
+        </div>
+        <button onclick="clearRoomSelection()" style="font-family:'Jost',sans-serif;font-size:0.58rem;letter-spacing:0.15em;text-transform:uppercase;background:none;border:1px solid rgba(150,113,56,0.3);color:#967138;padding:0.4rem 0.9rem;cursor:pointer;" id="btn-change-room">Change Room</button>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-5 gap-10 lg:gap-12 items-start">
+
+        <!-- Form -->
+        <div class="lg:col-span-3">
+          <p class="font-sans text-[0.65rem] tracking-widest uppercase mb-5" style="color:#967138" id="section-guests">Guest Details</p>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="form-label" for="guest-name" id="label-name">Full Name</label>
+              <input type="text" id="guest-name" class="form-input" autocomplete="name">
+            </div>
+            <div>
+              <label class="form-label" for="guest-email" id="label-email">Email Address</label>
+              <input type="email" id="guest-email" class="form-input" autocomplete="email">
+            </div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="form-label" for="guest-phone" id="label-phone">Phone Number</label>
+              <input type="tel" id="guest-phone" class="form-input" autocomplete="tel">
+            </div>
+            <div>
+              <label class="form-label" for="guest-count" id="label-guests">Number of Guests</label>
+              <select id="guest-count" class="form-input">
+                <option value="">— Select —</option>
+                <option value="1">1 guest</option>
+                <option value="2">2 guests</option>
+                <option value="3">3 guests</option>
+                <option value="4">4 guests</option>
+                <option value="5">5 guests</option>
+                <option value="6">6 guests</option>
+                <option value="7+">7+ guests</option>
+              </select>
+            </div>
+          </div>
+          <div class="mb-6">
+            <label class="form-label" for="special-requests">
+              <span id="label-requests">Special Requests</span>
+              <span style="color:rgba(28,25,21,0.3);font-style:italic;text-transform:none;letter-spacing:0;margin-left:0.4em" id="label-optional">(optional)</span>
+            </label>
+            <textarea id="special-requests" class="form-input"></textarea>
+          </div>
+
+          <div id="form-error" class="notice notice-error mb-4" style="display:none;"></div>
+
+          <button id="submit-btn" class="btn-submit" onclick="submitBooking()" disabled>
+            <span id="btn-submit-text">Request to Book</span>
+          </button>
+          <p class="font-sans mt-4" style="font-size:0.7rem;color:rgba(28,25,21,0.4);line-height:1.7" id="policy-note">
+            By submitting this request, you agree to be contacted by our team to confirm availability and finalise your booking. No payment is required at this stage.
+          </p>
+        </div>
+
+        <!-- Summary sidebar -->
+        <div class="lg:col-span-2">
+          <div style="background:white;border:1px solid rgba(150,113,56,0.18);padding:1.75rem;">
+            <p class="font-sans text-[0.58rem] tracking-widest uppercase mb-4" style="color:#967138" id="summary-title">Booking Summary</p>
+
+            <div id="summary-filled">
+              <div class="price-row">
+                <span class="font-sans" style="font-size:0.75rem;color:rgba(28,25,21,0.55)" id="sum-room-label">Room</span>
+                <span class="font-sans font-medium" style="font-size:0.78rem" id="sum-room-val">—</span>
+              </div>
+              <div class="price-row">
+                <span class="font-sans" style="font-size:0.75rem;color:rgba(28,25,21,0.55)" id="sum-checkin-label">Check-in</span>
+                <span class="font-sans font-medium" style="font-size:0.78rem" id="sum-checkin-val">—</span>
+              </div>
+              <div class="price-row">
+                <span class="font-sans" style="font-size:0.75rem;color:rgba(28,25,21,0.55)" id="sum-checkout-label">Check-out</span>
+                <span class="font-sans font-medium" style="font-size:0.78rem" id="sum-checkout-val">—</span>
+              </div>
+              <div class="price-row">
+                <span class="font-sans" style="font-size:0.75rem;color:rgba(28,25,21,0.55)" id="sum-nights-label">Duration</span>
+                <span class="font-sans font-medium" style="font-size:0.78rem" id="sum-nights-val">—</span>
+              </div>
+              <div class="price-row">
+                <span class="font-sans" style="font-size:0.75rem;color:rgba(28,25,21,0.55)" id="sum-rate-label">Nightly rate</span>
+                <span class="font-sans font-medium" style="font-size:0.78rem" id="sum-rate-val">—</span>
+              </div>
+              <div class="price-row total">
+                <span class="font-sans font-medium" style="font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;color:#967138" id="sum-total-label">Total</span>
+                <span class="font-display font-light" style="font-size:1.6rem;color:#1C1915;letter-spacing:-0.01em" id="sum-total-val">—</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="background:rgba(43,58,32,0.06);border:1px solid rgba(43,58,32,0.12);padding:1.4rem;margin-top:0.9rem;">
+            <p class="font-sans text-[0.58rem] tracking-widest uppercase mb-3" style="color:#2B3A20" id="expect-title">What Happens Next</p>
+            <ol style="list-style:none;display:flex;flex-direction:column;gap:0.6rem;">
+              <li class="flex gap-3 items-start">
+                <span style="font-family:'Jost',sans-serif;font-size:0.6rem;background:#2B3A20;color:#FAF7EF;width:17px;height:17px;min-width:17px;display:flex;align-items:center;justify-content:center;">1</span>
+                <span class="font-sans" style="font-size:0.72rem;color:rgba(28,25,21,0.6);line-height:1.65" id="step-1">We confirm your request within 24 hours.</span>
+              </li>
+              <li class="flex gap-3 items-start">
+                <span style="font-family:'Jost',sans-serif;font-size:0.6rem;background:#2B3A20;color:#FAF7EF;width:17px;height:17px;min-width:17px;display:flex;align-items:center;justify-content:center;">2</span>
+                <span class="font-sans" style="font-size:0.72rem;color:rgba(28,25,21,0.6);line-height:1.65" id="step-2">You receive a confirmation email with booking reference.</span>
+              </li>
+              <li class="flex gap-3 items-start">
+                <span style="font-family:'Jost',sans-serif;font-size:0.6rem;background:#2B3A20;color:#FAF7EF;width:17px;height:17px;min-width:17px;display:flex;align-items:center;justify-content:center;">3</span>
+                <span class="font-sans" style="font-size:0.72rem;color:rgba(28,25,21,0.6);line-height:1.65" id="step-3">Our team contacts you to arrange payment.</span>
+              </li>
+            </ol>
+          </div>
+
+          <div class="mt-4 text-center">
+            <p class="font-sans" style="font-size:0.7rem;color:rgba(28,25,21,0.4);line-height:1.9">
+              <span id="contact-pre">Questions?</span><br>
+              <a href="tel:+66926100560" style="color:#967138">+66 92 610 0560</a><br>
+              <a href="mailto:ecoeyesvillagenaec@gmail.com" style="color:#967138">ecoeyesvillagenaec@gmail.com</a>
+            </p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════
+     FOOTER
+═══════════════════════════════════════════ -->
+<footer class="bg-dark py-16 px-6" style="border-top:1px solid rgba(255,255,255,0.06)">
+  <div class="max-w-7xl mx-auto">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-14">
+      <div class="md:col-span-2">
+        <a href="index.html" style="display:inline-flex;align-items:center;padding:0.25rem 0.5rem;background:rgba(250,247,239,0.05);border-radius:2px;margin-bottom:1.25rem;">
+          <img src="brand_assets/brand%20logo%20updated.png" alt="Eco Eyes Village" style="height:34px;display:block;" onerror="this.src='brand_assets/brand%20logo%20old.png';this.onerror=null">
+        </a>
+        <p class="font-sans text-white/35 text-[0.8rem] leading-[1.8] mb-5" style="max-width:26rem">A private nature conservatory, luxury glamping resort, and learning centre in Nakhon Nayok, Thailand.</p>
+      </div>
+      <div>
+        <p class="font-sans text-white/30 text-[0.58rem] tracking-widest uppercase mb-5">Explore</p>
+        <nav class="flex flex-col gap-3">
+          <a href="resort.html"  class="font-sans text-white/45 text-[0.78rem] hover:text-white/75 transition-colors">Resort Stay</a>
+          <a href="cafe.html"    class="font-sans text-white/45 text-[0.78rem] hover:text-white/75 transition-colors">Eco Café</a>
+          <a href="life.html"    class="font-sans text-white/45 text-[0.78rem] hover:text-white/75 transition-colors">Experiences</a>
+          <a href="csr.html"     class="font-sans text-white/45 text-[0.78rem] hover:text-white/75 transition-colors">Conservation</a>
+          <a href="explore.html" class="font-sans text-white/45 text-[0.78rem] hover:text-white/75 transition-colors">Explore Nakhon Nayok</a>
+        </nav>
+      </div>
+      <div>
+        <p class="font-sans text-white/30 text-[0.58rem] tracking-widest uppercase mb-5">Information</p>
+        <nav class="flex flex-col gap-3 mb-6">
+          <a href="contact.html" class="font-sans text-white/45 text-[0.78rem] hover:text-white/75 transition-colors">Contact Us</a>
+          <a href="booking.html" class="font-sans text-white/45 text-[0.78rem] hover:text-white/75 transition-colors">Book Now</a>
+          <a href="tel:+66926100560" class="font-sans text-white/30 text-[0.78rem] hover:text-white/55 transition-colors">+66 92 610 0560</a>
+        </nav>
+        <p class="font-sans text-white/25 text-[0.72rem] leading-[1.7]">188 Moo 9, Sarika<br>Nakhon Nayok 26000<br>Thailand</p>
+      </div>
+    </div>
+    <div class="pt-8 flex flex-col md:flex-row items-center justify-between gap-3" style="border-top:1px solid rgba(255,255,255,0.06)">
+      <p class="font-sans text-white/20 text-[0.6rem] tracking-wide">© 2025 Eco Eyes Village. All rights reserved.</p>
+      <p class="font-sans text-white/20 text-[0.6rem] tracking-wide">Nakhon Nayok, Thailand</p>
+    </div>
+  </div>
+</footer>
+
+
+<!-- ═══════════════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════════════ -->
+<script>
+  // ── Constants ────────────────────────────────
+  const NIGHTLY_RATE = 2500;
+  const PHOTO_BASE   = 'brand_assets/eco%20eyes%20website%20photos%20/Room%20Photos/';
+
+  // All room photos shared across every room, same order, no people
+  const ROOM_PHOTOS = [
+    'Room%20picture%201.webp',
+    'Room%20picture%202.webp',
+    'Room%20picture%203.webp',
+    'Room%20picture%204.webp',
+    'Room%20picture%205.webp',
+    'Scenic%20room%20picture%20.webp',
+    'Outdoor%20patio%20picture.webp',
+    'room%20view.jpg',
+    'room%20scenic.jpg',
+    'outdoor%20room%20view.jpg',
+    'Bathroom%20picture%201.webp',
+    'bathroom%202.webp',
+    'inside%20room%20table.jpg',
+    'picture%20of%20lights.webp',
+    'view%20from%20inside%20the%20room.jpg',
+  ];
+
+  // 10 rooms — photos array is shared (ROOM_PHOTOS)
+  const ROOMS_LOCAL = [
+    { id:'sun',     num:'01', en:'The Sun',     th:'เดอะ ซัน',          zh:'太阳房'  },
+    { id:'moon',    num:'02', en:'The Moon',    th:'เดอะ มูน',          zh:'月亮房'  },
+    { id:'mercury', num:'03', en:'The Mercury', th:'เดอะ เมอร์คิวรี่',  zh:'水星房'  },
+    { id:'earth',   num:'04', en:'The Earth',   th:'เดอะ เอิร์ธ',      zh:'地球房'  },
+    { id:'mars',    num:'05', en:'The Mars',    th:'เดอะ มาร์ส',        zh:'火星房'  },
+    { id:'jupiter', num:'06', en:'The Jupiter', th:'เดอะ จูปิเตอร์',    zh:'木星房'  },
+    { id:'saturn',  num:'07', en:'The Saturn',  th:'เดอะ แซทเทิร์น',   zh:'土星房'  },
+    { id:'uranus',  num:'08', en:'The Uranus',  th:'เดอะ ยูเรนัส',     zh:'天王星房' },
+    { id:'neptune', num:'09', en:'The Neptune', th:'เดอะ เนปจูน',      zh:'海王星房' },
+    { id:'pluto',   num:'10', en:'The Pluto',   th:'เดอะ พลูโต',       zh:'冥王星房' },
+  ];
+
+  // Server availability data (loaded after Check Availability)
+  let serverRooms    = null;   // array from /api/rooms
+  let checkinDate    = null;
+  let checkoutDate   = null;
+  let selectedRoomId = null;
+  let currentLang    = 'en';
+  let fpCheckin, fpCheckout;
+
+  // Calendar blocked-date sets (loaded async on page init)
+  let someBookedSet   = new Set();
+  let fullyBlockedSet = new Set();
+
+  async function loadBlockedDates() {
+    try {
+      const data = await fetch('/api/blocked-dates').then(r => r.json());
+      someBookedSet   = new Set(data.someBooked   || []);
+      fullyBlockedSet = new Set(data.fullyBlocked  || []);
+      // Re-init pickers to pick up the disable array and day markers
+      if (fpCheckin)  fpCheckin.destroy();
+      if (fpCheckout) fpCheckout.destroy();
+      initFlatpickr([...fullyBlockedSet]);
+    } catch { /* non-fatal — calendar still works without highlights */ }
+  }
+
+  // ── Nav / scroll ─────────────────────────────
+  window.addEventListener('scroll', () => {
+    document.getElementById('back-to-top').classList.toggle('visible', window.scrollY > 400);
+  }, { passive: true });
+  const mobileNav = document.getElementById('mobile-nav');
+  function openMenu()  { mobileNav.classList.add('open');    document.body.style.overflow = 'hidden'; }
+  function closeMenu() { mobileNav.classList.remove('open'); document.body.style.overflow = ''; }
+
+  // ── Date helpers ──────────────────────────────
+  function formatDateDisplay(d) { return d.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' }); }
+  function formatDateISO(d) {
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
+  function getNights() {
+    if (!checkinDate || !checkoutDate) return 0;
+    return Math.round((checkoutDate - checkinDate) / 86400000);
+  }
+
+  // ── Render room cards ─────────────────────────
+  function renderRooms(availMap) {
+    const container = document.getElementById('rooms-container');
+    container.innerHTML = '';
+    const lang = currentLang;
+
+    ROOMS_LOCAL.forEach(room => {
+      const avail = availMap ? availMap[room.id] : null;  // null = unknown, true/false = known
+      const photos = ROOM_PHOTOS;
+
+      const card = document.createElement('div');
+      card.className = 'room-card reveal';
+      card.id = 'room-card-' + room.id;
+      if (avail === false) card.classList.add('unavailable');
+
+      const roomLabel = lang === 'th' ? room.th : lang === 'zh' ? room.zh : room.en;
+      const badgeClass = avail === true ? 'avail-ok' : avail === false ? 'avail-no' : 'avail-tbd';
+      const badgeText  = avail === true
+        ? (lang==='th'?'ว่าง':lang==='zh'?'可预订':'Available')
+        : avail === false
+        ? (lang==='th'?'ไม่ว่าง':lang==='zh'?'已订满':'Unavailable')
+        : (lang==='th'?'เลือกวันที่ก่อน':lang==='zh'?'请选择日期':'Select dates first');
+      const selectLabel = selectedRoomId === room.id
+        ? (lang==='th'?'✓ เลือกแล้ว':lang==='zh'?'✓ 已选择':'✓ Selected')
+        : (lang==='th'?'เลือกห้องนี้':lang==='zh'?'选择此房间':'Select Room');
+
+      const photoImgs = photos.map((p, i) =>
+        `<img src="${PHOTO_BASE}${p}" alt="${room.en} - photo ${i+1}" class="${i===0?'active':''}" loading="${i===0?'eager':'lazy'}" onerror="this.style.display='none'">`
+      ).join('');
+      const photoNavHtml = photos.length > 1 ? `
+        <div class="photo-nav">
+          <button class="photo-btn" onclick="prevPhoto('${room.id}',event)" aria-label="Previous">
+            <svg width="12" height="12" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+          </button>
+          <button class="photo-btn" onclick="nextPhoto('${room.id}',event)" aria-label="Next">
+            <svg width="12" height="12" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+          </button>
+        </div>
+        <span class="photo-counter" id="photo-counter-${room.id}">1 / ${photos.length}</span>
+      ` : '';
+
+      // Amenities — same for all rooms
+      const amenityLabel = (icon, t) => `<span class="amenity">${icon}<span>${t}</span></span>`;
+      const amenities = [
+        amenityLabel(`<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M1.5 8.5l10.5-7 10.5 7M5 22V12h14v10"/></svg>`,
+          lang==='th'?'ที่พักส่วนตัว':lang==='zh'?'独立套间':'Private Suite'),
+        amenityLabel(`<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`,
+          lang==='th'?'ฟรีไวไฟ':lang==='zh'?'免费WiFi':'Free Wi-Fi'),
+        amenityLabel(`<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M3 12h18M3 6h18M3 18h18"/></svg>`,
+          lang==='th'?'ระเบียงส่วนตัว':lang==='zh'?'私人阳台':'Private Deck'),
+        amenityLabel(`<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>`,
+          lang==='th'?'ฝักบัวเรนดรอป':lang==='zh'?'雨淋浴':'Rainfall Shower'),
+        amenityLabel(`<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>`,
+          lang==='th'?'วิวธรรมชาติ':lang==='zh'?'自然景观':'Forest Views'),
+        amenityLabel(`<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M12 22c0 0-8-5.6-8-12a8 8 0 0 1 16 0c0 6.4-8 12-8 12z"/><circle cx="12" cy="10" r="2.5"/></svg>`,
+          lang==='th'?'วิวทะเลสาบ':lang==='zh'?'湖景':'Lakeside View'),
+      ].join('');
+
+      const btnClass = selectedRoomId === room.id
+        ? 'btn-select btn-selected'
+        : avail === false ? 'btn-select btn-unavail' : 'btn-select';
+      const btnDisabled = avail === false ? 'disabled' : '';
+
+      const nights = getNights();
+      const rateStr = `฿${NIGHTLY_RATE.toLocaleString()}`;
+      const nightLabel = lang==='th'? '/คืน' : lang==='zh'? '/晚' : '/night';
+
+      card.innerHTML = `
+        <div class="room-photo-wrap">
+          ${photoImgs}
+          ${photoNavHtml}
+        </div>
+        <div class="room-info">
+          <div>
+            <div class="room-header">
+              <span class="room-number">${room.num}</span>
+              <h3 class="room-name-text">${roomLabel}</h3>
+              <span class="avail-badge ${badgeClass}">${badgeText}</span>
+            </div>
+            <div class="amenities">${amenities}</div>
+          </div>
+          <div class="room-price-row">
+            <div>
+              <span class="rate-amount">${rateStr}</span>
+              <span class="rate-unit">${nightLabel}</span>
+              ${nights > 0 ? `<div style="font-family:'Jost',sans-serif;font-size:0.68rem;color:rgba(28,25,21,0.45);margin-top:0.2rem">฿${(nights * NIGHTLY_RATE).toLocaleString()} ${lang==='th'?'รวม':lang==='zh'?'合计':'total'} (${nights} ${lang==='th'?'คืน':lang==='zh'?'晚':'nights'})</div>` : ''}
+            </div>
+            <button class="${btnClass}" ${btnDisabled} onclick="selectRoom('${room.id}','${roomLabel}')">${selectLabel}</button>
+          </div>
+        </div>
+      `;
+
+      container.appendChild(card);
+    });
+
+    // Re-run reveal animation
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); } });
+    }, { threshold: 0.05 });
+    container.querySelectorAll('.reveal').forEach(el => io.observe(el));
+    setTimeout(() => container.querySelectorAll('.reveal').forEach(el => el.classList.add('visible')), 100);
+  }
+
+  // ── Photo carousel ────────────────────────────
+  function getPhotos(roomId) {
+    const card = document.getElementById('room-card-' + roomId);
+    return card ? Array.from(card.querySelectorAll('.room-photo-wrap img')) : [];
+  }
+  function currentPhotoIdx(roomId) {
+    return getPhotos(roomId).findIndex(img => img.classList.contains('active'));
+  }
+  function setPhoto(roomId, idx, evt) {
+    if (evt) evt.stopPropagation();
+    const imgs = getPhotos(roomId);
+    imgs.forEach((img, i) => img.classList.toggle('active', i === idx));
+    const counter = document.getElementById('photo-counter-' + roomId);
+    if (counter) counter.textContent = (idx + 1) + ' / ' + imgs.length;
+  }
+  function prevPhoto(roomId, evt) {
+    if (evt) evt.stopPropagation();
+    const imgs = getPhotos(roomId);
+    const cur  = currentPhotoIdx(roomId);
+    setPhoto(roomId, (cur - 1 + imgs.length) % imgs.length, null);
+  }
+  function nextPhoto(roomId, evt) {
+    if (evt) evt.stopPropagation();
+    const imgs = getPhotos(roomId);
+    setPhoto(roomId, (currentPhotoIdx(roomId) + 1) % imgs.length, null);
+  }
+
+  // ── Flatpickr init ────────────────────────────
+  function initFlatpickr(fullyBlockedDates) {
+    const onDayCreate = (dObj, dStr, fp, dayElem) => {
+      const d = dayElem.dateObj;
+      if (!d) return;
+      const iso = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+      if (fullyBlockedSet.has(iso)) {
+        dayElem.classList.add('fp-fully-booked');
+      } else if (someBookedSet.has(iso)) {
+        dayElem.classList.add('fp-some-booked');
+      }
+    };
+
+    const shared = {
+      dateFormat: 'd M Y', minDate: 'today',
+      disable: fullyBlockedDates || [],
+      disableMobile: true,
+      locale: { firstDayOfWeek: 1 },
+      onDayCreate,
+    };
+    fpCheckin = flatpickr('#checkin', {
+      ...shared,
+      onChange(sel) {
+        checkinDate = sel[0] || null;
+        if (checkinDate && fpCheckout) {
+          fpCheckout.set('minDate', new Date(checkinDate.getTime() + 86400000));
+          if (checkoutDate && checkoutDate <= checkinDate) { fpCheckout.clear(); checkoutDate = null; }
+        }
+        updateDateBar(); updateCheckBtn();
+      }
+    });
+    fpCheckout = flatpickr('#checkout', {
+      ...shared,
+      onChange(sel) { checkoutDate = sel[0] || null; updateDateBar(); updateCheckBtn(); }
+    });
+  }
+
+  function updateDateBar() {
+    const n = getNights();
+    const pill = document.getElementById('nights-pill');
+    if (n > 0) {
+      pill.textContent = n + (currentLang==='th'?' คืน':currentLang==='zh'?' 晚':' night' + (n!==1?'s':''));
+      pill.style.display = 'inline-block';
+    } else {
+      pill.style.display = 'none';
+    }
+    if (serverRooms) renderRooms(buildAvailMap(serverRooms));
+  }
+
+  function updateCheckBtn() {
+    const btn = document.getElementById('check-avail-btn');
+    btn.disabled = !(checkinDate && checkoutDate);
+  }
+
+  function buildAvailMap(rooms) {
+    const map = {};
+    rooms.forEach(r => { map[r.id] = r.available; });
+    return map;
+  }
+
+  // ── Check Availability ────────────────────────
+  async function checkAvailability() {
+    if (!checkinDate || !checkoutDate) return;
+    const notice = document.getElementById('rooms-notice');
+    notice.className = 'notice notice-loading mb-6';
+    notice.textContent = currentLang==='th' ? 'กำลังตรวจสอบห้องว่าง…' : currentLang==='zh' ? '正在查询可用房间…' : 'Checking room availability…';
+    notice.style.display = 'block';
+
+    try {
+      const res  = await fetch(`/api/rooms?checkIn=${formatDateISO(checkinDate)}&checkOut=${formatDateISO(checkoutDate)}`);
+      const data = await res.json();
+      serverRooms = data.rooms || ROOMS_LOCAL.map(r => ({ id: r.id, available: true }));
+      notice.style.display = 'none';
+      renderRooms(buildAvailMap(serverRooms));
+    } catch (e) {
+      notice.style.display = 'none';
+      serverRooms = ROOMS_LOCAL.map(r => ({ id: r.id, available: true }));
+      renderRooms(buildAvailMap(serverRooms));
+    }
+  }
+
+  // ── Room selection ────────────────────────────
+  function selectRoom(roomId, roomLabel) {
+    if (selectedRoomId === roomId) return;
+    selectedRoomId = roomId;
+
+    // Update summary
+    document.getElementById('sum-room-val').textContent    = roomLabel;
+    document.getElementById('sum-checkin-val').textContent  = checkinDate  ? formatDateDisplay(checkinDate)  : '—';
+    document.getElementById('sum-checkout-val').textContent = checkoutDate ? formatDateDisplay(checkoutDate) : '—';
+    const n = getNights();
+    const lang = currentLang;
+    document.getElementById('sum-nights-val').textContent  = n > 0 ? n + (lang==='th'?' คืน':lang==='zh'?' 晚':' night'+(n!==1?'s':'')) : '—';
+    document.getElementById('sum-rate-val').textContent    = `฿${NIGHTLY_RATE.toLocaleString()} / ${lang==='th'?'คืน':lang==='zh'?'晚':'night'}`;
+    document.getElementById('sum-total-val').textContent   = n > 0 ? `฿${(n * NIGHTLY_RATE).toLocaleString()}` : '—';
+
+    // Show banner
+    document.getElementById('banner-room-name').textContent = roomLabel;
+    document.getElementById('selected-room-banner').classList.add('show');
+
+    // Show form
+    const formSection = document.getElementById('booking-form-section');
+    formSection.classList.add('show');
+    setTimeout(() => formSection.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+
+    // Re-render cards to update button states
+    if (serverRooms) renderRooms(buildAvailMap(serverRooms));
+    else renderRooms(null);
+
+    validateForm();
+  }
+
+  function clearRoomSelection() {
+    selectedRoomId = null;
+    document.getElementById('selected-room-banner').classList.remove('show');
+    document.getElementById('booking-form-section').classList.remove('show');
+    if (serverRooms) renderRooms(buildAvailMap(serverRooms));
+    else renderRooms(null);
+  }
+
+  // ── Form validation ───────────────────────────
+  function validateForm() {
+    const name   = document.getElementById('guest-name').value.trim();
+    const email  = document.getElementById('guest-email').value.trim();
+    const phone  = document.getElementById('guest-phone').value.trim();
+    const guests = document.getElementById('guest-count').value;
+    const ok = selectedRoomId && checkinDate && checkoutDate && name &&
+               /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && phone && guests;
+    document.getElementById('submit-btn').disabled = !ok;
+    return ok;
+  }
+  ['guest-name','guest-email','guest-phone','guest-count'].forEach(id => {
+    const el = document.getElementById(id);
+    el.addEventListener('input',  validateForm);
+    el.addEventListener('change', validateForm);
+  });
+
+  // ── Submit ────────────────────────────────────
+  async function submitBooking() {
+    if (!validateForm()) return;
+    const errorEl = document.getElementById('form-error');
+    errorEl.style.display = 'none';
+
+    const roomLocal = ROOMS_LOCAL.find(r => r.id === selectedRoomId);
+    const roomName  = currentLang==='th' ? roomLocal?.th : currentLang==='zh' ? roomLocal?.zh : roomLocal?.en;
+    const nights    = getNights();
+    const payload = {
+      checkIn:         formatDateISO(checkinDate),
+      checkOut:        formatDateISO(checkoutDate),
+      guestName:       document.getElementById('guest-name').value.trim(),
+      guestEmail:      document.getElementById('guest-email').value.trim(),
+      guestPhone:      document.getElementById('guest-phone').value.trim(),
+      guestCount:      document.getElementById('guest-count').value,
+      specialRequests: document.getElementById('special-requests').value.trim(),
+      roomId:          selectedRoomId,
+      roomName:        roomName,
+      lang:            currentLang,
+      nights,
+      total:           nights * NIGHTLY_RATE,
+    };
+
+    const btn     = document.getElementById('submit-btn');
+    const btnText = document.getElementById('btn-submit-text');
+    btn.disabled  = true;
+    btnText.textContent = '…';
+
+    try {
+      const res  = await fetch('/api/booking', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || 'Something went wrong. Please try again.');
+
+      const params = new URLSearchParams({
+        ref:     data.ref || data.referenceId,
+        checkIn: payload.checkIn, checkOut: payload.checkOut,
+        nights, total: payload.total,
+        name:    payload.guestName,
+        room:    roomName || '',
+      });
+      window.location.href = 'booking-confirm.html?' + params.toString();
+    } catch (err) {
+      errorEl.textContent = err.message;
+      errorEl.style.display = 'block';
+      btn.disabled  = false;
+      btnText.textContent = currentLang==='th' ? 'ส่งคำขอจอง' : currentLang==='zh' ? '提交预订申请' : 'Request to Book';
+    }
+  }
+
+  // ── Language ──────────────────────────────────
+  const T = {
+    'nl-stay':           { en:'Stay',                th:'ที่พัก',                  zh:'住宿' },
+    'nl-cafe':           { en:'Café',                th:'คาเฟ่',                   zh:'咖啡厅' },
+    'nl-life':           { en:'Experiences',         th:'ประสบการณ์',              zh:'体验活动' },
+    'nl-csr':            { en:'Conservation',        th:'อนุรักษ์',                zh:'生态保育' },
+    'nl-explore':        { en:'Explore',             th:'สำรวจ',                   zh:'探索' },
+    'nl-contact':        { en:'Contact',             th:'ติดต่อ',                  zh:'联系我们' },
+    'nav-book':          { en:'Book Now',            th:'จองที่พัก',               zh:'立即预订' },
+    'page-label':        { en:'Nakhon Nayok · Thailand', th:'นครนายก · ประเทศไทย', zh:'那空那育 · 泰国' },
+    'page-h1a':          { en:'Choose Your',         th:'เลือก',                  zh:'选择您的' },
+    'page-h1b':          { en:'Room',                th:'ห้องพัก',                 zh:'房间' },
+    'page-sub':          { en:'10 rooms · Each one unique · All in the heart of the forest', th:'10 ห้องพัก · แต่ละห้องมีเอกลักษณ์ · ท่ามกลางธรรมชาติ', zh:'10间客房 · 各具特色 · 深处森林之中' },
+    'label-checkin':     { en:'Check-in',            th:'เช็คอิน',                 zh:'入住日期' },
+    'label-checkout':    { en:'Check-out',           th:'เช็คเอาท์',               zh:'退房日期' },
+    'check-btn-text':    { en:'Check Availability',  th:'ตรวจสอบห้องว่าง',         zh:'查询空房' },
+    'section-guests':    { en:'Guest Details',       th:'ข้อมูลผู้เข้าพัก',        zh:'住客信息' },
+    'label-name':        { en:'Full Name',           th:'ชื่อ-นามสกุล',            zh:'姓名' },
+    'label-email':       { en:'Email Address',       th:'อีเมล',                  zh:'电子邮箱' },
+    'label-phone':       { en:'Phone Number',        th:'เบอร์โทรศัพท์',           zh:'电话号码' },
+    'label-guests':      { en:'Number of Guests',    th:'จำนวนผู้เข้าพัก',         zh:'入住人数' },
+    'label-requests':    { en:'Special Requests',    th:'คำขอพิเศษ',               zh:'特殊要求' },
+    'label-optional':    { en:'(optional)',          th:'(ถ้ามี)',                  zh:'（可选）' },
+    'btn-submit-text':   { en:'Request to Book',     th:'ส่งคำขอจอง',              zh:'提交预订申请' },
+    'policy-note':       { en:'By submitting this request, you agree to be contacted by our team to confirm availability and finalise your booking. No payment is required at this stage.', th:'การส่งคำขอนี้ถือว่าคุณยินยอมให้ทีมงานของเราติดต่อกลับเพื่อยืนยันการจอง ไม่จำเป็นต้องชำระเงินในขั้นตอนนี้', zh:'提交申请即表示您同意我们的团队与您联系以确认预订，本阶段无需付款。' },
+    'summary-title':     { en:'Booking Summary',     th:'สรุปการจอง',              zh:'预订摘要' },
+    'sum-room-label':    { en:'Room',                th:'ห้องพัก',                 zh:'房间' },
+    'sum-checkin-label': { en:'Check-in',            th:'เช็คอิน',                 zh:'入住' },
+    'sum-checkout-label':{ en:'Check-out',           th:'เช็คเอาท์',               zh:'退房' },
+    'sum-nights-label':  { en:'Duration',            th:'ระยะเวลา',                zh:'住宿时长' },
+    'sum-rate-label':    { en:'Nightly rate',        th:'ราคาต่อคืน',              zh:'每晚价格' },
+    'sum-total-label':   { en:'Total',               th:'รวม',                    zh:'合计' },
+    'expect-title':      { en:'What Happens Next',   th:'ขั้นตอนต่อไป',            zh:'后续步骤' },
+    'step-1':            { en:'We confirm your request within 24 hours.', th:'เราจะยืนยันคำขอภายใน 24 ชั่วโมง', zh:'我们将在24小时内确认您的申请。' },
+    'step-2':            { en:'You receive a confirmation email with booking reference.', th:'คุณจะได้รับอีเมลยืนยันพร้อมหมายเลขการจอง', zh:'您将收到一封含预订编号的确认邮件。' },
+    'step-3':            { en:'Our team contacts you to arrange payment.', th:'ทีมงานจะติดต่อเพื่อจัดการการชำระเงิน', zh:'我们的团队将联系您安排付款事宜。' },
+    'banner-label':      { en:'Selected Room',       th:'ห้องที่เลือก',             zh:'已选房间' },
+    'btn-change-room':   { en:'Change Room',         th:'เปลี่ยนห้อง',              zh:'更换房间' },
+    'contact-pre':       { en:'Questions?',          th:'สอบถามข้อมูล?',            zh:'有问题？' },
+  };
+
+  function setLang(lang) {
+    currentLang = lang;
+    Object.entries(T).forEach(([id, vals]) => {
+      const el = document.getElementById(id);
+      if (el && vals[lang] !== undefined) el.textContent = vals[lang];
+    });
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
+    });
+    document.documentElement.lang = lang === 'zh' ? 'zh-CN' : lang;
+    localStorage.setItem('eev-lang', lang);
+    // Re-render room cards with new language
+    if (serverRooms) renderRooms(buildAvailMap(serverRooms));
+    else renderRooms(null);
+  }
+
+  // ── Init ──────────────────────────────────────
+  const savedLang = localStorage.getItem('eev-lang') || 'en';
+  currentLang = savedLang;
+  document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.toggle('active', btn.getAttribute('data-lang') === savedLang));
+
+  // Render rooms immediately (no availability yet)
+  renderRooms(null);
+
+  // Init flatpickr with empty disable list first; loadBlockedDates() reinits with real data
+  initFlatpickr([]);
+
+  // Apply saved language after render
+  if (savedLang !== 'en') setLang(savedLang);
+
+  // Async: load booked dates for calendar highlighting (non-blocking)
+  loadBlockedDates();
+</script>
+
+</body>
+</html>

@@ -1,3 +1,8 @@
+# Secrets — never commit
+.env
+node_modules/
+temporary screenshots/
+
 brand_assets/eco eyes website photos /.DS_Store
 brand_assets/eco eyes website photos /Advertisement Photos/.DS_Store
 .DS_Store
