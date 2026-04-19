@@ -121,14 +121,15 @@
     .photo-counter { position: absolute; bottom: 0.6rem; right: 0.75rem; font-family: 'Jost', sans-serif; font-size: 0.6rem; letter-spacing: 0.08em; color: rgba(255,255,255,0.85); background: rgba(0,0,0,0.45); padding: 0.18rem 0.5rem; pointer-events: none; }
 
     /* ── Calendar booked-date indicators ── */
-    .flatpickr-day.fp-some-booked { position: relative; }
+    .flatpickr-day { position: relative !important; }
     .flatpickr-day.fp-some-booked::after {
-      content: ''; position: absolute; bottom: 3px; left: 50%; transform: translateX(-50%);
-      width: 4px; height: 4px; border-radius: 50%; background: rgba(196,163,106,0.7);
+      content: ''; position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%);
+      width: 4px; height: 4px; border-radius: 50%; background: rgba(196,163,106,0.75);
+      pointer-events: none; z-index: 1;
     }
     .flatpickr-day.fp-fully-booked {
       background: rgba(90,30,20,0.25) !important;
-      color: rgba(250,247,239,0.25) !important;
+      color: rgba(250,247,239,0.22) !important;
       text-decoration: line-through !important;
     }
 
@@ -290,7 +291,7 @@
   </div>
   <div class="date-sep"></div>
   <span class="nights-pill" id="nights-pill" style="display:none"></span>
-  <button class="btn-check" id="check-avail-btn" onclick="checkAvailability()" disabled id="check-btn-text">
+  <button class="btn-check" id="check-avail-btn" onclick="checkAvailability()" disabled>
     <span id="check-btn-text">Check Availability</span>
   </button>
 </div>
@@ -536,11 +537,17 @@
       const data = await fetch('/api/blocked-dates').then(r => r.json());
       someBookedSet   = new Set(data.someBooked   || []);
       fullyBlockedSet = new Set(data.fullyBlocked  || []);
-      // Re-init pickers to pick up the disable array and day markers
-      if (fpCheckin)  fpCheckin.destroy();
-      if (fpCheckout) fpCheckout.destroy();
-      initFlatpickr([...fullyBlockedSet]);
-    } catch { /* non-fatal — calendar still works without highlights */ }
+
+      // Only disable future fully-booked dates (past dates don't matter with minDate:today)
+      const today = new Date().toISOString().split('T')[0];
+      const futureFull = [...fullyBlockedSet].filter(d => d >= today);
+
+      // Update existing pickers without destroying them — preserves any already-selected dates
+      if (fpCheckin)  fpCheckin.set('disable', futureFull);
+      if (fpCheckout) fpCheckout.set('disable', futureFull);
+      // onDayCreate closes over someBookedSet/fullyBlockedSet by reference;
+      // next time user opens the calendar the dots will render automatically.
+    } catch { /* non-fatal */ }
   }
 
   // ── Nav / scroll ─────────────────────────────
