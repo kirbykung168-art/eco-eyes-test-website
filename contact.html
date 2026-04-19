@@ -387,6 +387,7 @@
   document.querySelectorAll('.reveal').forEach(el => io.observe(el));
   setTimeout(() => document.querySelectorAll('section:first-of-type .reveal').forEach(el => el.classList.add('visible')), 150);
   function setLang(lang) {
+    if (lang === 'en') { localStorage.setItem('eev-lang','en'); location.reload(); return; }
     document.querySelectorAll('[data-en]').forEach(el => {
       const t = el.dataset[lang];
       if (t !== undefined) el.textContent = t;
