@@ -330,12 +330,12 @@
       <path d="M18 6L6 18M6 6l12 12"/>
     </svg>
   </button>
-  <a href="resort.html"  onclick="closeMenu()" class="font-display text-white text-4xl font-light italic hover:text-[#C4A36A] transition-colors">Stay</a>
-  <a href="cafe.html"    onclick="closeMenu()" class="font-display text-white text-4xl font-light italic hover:text-[#C4A36A] transition-colors">Café</a>
-  <a href="life.html"    onclick="closeMenu()" class="font-display text-white text-4xl font-light italic hover:text-[#C4A36A] transition-colors">Experiences</a>
-  <a href="csr.html"     onclick="closeMenu()" class="font-display text-white text-4xl font-light italic hover:text-[#C4A36A] transition-colors">Conservation</a>
-  <a href="explore.html" onclick="closeMenu()" class="font-display text-white text-4xl font-light italic hover:text-[#C4A36A] transition-colors">Explore</a>
-  <a href="contact.html" onclick="closeMenu()" class="font-display text-white text-4xl font-light italic hover:text-[#C4A36A] transition-colors">Contact</a>
+  <a href="resort.html"  onclick="closeMenu()" class="font-display text-white text-4xl font-light italic hover:text-[#C4A36A] transition-colors" data-en="Stay"         data-th="ที่พัก"          data-zh="住宿">Stay</a>
+  <a href="cafe.html"    onclick="closeMenu()" class="font-display text-white text-4xl font-light italic hover:text-[#C4A36A] transition-colors" data-en="Café"         data-th="คาเฟ่"           data-zh="咖啡厅">Café</a>
+  <a href="life.html"    onclick="closeMenu()" class="font-display text-white text-4xl font-light italic hover:text-[#C4A36A] transition-colors" data-en="Experiences"  data-th="ประสบการณ์"       data-zh="体验活动">Experiences</a>
+  <a href="csr.html"     onclick="closeMenu()" class="font-display text-white text-4xl font-light italic hover:text-[#C4A36A] transition-colors" data-en="Conservation" data-th="อนุรักษ์"         data-zh="生态保育">Conservation</a>
+  <a href="explore.html" onclick="closeMenu()" class="font-display text-white text-4xl font-light italic hover:text-[#C4A36A] transition-colors" data-en="Explore"      data-th="สำรวจ"           data-zh="探索">Explore</a>
+  <a href="contact.html" onclick="closeMenu()" class="font-display text-white text-4xl font-light italic hover:text-[#C4A36A] transition-colors" data-en="Contact"      data-th="ติดต่อ"          data-zh="联系我们">Contact</a>
   <div class="flex items-center gap-3 mt-2">
     <button class="lang-btn active text-sm" onclick="setLang('en');closeMenu()">EN</button>
     <span class="lang-divider">|</span>
@@ -402,7 +402,7 @@
     <div class="text-center mb-12 reveal">
       <p class="font-sans text-gold text-[0.58rem] tracking-widest uppercase mb-3" id="book-label">Reserve Your Experience</p>
       <h2 class="font-display text-white font-light" style="font-size:clamp(2rem,3.5vw,3rem)">
-        Book Your <em id="book-em">Stay</em>
+        <span id="book-pre">Book Your</span> <em id="book-em">Stay</em>
       </h2>
     </div>
 
@@ -655,7 +655,7 @@
     <div class="text-center mb-20 reveal">
       <p class="font-sans text-gold text-[0.62rem] tracking-widest uppercase mb-5" id="exp-label">What We Offer</p>
       <h2 class="font-display text-dark font-light" style="font-size:clamp(2.4rem,4vw,3.8rem)">
-        Our <em id="exp-em">Experiences</em>
+        <span id="exp-pre">Our</span> <em id="exp-em">Experiences</em>
       </h2>
     </div>
 
@@ -823,7 +823,7 @@
     <div class="text-center mb-16 reveal">
       <p class="font-sans text-gold text-[0.62rem] tracking-widest uppercase mb-5" id="rev-label">Guest Experiences</p>
       <h2 class="font-display text-white font-light mb-6" style="font-size:clamp(2.4rem,4vw,3.8rem)">
-        What Our Guests <em id="rev-em">Say</em>
+        <span id="rev-pre">What Our Guests</span> <em id="rev-em">Say</em>
       </h2>
       <div class="flex items-center justify-center gap-4">
         <div class="flex gap-1">
@@ -1164,6 +1164,7 @@
     'hero-cta1':     { en: 'Book Your Stay',                       th: 'จองที่พัก',                    zh: '预订住宿' },
     'hero-cta2':     { en: 'Explore',                              th: 'สำรวจ',                        zh: '探索' },
     'book-label':         { en: 'Reserve Your Experience',              th: 'สำรองที่พักของคุณ',             zh: '预订您的体验' },
+    'book-pre':           { en: 'Book Your',                            th: 'จอง',                          zh: '预订您的' },
     'book-em':            { en: 'Stay',                                 th: 'ที่พัก',                       zh: '住宿' },
     'direct-badge-text':  { en: 'Lowest Rate Guaranteed · Book Direct', th: 'ราคาถูกที่สุด · จองโดยตรง',     zh: '最低价格保证 · 直接预订' },
     'direct-label':       { en: 'Official Website',                     th: 'เว็บไซต์อย่างเป็นทางการ',        zh: '官方网站' },
@@ -1181,14 +1182,16 @@
     'about-h2-em':   { en: 'Became Forest',                       th: 'ผืนป่า',                       zh: '森林的故事' },
     'about-cta':     { en: 'Discover Our Resort',                  th: 'ค้นพบรีสอร์ทของเรา',            zh: '了解我们的度假村' },
     'exp-label':     { en: 'What We Offer',                       th: 'สิ่งที่เรานำเสนอ',              zh: '我们提供的服务' },
-    'exp-em':        { en: 'Experiences',                         th: 'ประสบการณ์',                   zh: '体验' },
+    'exp-pre':       { en: 'Our',                                 th: '',                             zh: '' },
+    'exp-em':        { en: 'Experiences',                         th: 'ประสบการณ์ของเรา',              zh: '我们的体验' },
     'cons-label':    { en: 'Our Mission',                         th: 'พันธกิจของเรา',                 zh: '我们的使命' },
     'cons-h2-line1': { en: 'Raising Awareness,',                  th: 'สร้างความตระหนักรู้',            zh: '提高意识，' },
     'cons-h2-em':    { en: 'One Forest at a Time',                th: 'ทีละหนึ่งผืนป่า',               zh: '一片森林一片森林地' },
     'cons-cta':      { en: 'Our Conservation Work',               th: 'งานอนุรักษ์ของเรา',             zh: '我们的保育工作' },
     'gallery-cta':   { en: 'View All Experiences',                th: 'ดูประสบการณ์ทั้งหมด',           zh: '查看所有体验' },
     'rev-label':     { en: 'Guest Experiences',                   th: 'ประสบการณ์ของแขก',              zh: '宾客体验' },
-    'rev-em':        { en: 'Say',                                 th: 'พูด',                          zh: '评价' },
+    'rev-pre':       { en: 'What Our Guests',                     th: '',                             zh: '' },
+    'rev-em':        { en: 'Say',                                 th: 'รีวิวจากแขกผู้เข้าพัก',         zh: '宾客评价' },
     'rev-cta':       { en: 'Read All 123 Reviews',                th: 'อ่านรีวิวทั้งหมด 123 รายการ',   zh: '查看全部123条评价' },
     'visit-label':   { en: 'Find Us',                             th: 'หาเราได้ที่',                   zh: '找到我们' },
     'visit-h2-line1':{ en: 'Plan Your',                           th: 'วางแผน',                       zh: '规划您的' },

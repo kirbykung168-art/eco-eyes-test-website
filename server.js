@@ -31,8 +31,21 @@ app.use(express.static(__dirname));   // serves index.html, booking.html etc.
 // ── Config ───────────────────────────────────────────────────
 const HOSTEX_API_KEY  = process.env.HOSTEX_API_KEY;
 const HOSTEX_BASE     = 'https://api.hostex.io/v3';
-const NIGHTLY_RATE    = parseInt(process.env.NIGHTLY_RATE || '2500', 10);
+const BASE_RATE       = parseInt(process.env.NIGHTLY_RATE || '4500', 10);
+const WEEKEND_RATE    = parseInt(process.env.WEEKEND_RATE || '5500', 10);
 let   cachedPropertyId = process.env.HOSTEX_PROPERTY_ID || null;
+
+function calcTotal(checkIn, checkOut) {
+  let total = 0;
+  const cur = new Date(checkIn + 'T12:00:00');
+  const end = new Date(checkOut + 'T12:00:00');
+  while (cur < end) {
+    const d = cur.getDay();
+    total += (d === 5 || d === 6) ? WEEKEND_RATE : BASE_RATE;
+    cur.setDate(cur.getDate() + 1);
+  }
+  return total;
+}
 
 // ── Universal Hostex list extractor ──────────────────────────
 // Hostex v3 wraps responses as { error_code:200, data: { properties:[...] } }
@@ -246,18 +259,18 @@ app.get('/api/rooms', async (req, res) => {
         zh:        room.zh,
         hostexId:  room.hostexId,
         available,
-        nightlyRate: NIGHTLY_RATE,
+        nightlyRate: BASE_RATE,
       };
     }));
 
-    res.json({ success: true, rooms: roomsWithAvail, nightlyRate: NIGHTLY_RATE });
+    res.json({ success: true, rooms: roomsWithAvail, nightlyRate: BASE_RATE });
   } catch (err) {
     console.error('Rooms error:', err.message);
     // Fall back: return all rooms as available
     res.json({
       success: true,
-      rooms: ROOMS.map(r => ({ ...r, available: true, blocked: [], nightlyRate: NIGHTLY_RATE })),
-      nightlyRate: NIGHTLY_RATE,
+      rooms: ROOMS.map(r => ({ ...r, available: true, blocked: [], nightlyRate: BASE_RATE })),
+      nightlyRate: BASE_RATE,
     });
   }
 });
@@ -308,10 +321,10 @@ app.get('/api/availability', async (req, res) => {
       console.warn('Calendar fetch failed:', e.message);
     }
 
-    res.json({ success: true, blocked: blockedRanges, blockedDates, nightlyRate: NIGHTLY_RATE });
+    res.json({ success: true, blocked: blockedRanges, blockedDates, nightlyRate: BASE_RATE });
   } catch (err) {
     console.error('Availability error:', err.message);
-    res.json({ success: false, error: err.message, blocked: [], blockedDates: [], nightlyRate: NIGHTLY_RATE });
+    res.json({ success: false, error: err.message, blocked: [], blockedDates: [], nightlyRate: BASE_RATE });
   }
 });
 
@@ -396,7 +409,7 @@ app.post('/api/booking', async (req, res) => {
         guest_phone:        phone,
         number_of_adults:   parseInt(guests, 10) || 1,
         number_of_guests:   parseInt(guests, 10) || 1,
-        total_price:        parseInt(total, 10),
+        total_price:        calcTotal(checkIn, checkOut),
         currency:           'THB',
         remarks:            specialRequests || '',
         channel_type:       'hostex_direct',
@@ -414,7 +427,8 @@ app.post('/api/booking', async (req, res) => {
     await sendConfirmationEmail({ name, email, checkIn, checkOut,
       nights, total, guests, referenceId, specialRequests, lang, roomName });
 
-    res.json({ success: true, ref: referenceId, referenceId, name, checkIn, checkOut, nights, total, guests, roomName });
+    const serverTotal = calcTotal(checkIn, checkOut);
+    res.json({ success: true, ref: referenceId, referenceId, name, checkIn, checkOut, nights, total: serverTotal, guests, roomName });
 
   } catch (err) {
     console.error('Booking error:', err.message);
