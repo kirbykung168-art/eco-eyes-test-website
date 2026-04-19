@@ -677,10 +677,14 @@ function buildEmailHtml({ name, checkIn, checkOut, nights,
 
 
 // ================================================================
-// Start server
+// Start server (local dev only — Vercel uses the export below)
 // ================================================================
-app.listen(PORT, () => {
-  console.log(`\n🌿 Eco Eyes Village server running at http://localhost:${PORT}`);
-  console.log(`   Booking page: http://localhost:${PORT}/booking.html\n`);
-  if (!HOSTEX_API_KEY) console.warn('⚠️  HOSTEX_API_KEY not set in .env');
-});
+if (process.env.VERCEL !== '1') {
+  app.listen(PORT, () => {
+    console.log(`\n🌿 Eco Eyes Village server running at http://localhost:${PORT}`);
+    console.log(`   Booking page: http://localhost:${PORT}/booking.html\n`);
+    if (!HOSTEX_API_KEY) console.warn('⚠️  HOSTEX_API_KEY not set in .env');
+  });
+}
+
+export default app;
