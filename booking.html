@@ -10,8 +10,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500;1,600&family=Jost:wght@200;300;400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -87,19 +85,16 @@
     .btn-check:hover { background: #6B4F22; }
     .btn-check:disabled { background: rgba(150,113,56,0.3); cursor: not-allowed; }
 
-    /* ── Flatpickr ── */
-    .flatpickr-calendar { background: #1C1915 !important; border: 1px solid rgba(196,163,106,0.25) !important; border-radius: 2px !important; box-shadow: 0 20px 60px rgba(0,0,0,0.5) !important; font-family: 'Jost', sans-serif !important; }
-    .flatpickr-months .flatpickr-month, .flatpickr-current-month, .flatpickr-monthDropdown-months, .numInputWrapper { color: #FAF7EF !important; fill: #FAF7EF !important; }
-    .flatpickr-current-month .flatpickr-monthDropdown-months { color: #FAF7EF !important; }
-    .flatpickr-day { color: rgba(250,247,239,0.7) !important; border-radius: 2px !important; }
-    .flatpickr-day.selected, .flatpickr-day.startRange, .flatpickr-day.endRange { background: #967138 !important; border-color: #967138 !important; color: #FAF7EF !important; }
-    .flatpickr-day.inRange { background: rgba(150,113,56,0.18) !important; border-color: transparent !important; color: #FAF7EF !important; }
-    .flatpickr-day.disabled, .flatpickr-day.flatpickr-disabled { color: rgba(250,247,239,0.18) !important; text-decoration: line-through; }
-    .flatpickr-day:hover:not(.disabled):not(.flatpickr-disabled) { background: rgba(150,113,56,0.25) !important; }
-    .flatpickr-weekday { color: rgba(196,163,106,0.6) !important; font-size: 0.65rem !important; }
-    .flatpickr-months .flatpickr-prev-month, .flatpickr-months .flatpickr-next-month { fill: rgba(250,247,239,0.5) !important; }
-    .flatpickr-months .flatpickr-prev-month:hover svg, .flatpickr-months .flatpickr-next-month:hover svg { fill: #C4A36A !important; }
-    .numInput { color: #FAF7EF !important; background: transparent !important; }
+    /* ── Native date inputs ── */
+    .date-input-styled[type="date"] {
+      color-scheme: dark;
+      -webkit-appearance: none; appearance: none;
+    }
+    .date-input-styled[type="date"]::-webkit-calendar-picker-indicator {
+      filter: invert(0.6) sepia(1) saturate(1.5) hue-rotate(5deg);
+      cursor: pointer; opacity: 0.7;
+    }
+    .date-input-styled[type="date"]::-webkit-calendar-picker-indicator:hover { opacity: 1; }
 
     /* ── Room cards ── */
     .room-card {
@@ -119,19 +114,6 @@
     .photo-btn { width: 30px; height: 30px; background: rgba(28,25,21,0.6); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; pointer-events: all; transition: background 0.2s ease; flex-shrink: 0; }
     .photo-btn:hover { background: rgba(28,25,21,0.85); }
     .photo-counter { position: absolute; bottom: 0.6rem; right: 0.75rem; font-family: 'Jost', sans-serif; font-size: 0.6rem; letter-spacing: 0.08em; color: rgba(255,255,255,0.85); background: rgba(0,0,0,0.45); padding: 0.18rem 0.5rem; pointer-events: none; }
-
-    /* ── Calendar booked-date indicators ── */
-    .flatpickr-day { position: relative !important; }
-    .flatpickr-day.fp-some-booked::after {
-      content: ''; position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%);
-      width: 4px; height: 4px; border-radius: 50%; background: rgba(196,163,106,0.75);
-      pointer-events: none; z-index: 1;
-    }
-    .flatpickr-day.fp-fully-booked {
-      background: rgba(90,30,20,0.25) !important;
-      color: rgba(250,247,239,0.22) !important;
-      text-decoration: line-through !important;
-    }
 
     /* Room info side */
     .room-info { padding: 1.75rem 2rem; display: flex; flex-direction: column; justify-content: space-between; }
@@ -282,12 +264,12 @@
 <div id="date-bar">
   <div class="date-field-wrap">
     <span class="date-label" id="label-checkin">Check-in</span>
-    <input type="text" id="checkin" class="date-input-styled" placeholder="DD MMM YYYY" readonly autocomplete="off">
+    <input type="date" id="checkin" class="date-input-styled" autocomplete="off">
   </div>
   <div class="date-sep"></div>
   <div class="date-field-wrap">
     <span class="date-label" id="label-checkout">Check-out</span>
-    <input type="text" id="checkout" class="date-input-styled" placeholder="DD MMM YYYY" readonly autocomplete="off">
+    <input type="date" id="checkout" class="date-input-styled" autocomplete="off">
   </div>
   <div class="date-sep"></div>
   <span class="nights-pill" id="nights-pill" style="display:none"></span>
@@ -521,49 +503,11 @@
   ];
 
   // Server availability data (loaded after Check Availability)
-  let serverRooms    = null;   // array from /api/rooms
+  let serverRooms    = null;
   let checkinDate    = null;
   let checkoutDate   = null;
   let selectedRoomId = null;
   let currentLang    = 'en';
-  let fpCheckin, fpCheckout;
-
-  // Calendar blocked-date sets (loaded async on page init)
-  let someBookedSet   = new Set();
-  let fullyBlockedSet = new Set();
-
-  // Stamps fp-some-booked / fp-fully-booked on every currently-rendered day cell.
-  // Called after data loads AND on every calendar open/month-change so dots always show.
-  function applyBlockedClasses() {
-    document.querySelectorAll('.flatpickr-day').forEach(dayElem => {
-      const d = dayElem.dateObj;
-      if (!d) return;
-      const iso = d.getFullYear() + '-' +
-        String(d.getMonth() + 1).padStart(2, '0') + '-' +
-        String(d.getDate()).padStart(2, '0');
-      dayElem.classList.remove('fp-some-booked', 'fp-fully-booked');
-      if (fullyBlockedSet.has(iso))      dayElem.classList.add('fp-fully-booked');
-      else if (someBookedSet.has(iso))   dayElem.classList.add('fp-some-booked');
-    });
-  }
-
-  async function loadBlockedDates() {
-    try {
-      const data = await fetch('/api/blocked-dates').then(r => r.json());
-      someBookedSet   = new Set(data.someBooked   || []);
-      fullyBlockedSet = new Set(data.fullyBlocked  || []);
-
-      const today = new Date().toISOString().split('T')[0];
-      const futureFull = [...fullyBlockedSet].filter(d => d >= today);
-
-      // Update disable array on existing pickers without destroying them
-      if (fpCheckin)  fpCheckin.set('disable', futureFull);
-      if (fpCheckout) fpCheckout.set('disable', futureFull);
-
-      // Stamp classes on any day cells already visible in the DOM right now
-      applyBlockedClasses();
-    } catch { /* non-fatal */ }
-  }
 
   // ── Nav / scroll ─────────────────────────────
   window.addEventListener('scroll', () => {
@@ -713,32 +657,34 @@
     setPhoto(roomId, (currentPhotoIdx(roomId) + 1) % imgs.length, null);
   }
 
-  // ── Flatpickr init ────────────────────────────
-  function initFlatpickr(fullyBlockedDates) {
-    const shared = {
-      dateFormat: 'd M Y', minDate: 'today',
-      disable: fullyBlockedDates || [],
-      disableMobile: true,
-      locale: { firstDayOfWeek: 1 },
-      // Apply dot classes whenever the calendar renders or navigates
-      onOpen:        () => setTimeout(applyBlockedClasses, 0),
-      onMonthChange: () => setTimeout(applyBlockedClasses, 0),
-      onYearChange:  () => setTimeout(applyBlockedClasses, 0),
-    };
-    fpCheckin = flatpickr('#checkin', {
-      ...shared,
-      onChange(sel) {
-        checkinDate = sel[0] || null;
-        if (checkinDate && fpCheckout) {
-          fpCheckout.set('minDate', new Date(checkinDate.getTime() + 86400000));
-          if (checkoutDate && checkoutDate <= checkinDate) { fpCheckout.clear(); checkoutDate = null; }
+  // ── Native date input wiring ──────────────────
+  function initDateInputs() {
+    const today = new Date().toISOString().split('T')[0];
+    const inEl  = document.getElementById('checkin');
+    const outEl = document.getElementById('checkout');
+
+    inEl.min  = today;
+    outEl.min = today;
+
+    inEl.addEventListener('change', () => {
+      checkinDate = inEl.value ? new Date(inEl.value + 'T12:00:00') : null;
+      if (inEl.value) {
+        // checkout must be at least the day after check-in
+        const nextDay = new Date(inEl.value + 'T12:00:00');
+        nextDay.setDate(nextDay.getDate() + 1);
+        outEl.min = nextDay.toISOString().split('T')[0];
+        // clear checkout if it's now before the new min
+        if (outEl.value && outEl.value <= inEl.value) {
+          outEl.value = '';
+          checkoutDate = null;
         }
-        updateDateBar(); updateCheckBtn();
       }
+      updateDateBar(); updateCheckBtn();
     });
-    fpCheckout = flatpickr('#checkout', {
-      ...shared,
-      onChange(sel) { checkoutDate = sel[0] || null; updateDateBar(); updateCheckBtn(); }
+
+    outEl.addEventListener('change', () => {
+      checkoutDate = outEl.value ? new Date(outEl.value + 'T12:00:00') : null;
+      updateDateBar(); updateCheckBtn();
     });
   }
 
@@ -774,7 +720,9 @@
     notice.style.display = 'block';
 
     try {
-      const res  = await fetch(`/api/rooms?checkIn=${formatDateISO(checkinDate)}&checkOut=${formatDateISO(checkoutDate)}`);
+      const ci = document.getElementById('checkin').value;
+      const co = document.getElementById('checkout').value;
+      const res  = await fetch(`/api/rooms?checkIn=${ci}&checkOut=${co}`);
       const data = await res.json();
       serverRooms = data.rooms || ROOMS_LOCAL.map(r => ({ id: r.id, available: true }));
       notice.style.display = 'none';
@@ -960,14 +908,11 @@
   // Render rooms immediately (no availability yet)
   renderRooms(null);
 
-  // Init flatpickr with empty disable list first; loadBlockedDates() reinits with real data
-  initFlatpickr([]);
+  // Wire up native date inputs
+  initDateInputs();
 
   // Apply saved language after render
   if (savedLang !== 'en') setLang(savedLang);
-
-  // Async: load booked dates for calendar highlighting (non-blocking)
-  loadBlockedDates();
 </script>
 
 </body>
