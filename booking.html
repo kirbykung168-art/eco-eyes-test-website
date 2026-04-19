@@ -85,19 +85,81 @@
     .btn-check:hover { background: #6B4F22; }
     .btn-check:disabled { background: rgba(150,113,56,0.3); cursor: not-allowed; }
 
-    /* ── Native date inputs ── */
-    .date-input-styled[type="date"] {
-      color-scheme: dark;
-      -webkit-appearance: none; appearance: none;
+    /* ── Custom date picker ── */
+    .date-display {
+      font-family: 'Jost', sans-serif; font-size: 0.85rem; color: #FAF7EF;
+      padding: 0.3rem 0; border-bottom: 1px solid rgba(196,163,106,0.3);
+      cursor: pointer; transition: border-color 0.3s; white-space: nowrap; min-width: 110px;
     }
-    .date-input-styled[type="date"]::-webkit-calendar-picker-indicator {
-      position: absolute; inset: 0; width: 100%; height: 100%;
-      opacity: 0; cursor: pointer;
+    .date-display.placeholder { color: rgba(250,247,239,0.35); }
+    #date-range-wrap:hover .date-display { border-color: #C4A36A; }
+
+    #cal-popup {
+      display: none; position: absolute; top: calc(100% + 2px); left: 0; z-index: 1000;
+      background: #fff; border: 1px solid rgba(0,0,0,0.12);
+      box-shadow: 0 16px 48px rgba(0,0,0,0.2); width: 320px;
+      font-family: 'Jost', sans-serif;
     }
-    .date-field-icon {
-      position: absolute; right: 0; bottom: 0.4rem; pointer-events: none;
-      opacity: 0.5;
+    #cal-popup.open { display: block; }
+    #cal-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 1.25rem 0.75rem; border-bottom: 1px solid rgba(0,0,0,0.07);
     }
+    .cal-nav-btn {
+      background: none; border: none; cursor: pointer; font-size: 1.4rem;
+      color: #1C1915; padding: 0.1rem 0.45rem; line-height: 1; opacity: 0.45;
+      transition: opacity 0.2s; font-family: 'Jost', sans-serif;
+    }
+    .cal-nav-btn:hover { opacity: 1; }
+    #cal-month-label {
+      font-size: 0.78rem; letter-spacing: 0.15em; text-transform: uppercase;
+      color: #1C1915; font-weight: 500;
+    }
+    #cal-grid { padding: 0.75rem 1rem 0.5rem; }
+    .cal-day-headers, .cal-days { display: grid; grid-template-columns: repeat(7, 1fr); }
+    .cal-day-headers { margin-bottom: 0.15rem; }
+    .cal-day-header {
+      font-size: 0.52rem; letter-spacing: 0.06em; text-transform: uppercase;
+      color: rgba(28,25,21,0.33); text-align: center; padding: 0.3rem 0;
+    }
+    .cal-days { gap: 1px; }
+    .cal-day {
+      position: relative; aspect-ratio: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; font-size: 0.75rem;
+      color: #1C1915; cursor: pointer; transition: background 0.12s;
+      user-select: none; border-radius: 1px;
+    }
+    .cal-day:hover:not(.cal-past):not(.cal-empty):not(.cal-fully-blocked) { background: rgba(28,25,21,0.07); }
+    .cal-day.cal-empty { cursor: default; }
+    .cal-day.cal-past { color: rgba(28,25,21,0.18); cursor: not-allowed; }
+    .cal-day.cal-fully-blocked { color: rgba(28,25,21,0.22); cursor: not-allowed; }
+    .cal-day-num { position: relative; }
+    .cal-day.cal-today .cal-day-num::after {
+      content: ''; position: absolute; bottom: -2px; left: 50%; transform: translateX(-50%);
+      width: 3px; height: 3px; border-radius: 50%; background: #967138;
+    }
+    .cal-day.cal-start, .cal-day.cal-end {
+      background: #1C1915 !important; color: #FAF7EF !important; border-radius: 2px;
+    }
+    .cal-day.cal-in-range { background: rgba(28,25,21,0.09); border-radius: 0; }
+    .avail-dot {
+      width: 3px; height: 3px; border-radius: 50%; margin-top: 1px; flex-shrink: 0;
+    }
+    .dot-avail      { background: #5cb85c; }
+    .dot-partial    { background: #e6a817; }
+    .dot-full-booked{ background: rgba(28,25,21,0.18); }
+    #cal-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.7rem 1.25rem; border-top: 1px solid rgba(0,0,0,0.07); background: #f8f8f8;
+    }
+    #cal-range-display { font-size: 0.68rem; color: rgba(28,25,21,0.5); line-height: 1.5; }
+    #cal-done-btn {
+      font-family: 'Jost', sans-serif; font-size: 0.58rem; letter-spacing: 0.2em;
+      text-transform: uppercase; background: #1C1915; color: #FAF7EF; border: none;
+      padding: 0.55rem 1.15rem; cursor: pointer; transition: background 0.2s;
+    }
+    #cal-done-btn:hover:not(:disabled) { background: #2A251E; }
+    #cal-done-btn:disabled { background: rgba(28,25,21,0.14); color: rgba(28,25,21,0.35); cursor: not-allowed; }
 
     /* ── Room cards ── */
     .room-card {
@@ -265,17 +327,41 @@
      DATE SELECTION BAR
 ═══════════════════════════════════════════ -->
 <div id="date-bar">
-  <div class="date-field-wrap">
-    <span class="date-label" id="label-checkin">Check-in</span>
-    <input type="date" id="checkin" class="date-input-styled" autocomplete="off" onclick="try{this.showPicker()}catch(e){}">
-    <svg class="date-field-icon" width="14" height="14" fill="none" stroke="#C4A36A" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+  <div id="date-range-wrap" onclick="toggleCalendar(event)" style="cursor:pointer;display:flex;align-items:center;gap:1.5rem;flex:1;min-width:0;position:relative;">
+    <div class="date-field-wrap">
+      <span class="date-label" id="label-checkin">Check-in</span>
+      <div class="date-display placeholder" id="checkin-display">Select date</div>
+    </div>
+    <div class="date-sep"></div>
+    <div class="date-field-wrap">
+      <span class="date-label" id="label-checkout">Check-out</span>
+      <div class="date-display placeholder" id="checkout-display">Select date</div>
+    </div>
+    <svg style="flex-shrink:0;opacity:0.45;" width="14" height="14" fill="none" stroke="#C4A36A" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+
+    <!-- Custom calendar popup — positioned relative to the date fields -->
+    <div id="cal-popup">
+      <div id="cal-header">
+        <button class="cal-nav-btn" onclick="calNavMonth(-1,event)">&#8249;</button>
+        <span id="cal-month-label"></span>
+        <button class="cal-nav-btn" onclick="calNavMonth(1,event)">&#8250;</button>
+      </div>
+      <div id="cal-grid">
+        <div class="cal-day-headers">
+          <div class="cal-day-header">Su</div><div class="cal-day-header">Mo</div>
+          <div class="cal-day-header">Tu</div><div class="cal-day-header">We</div>
+          <div class="cal-day-header">Th</div><div class="cal-day-header">Fr</div>
+          <div class="cal-day-header">Sa</div>
+        </div>
+        <div class="cal-days" id="cal-days"></div>
+      </div>
+      <div id="cal-footer">
+        <div id="cal-range-display">Select check-in date</div>
+        <button id="cal-done-btn" onclick="confirmCalendar(event)" disabled>DONE</button>
+      </div>
+    </div>
   </div>
-  <div class="date-sep"></div>
-  <div class="date-field-wrap">
-    <span class="date-label" id="label-checkout">Check-out</span>
-    <input type="date" id="checkout" class="date-input-styled" autocomplete="off" onclick="try{this.showPicker()}catch(e){}">
-    <svg class="date-field-icon" width="14" height="14" fill="none" stroke="#C4A36A" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-  </div>
+
   <div class="date-sep"></div>
   <span class="nights-pill" id="nights-pill" style="display:none"></span>
   <button class="btn-check" id="check-avail-btn" onclick="checkAvailability()" disabled>
@@ -683,35 +769,172 @@
     setPhoto(roomId, (currentPhotoIdx(roomId) + 1) % imgs.length, null);
   }
 
-  // ── Native date input wiring ──────────────────
-  function initDateInputs() {
-    const today = new Date().toISOString().split('T')[0];
-    const inEl  = document.getElementById('checkin');
-    const outEl = document.getElementById('checkout');
+  // ── Custom calendar picker ────────────────────
+  let calYear, calMonth;
+  let calPickStep  = 0;
+  let calTempStart = null;
+  let calTempEnd   = null;
+  let calHoverDate = null;
+  let blockedDatesData = null;
 
-    inEl.min  = today;
-    outEl.min = today;
+  const CAL_MONTHS = ['January','February','March','April','May','June',
+                      'July','August','September','October','November','December'];
 
-    inEl.addEventListener('change', () => {
-      checkinDate = inEl.value ? new Date(inEl.value + 'T12:00:00') : null;
-      if (inEl.value) {
-        // checkout must be at least the day after check-in
-        const nextDay = new Date(inEl.value + 'T12:00:00');
-        nextDay.setDate(nextDay.getDate() + 1);
-        outEl.min = nextDay.toISOString().split('T')[0];
-        // clear checkout if it's now before the new min
-        if (outEl.value && outEl.value <= inEl.value) {
-          outEl.value = '';
-          checkoutDate = null;
-        }
+  async function loadBlockedDates() {
+    try {
+      const res = await fetch('/api/blocked-dates');
+      blockedDatesData = await res.json();
+    } catch { blockedDatesData = { someBooked:[], fullyBlocked:[] }; }
+    if (document.getElementById('cal-popup').classList.contains('open')) renderCalGrid();
+  }
+
+  function initCalendar() {
+    const today = new Date();
+    calYear  = today.getFullYear();
+    calMonth = today.getMonth();
+    loadBlockedDates();
+    // Stop popup clicks from reaching document (prevents accidental close)
+    document.getElementById('cal-popup').addEventListener('click', e => e.stopPropagation());
+    document.addEventListener('click', (e) => {
+      const popup = document.getElementById('cal-popup');
+      const wrap  = document.getElementById('date-range-wrap');
+      if (!popup.contains(e.target) && !wrap.contains(e.target)) {
+        popup.classList.remove('open');
       }
-      updateDateBar(); updateCheckBtn();
     });
+  }
 
-    outEl.addEventListener('change', () => {
-      checkoutDate = outEl.value ? new Date(outEl.value + 'T12:00:00') : null;
-      updateDateBar(); updateCheckBtn();
-    });
+  function toggleCalendar(e) {
+    if (e) e.stopPropagation();
+    const popup = document.getElementById('cal-popup');
+    if (popup.classList.contains('open')) {
+      popup.classList.remove('open');
+    } else {
+      popup.classList.add('open');
+      renderCalGrid();
+    }
+  }
+
+  function calNavMonth(dir, e) {
+    if (e) e.stopPropagation();
+    calMonth += dir;
+    if (calMonth < 0)  { calMonth = 11; calYear--; }
+    if (calMonth > 11) { calMonth = 0;  calYear++; }
+    renderCalGrid();
+  }
+
+  function renderCalGrid() {
+    const today = new Date(); today.setHours(0,0,0,0);
+    document.getElementById('cal-month-label').textContent = CAL_MONTHS[calMonth] + ' ' + calYear;
+
+    const firstDow  = new Date(calYear, calMonth, 1).getDay();
+    const daysInMon = new Date(calYear, calMonth + 1, 0).getDate();
+    const grid      = document.getElementById('cal-days');
+    grid.innerHTML  = '';
+
+    const someBooked   = blockedDatesData?.someBooked   || [];
+    const fullyBlocked = blockedDatesData?.fullyBlocked || [];
+
+    for (let i = 0; i < firstDow; i++) {
+      const el = document.createElement('div');
+      el.className = 'cal-day cal-empty';
+      grid.appendChild(el);
+    }
+
+    for (let d = 1; d <= daysInMon; d++) {
+      const date    = new Date(calYear, calMonth, d);
+      const dateStr = formatDateISO(date);
+      const isPast  = date < today;
+
+      const cell = document.createElement('div');
+      cell.className = 'cal-day';
+      if (date.getTime() === today.getTime()) cell.classList.add('cal-today');
+      if (isPast) cell.classList.add('cal-past');
+
+      const isFullyBlocked = !isPast && fullyBlocked.includes(dateStr);
+      if (isFullyBlocked) cell.classList.add('cal-fully-blocked');
+
+      // Range highlight
+      const s = calTempStart;
+      const hov = calTempEnd || (calPickStep === 1 ? calHoverDate : null);
+      const rangeS = s && hov ? (s <= hov ? s : hov) : s;
+      const rangeE = s && hov ? (s <= hov ? hov : s) : null;
+      if (s && date.getTime() === s.getTime()) cell.classList.add('cal-start');
+      if (calTempEnd && date.getTime() === calTempEnd.getTime()) cell.classList.add('cal-end');
+      if (rangeS && rangeE && date > rangeS && date < rangeE) cell.classList.add('cal-in-range');
+
+      const num = document.createElement('span');
+      num.className = 'cal-day-num';
+      num.textContent = d;
+      cell.appendChild(num);
+
+      if (!isPast) {
+        const dot = document.createElement('span');
+        dot.className = 'avail-dot';
+        if (fullyBlocked.includes(dateStr))    dot.classList.add('dot-full-booked');
+        else if (someBooked.includes(dateStr)) dot.classList.add('dot-partial');
+        else                                   dot.classList.add('dot-avail');
+        cell.appendChild(dot);
+      }
+
+      if (!isPast && !isFullyBlocked) {
+        cell.addEventListener('click',      (ev) => { ev.stopPropagation(); onCalDayClick(date); });
+        cell.addEventListener('mouseenter', ()   => onCalDayHover(date));
+      }
+      grid.appendChild(cell);
+    }
+    updateCalFooter();
+  }
+
+  function onCalDayClick(date) {
+    if (calPickStep === 0) {
+      calTempStart = date; calTempEnd = null; calPickStep = 1;
+    } else {
+      if (date <= calTempStart) {
+        calTempStart = date; calTempEnd = null;
+      } else {
+        calTempEnd = date; calPickStep = 0;
+      }
+    }
+    calHoverDate = null;
+    renderCalGrid();
+  }
+
+  function onCalDayHover(date) {
+    if (calPickStep === 1) { calHoverDate = date; renderCalGrid(); }
+  }
+
+  function updateCalFooter() {
+    const display = document.getElementById('cal-range-display');
+    const done    = document.getElementById('cal-done-btn');
+    if (calTempStart && calTempEnd) {
+      const n = Math.round((calTempEnd - calTempStart) / 86400000);
+      display.innerHTML = formatDateDisplay(calTempStart) + ' — ' + formatDateDisplay(calTempEnd) +
+        '<br><span style="color:#967138;font-size:0.62rem">' + n + ' night' + (n !== 1 ? 's' : '') + '</span>';
+      done.disabled = false;
+    } else if (calTempStart) {
+      display.textContent = formatDateDisplay(calTempStart) + ' — Select checkout';
+      done.disabled = true;
+    } else {
+      display.textContent = 'Select check-in date';
+      done.disabled = true;
+    }
+  }
+
+  function confirmCalendar(e) {
+    if (e) e.stopPropagation();
+    if (!calTempStart || !calTempEnd) return;
+    checkinDate  = calTempStart;
+    checkoutDate = calTempEnd;
+    const inEl  = document.getElementById('checkin-display');
+    const outEl = document.getElementById('checkout-display');
+    inEl.textContent  = formatDateDisplay(checkinDate);
+    outEl.textContent = formatDateDisplay(checkoutDate);
+    inEl.classList.remove('placeholder');
+    outEl.classList.remove('placeholder');
+    document.getElementById('cal-popup').classList.remove('open');
+    updateDateBar();
+    updateCheckBtn();
   }
 
   function updateDateBar() {
@@ -746,8 +969,8 @@
     notice.style.display = 'block';
 
     try {
-      const ci = document.getElementById('checkin').value;
-      const co = document.getElementById('checkout').value;
+      const ci = formatDateISO(checkinDate);
+      const co = formatDateISO(checkoutDate);
       const res  = await fetch(`/api/rooms?checkIn=${ci}&checkOut=${co}`);
       const data = await res.json();
       serverRooms = data.rooms || ROOMS_LOCAL.map(r => ({ id: r.id, available: true }));
@@ -886,6 +1109,7 @@
     'label-checkin':     { en:'Check-in',            th:'เช็คอิน',                 zh:'入住日期' },
     'label-checkout':    { en:'Check-out',           th:'เช็คเอาท์',               zh:'退房日期' },
     'check-btn-text':    { en:'Check Availability',  th:'ตรวจสอบห้องว่าง',         zh:'查询空房' },
+    'cal-done-btn':      { en:'DONE',               th:'ยืนยัน',                  zh:'确认' },
     'section-guests':    { en:'Guest Details',       th:'ข้อมูลผู้เข้าพัก',        zh:'住客信息' },
     'label-name':        { en:'Full Name',           th:'ชื่อ-นามสกุล',            zh:'姓名' },
     'label-email':       { en:'Email Address',       th:'อีเมล',                  zh:'电子邮箱' },
@@ -939,8 +1163,8 @@
   // Render rooms immediately (no availability yet)
   renderRooms(null);
 
-  // Wire up native date inputs
-  initDateInputs();
+  // Wire up custom calendar
+  initCalendar();
 
   // Apply saved language after render
   if (savedLang !== 'en') setLang(savedLang);
