@@ -824,10 +824,10 @@
     const payload = {
       checkIn:         formatDateISO(checkinDate),
       checkOut:        formatDateISO(checkoutDate),
-      guestName:       document.getElementById('guest-name').value.trim(),
-      guestEmail:      document.getElementById('guest-email').value.trim(),
-      guestPhone:      document.getElementById('guest-phone').value.trim(),
-      guestCount:      document.getElementById('guest-count').value,
+      name:            document.getElementById('guest-name').value.trim(),
+      email:           document.getElementById('guest-email').value.trim(),
+      phone:           document.getElementById('guest-phone').value.trim(),
+      guests:          document.getElementById('guest-count').value,
       specialRequests: document.getElementById('special-requests').value.trim(),
       roomId:          selectedRoomId,
       roomName:        roomName,
@@ -853,7 +853,7 @@
         ref:     data.ref || data.referenceId,
         checkIn: payload.checkIn, checkOut: payload.checkOut,
         nights, total: payload.total,
-        name:    payload.guestName,
+        name:    payload.name,
         room:    roomName || '',
       });
       window.location.href = 'booking-confirm.html?' + params.toString();
