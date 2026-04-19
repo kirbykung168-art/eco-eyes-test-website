@@ -930,7 +930,6 @@
   const savedLang = localStorage.getItem('eev-lang') || 'en';
   currentLang = savedLang;
   document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.toggle('active', btn.getAttribute('data-lang') === savedLang));
-  if (savedLang !== 'en') setLang(savedLang);
 
   // Render rooms immediately (no availability yet)
   renderRooms(null);
