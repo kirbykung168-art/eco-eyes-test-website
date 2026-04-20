@@ -614,7 +614,7 @@
   let serverRooms    = null;
   let checkinDate    = null;
   let checkoutDate   = null;
-  let selectedRoomId = null;
+  let selectedRoomIds = [];
   let currentLang    = 'en';
 
   // ── Nav / scroll ─────────────────────────────
@@ -657,9 +657,10 @@
         : avail === false
         ? (lang==='th'?'ไม่ว่าง':lang==='zh'?'已订满':'Unavailable')
         : (lang==='th'?'เลือกวันที่ก่อน':lang==='zh'?'请选择日期':'Select dates first');
-      const selectLabel = selectedRoomId === room.id
+      const isSelected = selectedRoomIds.includes(room.id);
+      const selectLabel = isSelected
         ? (lang==='th'?'✓ เลือกแล้ว':lang==='zh'?'✓ 已选择':'✓ Selected')
-        : (lang==='th'?'เลือกห้องนี้':lang==='zh'?'选择此房间':'Select Room');
+        : (lang==='th'?'เพิ่มห้องนี้':lang==='zh'?'添加此房间':'Add Room');
 
       const photoImgs = photos.map((p, i) =>
         `<img src="${PHOTO_BASE}${p}" alt="${room.en} - photo ${i+1}" class="${i===0?'active':''}" loading="${i===0?'eager':'lazy'}" onerror="this.style.display='none'">`
@@ -695,7 +696,7 @@
           lang==='th'?'รวมอาหารเช้า':lang==='zh'?'含早餐':'Breakfast Included'),
       ].join('');
 
-      const btnClass = selectedRoomId === room.id
+      const btnClass = isSelected
         ? 'btn-select btn-selected'
         : avail === false ? 'btn-select btn-unavail' : 'btn-select';
       const btnDisabled = avail === false ? 'disabled' : '';
@@ -727,7 +728,7 @@
               <div style="font-family:'Jost',sans-serif;font-size:0.63rem;color:rgba(28,25,21,0.38);margin-top:0.2rem">${weekendNote}</div>
               ${nights > 0 ? `<div style="font-family:'Jost',sans-serif;font-size:0.68rem;color:rgba(28,25,21,0.55);margin-top:0.15rem;font-weight:500">฿${tripTotal.toLocaleString()} ${lang==='th'?'รวม':lang==='zh'?'合计':'total'} (${nights} ${lang==='th'?'คืน':lang==='zh'?'晚':'nights'})</div>` : ''}
             </div>
-            <button class="${btnClass}" ${btnDisabled} onclick="selectRoom('${room.id}','${roomLabel}')">${selectLabel}</button>
+            <button class="${btnClass}" ${btnDisabled} onclick="selectRoom('${room.id}')">${selectLabel}</button>
           </div>
         </div>
       `;
@@ -1008,39 +1009,63 @@
   }
 
   // ── Room selection ────────────────────────────
-  function selectRoom(roomId, roomLabel) {
-    if (selectedRoomId === roomId) return;
-    selectedRoomId = roomId;
+  function selectRoom(roomId) {
+    const idx = selectedRoomIds.indexOf(roomId);
+    const adding = idx === -1;
+    if (adding) selectedRoomIds.push(roomId);
+    else        selectedRoomIds.splice(idx, 1);
 
-    // Update summary
-    document.getElementById('sum-room-val').textContent    = roomLabel;
-    document.getElementById('sum-checkin-val').textContent  = checkinDate  ? formatDateDisplay(checkinDate)  : '—';
-    document.getElementById('sum-checkout-val').textContent = checkoutDate ? formatDateDisplay(checkoutDate) : '—';
-    const n = getNights();
-    const lang = currentLang;
-    document.getElementById('sum-nights-val').textContent  = n > 0 ? n + (lang==='th'?' คืน':lang==='zh'?' 晚':' night'+(n!==1?'s':'')) : '—';
-    const tripTot = (checkinDate && checkoutDate) ? calcTotal(checkinDate, checkoutDate) : 0;
-    document.getElementById('sum-rate-val').textContent    = `฿${BASE_RATE.toLocaleString()}–฿${WEEKEND_RATE.toLocaleString()} / ${lang==='th'?'คืน':lang==='zh'?'晚':'night'}`;
-    document.getElementById('sum-total-val').textContent   = n > 0 ? `฿${tripTot.toLocaleString()}` : '—';
+    updateRoomSummary();
 
-    // Show banner
-    document.getElementById('banner-room-name').textContent = roomLabel;
-    document.getElementById('selected-room-banner').classList.add('show');
-
-    // Show form
+    const banner      = document.getElementById('selected-room-banner');
     const formSection = document.getElementById('booking-form-section');
-    formSection.classList.add('show');
-    setTimeout(() => formSection.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+    if (selectedRoomIds.length > 0) {
+      banner.classList.add('show');
+      formSection.classList.add('show');
+      if (adding) setTimeout(() => formSection.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+    } else {
+      banner.classList.remove('show');
+      formSection.classList.remove('show');
+    }
 
-    // Re-render cards to update button states
     if (serverRooms) renderRooms(buildAvailMap(serverRooms));
     else renderRooms(null);
-
     validateForm();
   }
 
+  function updateRoomSummary() {
+    const lang  = currentLang;
+    const n     = getNights();
+    const count = selectedRoomIds.length;
+    const perRoom = (checkinDate && checkoutDate) ? calcTotal(checkinDate, checkoutDate) : 0;
+    const grand   = perRoom * count;
+
+    const names = selectedRoomIds.map(id => {
+      const r = ROOMS_LOCAL.find(x => x.id === id);
+      return r ? (lang==='th' ? r.th : lang==='zh' ? r.zh : r.en) : id;
+    });
+
+    const roomDisplay = count === 0 ? '—'
+      : count === 1 ? names[0]
+      : names.join(', ');
+
+    document.getElementById('sum-room-val').textContent     = roomDisplay;
+    document.getElementById('sum-checkin-val').textContent  = checkinDate  ? formatDateDisplay(checkinDate)  : '—';
+    document.getElementById('sum-checkout-val').textContent = checkoutDate ? formatDateDisplay(checkoutDate) : '—';
+    document.getElementById('sum-nights-val').textContent   = n > 0 ? n + (lang==='th'?' คืน':lang==='zh'?' 晚':' night'+(n!==1?'s':'')) : '—';
+    const rateLabel = `฿${BASE_RATE.toLocaleString()}–฿${WEEKEND_RATE.toLocaleString()} / ${lang==='th'?'คืน':lang==='zh'?'晚':'night'}`;
+    const roomsLabel = count > 0 ? ` × ${count} ${lang==='th'?'ห้อง':lang==='zh'?'间':'room'+(count!==1?'s':'')}` : '';
+    document.getElementById('sum-rate-val').textContent     = rateLabel + roomsLabel;
+    document.getElementById('sum-total-val').textContent    = n > 0 && count > 0 ? `฿${grand.toLocaleString()}` : '—';
+
+    const bannerText = count === 0 ? '—'
+      : count === 1 ? names[0]
+      : `${count} ${lang==='th'?'ห้องที่เลือก':lang==='zh'?'间房间':' rooms selected'}`;
+    document.getElementById('banner-room-name').textContent = bannerText;
+  }
+
   function clearRoomSelection() {
-    selectedRoomId = null;
+    selectedRoomIds = [];
     document.getElementById('selected-room-banner').classList.remove('show');
     document.getElementById('booking-form-section').classList.remove('show');
     if (serverRooms) renderRooms(buildAvailMap(serverRooms));
@@ -1053,7 +1078,7 @@
     const email  = document.getElementById('guest-email').value.trim();
     const phone  = document.getElementById('guest-phone').value.trim();
     const guests = document.getElementById('guest-count').value;
-    const ok = selectedRoomId && checkinDate && checkoutDate && name &&
+    const ok = selectedRoomIds.length > 0 && checkinDate && checkoutDate && name &&
                /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && phone && guests;
     document.getElementById('submit-btn').disabled = !ok;
     return ok;
@@ -1070,9 +1095,10 @@
     const errorEl = document.getElementById('form-error');
     errorEl.style.display = 'none';
 
-    const roomLocal = ROOMS_LOCAL.find(r => r.id === selectedRoomId);
-    const roomName  = currentLang==='th' ? roomLocal?.th : currentLang==='zh' ? roomLocal?.zh : roomLocal?.en;
-    const nights    = getNights();
+    const roomLocals = selectedRoomIds.map(id => ROOMS_LOCAL.find(r => r.id === id)).filter(Boolean);
+    const roomNames  = roomLocals.map(r => currentLang==='th' ? r.th : currentLang==='zh' ? r.zh : r.en);
+    const nights     = getNights();
+    const perRoom    = calcTotal(checkinDate, checkoutDate);
     const payload = {
       checkIn:         formatDateISO(checkinDate),
       checkOut:        formatDateISO(checkoutDate),
@@ -1081,11 +1107,12 @@
       phone:           document.getElementById('guest-phone').value.trim(),
       guests:          document.getElementById('guest-count').value,
       specialRequests: document.getElementById('special-requests').value.trim(),
-      roomId:          selectedRoomId,
-      roomName:        roomName,
+      roomIds:         selectedRoomIds,
+      roomId:          selectedRoomIds[0],
+      roomName:        roomNames.join(', '),
       lang:            currentLang,
       nights,
-      total:           calcTotal(checkinDate, checkoutDate),
+      total:           perRoom * selectedRoomIds.length,
     };
 
     const btn     = document.getElementById('submit-btn');

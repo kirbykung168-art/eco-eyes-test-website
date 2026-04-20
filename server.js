@@ -347,7 +347,7 @@ app.get('/api/availability', async (req, res) => {
 app.post('/api/booking', async (req, res) => {
   const { name, email, phone, guests, checkIn, checkOut,
           nights, total, specialRequests, lang,
-          roomId, roomName } = req.body;
+          roomId, roomIds, roomName } = req.body;
 
   // ── Validation ───────────────────────────────────────────
   if (!name || !email || !phone || !checkIn || !checkOut || !guests) {
@@ -357,77 +357,58 @@ app.post('/api/booking', async (req, res) => {
     return res.status(400).json({ success: false, error: 'Invalid email address' });
   }
 
-  // Resolve Hostex listing ID for the selected room
-  let targetListingId = null;
-  try {
-    const rooms = await matchRoomsToListings();
-    const room  = rooms.find(r => r.id === roomId);
-    targetListingId = room?.hostexId || null;
-  } catch (_) { /* fall through to property-level */ }
+  // Support both single roomId and multi-room roomIds array
+  const allRoomIds = Array.isArray(roomIds) && roomIds.length > 0
+    ? roomIds
+    : roomId ? [roomId] : [];
 
   const referenceId = generateRef();
 
   try {
-    // ──────────────────────────────────────────────────────
-    // [PAYMENT STEP GOES HERE]
-    //
-    // When SiamPay is ready, replace this comment block with:
-    //
-    //   const payment = await createSiamPayIntent({
-    //     amount:      total,           // in THB (integer, e.g. 5000)
-    //     currency:    'THB',
-    //     reference:   referenceId,
-    //     description: `Eco Eyes Village — ${nights} night(s)`,
-    //     return_url:  `${process.env.SITE_URL}/booking-confirm.html`,
-    //     cancel_url:  `${process.env.SITE_URL}/booking.html`,
-    //   });
-    //
-    //   // Instead of completing the booking here, return the
-    //   // SiamPay payment URL to the frontend:
-    //   return res.json({ success: true, requiresPayment: true,
-    //                     paymentUrl: payment.redirect_url });
-    //
-    // Then create a /api/siampay-webhook endpoint below that
-    // receives SiamPay's success callback, and THAT webhook
-    // triggers the Hostex POST and email instead.
-    //
-    // For now we skip payment and proceed directly.
-    // ──────────────────────────────────────────────────────
+    const allRooms = await matchRoomsToListings();
 
-    const propertyId = targetListingId || await getPropertyId();
+    // ── POST one Hostex reservation per selected room ────
+    const perRoomPrice = calcTotal(checkIn, checkOut);
+    const targetIds = allRoomIds.length > 0
+      ? allRoomIds
+      : [null]; // fallback: one booking at property level
 
-    // ── POST reservation to Hostex ───────────────────────
-    // Field names confirmed from live API response (check_in_date, check_out_date)
-    await hostexFetch('/reservations', {
-      method: 'POST',
-      body: JSON.stringify({
-        property_id:        propertyId,
-        check_in_date:      checkIn,
-        check_out_date:     checkOut,
-        guest_name:         name,
-        guest_email:        email,
-        guest_phone:        phone,
-        number_of_adults:   parseInt(guests, 10) || 1,
-        number_of_guests:   parseInt(guests, 10) || 1,
-        total_price:        calcTotal(checkIn, checkOut),
-        currency:           'THB',
-        remarks:            specialRequests || '',
-        channel_type:       'hostex_direct',
-        status:             'accepted',
-        creator:            'Eco Eyes Village',
-      }),
-    });
-    // Invalidate cached room availability so next request picks up the new booking
+    for (const rid of targetIds) {
+      const matched   = allRooms.find(r => r.id === rid);
+      const propertyId = matched?.hostexId || await getPropertyId();
+      await hostexFetch('/reservations', {
+        method: 'POST',
+        body: JSON.stringify({
+          property_id:        propertyId,
+          check_in_date:      checkIn,
+          check_out_date:     checkOut,
+          guest_name:         name,
+          guest_email:        email,
+          guest_phone:        phone,
+          number_of_adults:   parseInt(guests, 10) || 1,
+          number_of_guests:   parseInt(guests, 10) || 1,
+          total_price:        perRoomPrice,
+          currency:           'THB',
+          remarks:            specialRequests || '',
+          channel_type:       'hostex_direct',
+          status:             'accepted',
+          creator:            'Eco Eyes Village',
+        }),
+      });
+      console.log(`  ✅ Reservation created for ${matched?.en || rid} (${checkIn} → ${checkOut})`);
+    }
+
+    // Invalidate cached room availability so next request picks up the new bookings
     roomListingCache = null;
     blockedDatesCache = null;
 
-    console.log(`✅ Booking created: ${referenceId} for ${name} — ${roomName || 'Room TBD'} (${checkIn} → ${checkOut})`);
+    const serverTotal = perRoomPrice * targetIds.length;
+    console.log(`✅ Booking ${referenceId} for ${name} — ${roomName || allRoomIds.join(',')} — total ฿${serverTotal}`);
 
     // ── Send confirmation email ──────────────────────────
     await sendConfirmationEmail({ name, email, checkIn, checkOut,
-      nights, total, guests, referenceId, specialRequests, lang, roomName });
+      nights, total: serverTotal, guests, referenceId, specialRequests, lang, roomName });
 
-    const serverTotal = calcTotal(checkIn, checkOut);
     res.json({ success: true, ref: referenceId, referenceId, name, checkIn, checkOut, nights, total: serverTotal, guests, roomName });
 
   } catch (err) {
