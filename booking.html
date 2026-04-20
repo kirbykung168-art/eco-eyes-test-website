@@ -97,13 +97,13 @@
     #cal-popup {
       display: none; position: absolute; top: calc(100% + 2px); left: 0; z-index: 1000;
       background: #fff; border: 1px solid rgba(0,0,0,0.12);
-      box-shadow: 0 16px 48px rgba(0,0,0,0.2); width: 320px;
+      box-shadow: 0 16px 48px rgba(0,0,0,0.2); width: 390px;
       font-family: 'Jost', sans-serif;
     }
     #cal-popup.open { display: block; }
     #cal-header {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 1rem 1.25rem 0.75rem; border-bottom: 1px solid rgba(0,0,0,0.07);
+      padding: 1.1rem 1.5rem 0.9rem; border-bottom: 1px solid rgba(0,0,0,0.07);
     }
     .cal-nav-btn {
       background: none; border: none; cursor: pointer; font-size: 1.4rem;
@@ -115,17 +115,17 @@
       font-size: 0.78rem; letter-spacing: 0.15em; text-transform: uppercase;
       color: #1C1915; font-weight: 500;
     }
-    #cal-grid { padding: 0.75rem 1rem 0.5rem; }
+    #cal-grid { padding: 1rem 1.25rem 0.6rem; }
     .cal-day-headers, .cal-days { display: grid; grid-template-columns: repeat(7, 1fr); }
-    .cal-day-headers { margin-bottom: 0.15rem; }
+    .cal-day-headers { margin-bottom: 0.2rem; }
     .cal-day-header {
-      font-size: 0.52rem; letter-spacing: 0.06em; text-transform: uppercase;
-      color: rgba(28,25,21,0.33); text-align: center; padding: 0.3rem 0;
+      font-size: 0.56rem; letter-spacing: 0.06em; text-transform: uppercase;
+      color: rgba(28,25,21,0.33); text-align: center; padding: 0.35rem 0;
     }
-    .cal-days { gap: 1px; }
+    .cal-days { gap: 2px; }
     .cal-day {
       position: relative; aspect-ratio: 1; display: flex; flex-direction: column;
-      align-items: center; justify-content: center; font-size: 0.75rem;
+      align-items: center; justify-content: center; font-size: 0.82rem;
       color: #1C1915; cursor: pointer; transition: background 0.12s;
       user-select: none; border-radius: 1px;
     }
@@ -150,9 +150,9 @@
     .dot-full-booked{ background: rgba(28,25,21,0.18); }
     #cal-footer {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 0.7rem 1.25rem; border-top: 1px solid rgba(0,0,0,0.07); background: #f8f8f8;
+      padding: 0.85rem 1.5rem; border-top: 1px solid rgba(0,0,0,0.07); background: #f8f8f8;
     }
-    #cal-range-display { font-size: 0.68rem; color: rgba(28,25,21,0.5); line-height: 1.5; }
+    #cal-range-display { font-size: 0.72rem; color: rgba(28,25,21,0.5); line-height: 1.5; }
     #cal-done-btn {
       font-family: 'Jost', sans-serif; font-size: 0.58rem; letter-spacing: 0.2em;
       text-transform: uppercase; background: #1C1915; color: #FAF7EF; border: none;
