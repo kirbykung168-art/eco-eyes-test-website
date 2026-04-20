@@ -95,7 +95,8 @@
     #date-range-wrap:hover .date-display { border-color: #C4A36A; }
 
     #cal-popup {
-      display: none; position: absolute; top: calc(100% + 2px); left: 0; z-index: 1000;
+      display: none; position: absolute; top: calc(100% + 2px); left: 50%;
+      transform: translateX(-50%); z-index: 1000;
       background: #fff; border: 1px solid rgba(0,0,0,0.12);
       box-shadow: 0 16px 48px rgba(0,0,0,0.2); width: 390px;
       font-family: 'Jost', sans-serif;
@@ -863,6 +864,8 @@
       if (calTempEnd && date.getTime() === calTempEnd.getTime()) cell.classList.add('cal-end');
       if (rangeS && rangeE && date > rangeS && date < rangeE) cell.classList.add('cal-in-range');
 
+      cell.dataset.date = dateStr;
+
       const num = document.createElement('span');
       num.className = 'cal-day-num';
       num.textContent = d;
@@ -878,11 +881,15 @@
       }
 
       if (!isPast && !isFullyBlocked) {
-        cell.addEventListener('click',      (ev) => { ev.stopPropagation(); onCalDayClick(date); });
-        cell.addEventListener('mouseenter', ()   => onCalDayHover(date));
+        cell.addEventListener('click', (ev) => { ev.stopPropagation(); onCalDayClick(date); });
+        cell.addEventListener('mouseenter', () => onCalDayHover(date));
       }
       grid.appendChild(cell);
     }
+    // Clear hover when mouse leaves the grid entirely
+    grid.addEventListener('mouseleave', () => {
+      if (calPickStep === 1 && calHoverDate) { calHoverDate = null; updateRangeClasses(); }
+    });
     updateCalFooter();
   }
 
@@ -901,7 +908,24 @@
   }
 
   function onCalDayHover(date) {
-    if (calPickStep === 1) { calHoverDate = date; renderCalGrid(); }
+    if (calPickStep !== 1) return;
+    calHoverDate = date;
+    updateRangeClasses();
+  }
+
+  function updateRangeClasses() {
+    const s = calTempStart;
+    const hov = calTempEnd || (calPickStep === 1 ? calHoverDate : null);
+    const rangeS = s && hov ? (s <= hov ? s : hov) : s;
+    const rangeE = s && hov ? (s <= hov ? hov : s) : null;
+    document.querySelectorAll('#cal-days .cal-day[data-date]').forEach(cell => {
+      const date = new Date(cell.dataset.date + 'T00:00:00');
+      cell.classList.remove('cal-start', 'cal-end', 'cal-in-range');
+      if (s && date.getTime() === s.getTime())            cell.classList.add('cal-start');
+      if (calTempEnd && date.getTime() === calTempEnd.getTime()) cell.classList.add('cal-end');
+      if (rangeS && rangeE && date > rangeS && date < rangeE) cell.classList.add('cal-in-range');
+    });
+    updateCalFooter();
   }
 
   function updateCalFooter() {
