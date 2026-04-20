@@ -9,12 +9,13 @@
 //   1. Serves all static HTML/CSS/JS files from the project root
 //   2. Provides API endpoints for the booking system
 //   3. Proxies Hostex API calls (keeps API key server-side)
-//   4. Handles Hostex webhooks (keeps dates in sync)
-//   5. Sends confirmation emails via Resend
+//   4. Creates Stripe Checkout Sessions for payment
+//   5. Stripe webhook → creates Hostex reservation + sends email
 // ================================================================
 
 import express   from 'express';
 import dotenv    from 'dotenv';
+import Stripe    from 'stripe';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -24,15 +25,26 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const app  = express();
 const PORT = process.env.PORT || 3000;
 
-// ── Middleware ────────────────────────────────────────────────
+// ── Stripe ────────────────────────────────────────────────────
+const stripe = process.env.STRIPE_SECRET_KEY
+  ? new Stripe(process.env.STRIPE_SECRET_KEY)
+  : null;
+
+// ── Stripe webhook — must be registered BEFORE express.json() ─
+// Stripe requires the raw (unparsed) body to verify the signature.
+// express.json() would consume it first, breaking verification.
+app.post('/api/stripe-webhook', express.raw({ type: 'application/json' }), handleStripeWebhook);
+
+// ── JSON + static middleware ──────────────────────────────────
 app.use(express.json());
 app.use(express.static(__dirname));   // serves index.html, booking.html etc.
 
 // ── Config ───────────────────────────────────────────────────
 const HOSTEX_API_KEY  = process.env.HOSTEX_API_KEY;
 const HOSTEX_BASE     = 'https://api.hostex.io/v3';
-const BASE_RATE       = parseInt(process.env.NIGHTLY_RATE || '4500', 10);
-const WEEKEND_RATE    = parseInt(process.env.WEEKEND_RATE || '5500', 10);
+const BASE_RATE       = parseInt(process.env.NIGHTLY_RATE  || '2700', 10);
+const WEEKEND_RATE    = parseInt(process.env.WEEKEND_RATE  || '3500', 10);
+const SITE_URL        = process.env.SITE_URL || 'http://localhost:3000';
 let   cachedPropertyId = process.env.HOSTEX_PROPERTY_ID || null;
 
 function calcTotal(checkIn, checkOut) {
@@ -363,52 +375,54 @@ app.post('/api/booking', async (req, res) => {
     : roomId ? [roomId] : [];
 
   const referenceId = generateRef();
+  const perRoomPrice = calcTotal(checkIn, checkOut);
+  const serverTotal  = perRoomPrice * Math.max(allRoomIds.length, 1);
 
   try {
-    const allRooms = await matchRoomsToListings();
-
-    // ── POST one Hostex reservation per selected room ────
-    const perRoomPrice = calcTotal(checkIn, checkOut);
-    const targetIds = allRoomIds.length > 0
-      ? allRoomIds
-      : [null]; // fallback: one booking at property level
-
-    for (const rid of targetIds) {
-      const matched   = allRooms.find(r => r.id === rid);
-      const propertyId = matched?.hostexId || await getPropertyId();
-      await hostexFetch('/reservations', {
-        method: 'POST',
-        body: JSON.stringify({
-          property_id:        propertyId,
-          check_in_date:      checkIn,
-          check_out_date:     checkOut,
-          guest_name:         name,
-          guest_email:        email,
-          guest_phone:        phone,
-          number_of_adults:   parseInt(guests, 10) || 1,
-          number_of_guests:   parseInt(guests, 10) || 1,
-          total_price:        perRoomPrice,
-          currency:           'THB',
-          remarks:            specialRequests || '',
-          channel_type:       'hostex_direct',
-          status:             'accepted',
-          creator:            'Eco Eyes Village',
-        }),
+    // ── Stripe Checkout Session ──────────────────────────
+    if (stripe) {
+      const roomLabel = roomName || `${allRoomIds.length} room${allRoomIds.length !== 1 ? 's' : ''}`;
+      const nightsNum = parseInt(nights, 10) || 1;
+      const session = await stripe.checkout.sessions.create({
+        payment_method_types: ['card'],
+        line_items: [{
+          price_data: {
+            currency:     'thb',
+            unit_amount:  serverTotal * 100,  // Stripe uses smallest unit (satang)
+            product_data: {
+              name:        `Eco Eyes Village — ${roomLabel}`,
+              description: `${checkIn} → ${checkOut} · ${nightsNum} night${nightsNum !== 1 ? 's' : ''} · ${guests} guest${guests > 1 ? 's' : ''}`,
+              images: ['https://eco-eyes-bucket.s3.ap-southeast-1.amazonaws.com/icon-circle.png'],
+            },
+          },
+          quantity: 1,
+        }],
+        customer_email: email,
+        metadata: {
+          referenceId,
+          name, email, phone, guests,
+          checkIn, checkOut,
+          nights: String(nightsNum),
+          roomIds: JSON.stringify(allRoomIds),
+          roomName: roomName || '',
+          specialRequests: specialRequests || '',
+          lang: lang || 'en',
+          total: String(serverTotal),
+        },
+        success_url: `${SITE_URL}/booking-confirm.html?ref=${referenceId}&checkIn=${checkIn}&checkOut=${checkOut}&nights=${nightsNum}&total=${serverTotal}&name=${encodeURIComponent(name)}&room=${encodeURIComponent(roomName || roomLabel)}&paid=1`,
+        cancel_url:  `${SITE_URL}/booking.html?cancelled=1`,
       });
-      console.log(`  ✅ Reservation created for ${matched?.en || rid} (${checkIn} → ${checkOut})`);
+
+      console.log(`🔗 Stripe session created: ${referenceId} — ฿${serverTotal}`);
+      return res.json({ success: true, requiresPayment: true, checkoutUrl: session.url, ref: referenceId });
     }
 
-    // Invalidate cached room availability so next request picks up the new bookings
-    roomListingCache = null;
-    blockedDatesCache = null;
-
-    const serverTotal = perRoomPrice * targetIds.length;
-    console.log(`✅ Booking ${referenceId} for ${name} — ${roomName || allRoomIds.join(',')} — total ฿${serverTotal}`);
-
-    // ── Send confirmation email ──────────────────────────
+    // ── Fallback: no Stripe key set — create Hostex reservation directly ──
+    console.warn('⚠️  STRIPE_SECRET_KEY not set — creating Hostex reservation without payment');
+    await createHostexReservations({ allRoomIds, checkIn, checkOut, name, email, phone,
+      guests, specialRequests, perRoomPrice, referenceId });
     await sendConfirmationEmail({ name, email, checkIn, checkOut,
       nights, total: serverTotal, guests, referenceId, specialRequests, lang, roomName });
-
     res.json({ success: true, ref: referenceId, referenceId, name, checkIn, checkOut, nights, total: serverTotal, guests, roomName });
 
   } catch (err) {
@@ -416,6 +430,114 @@ app.post('/api/booking', async (req, res) => {
     res.status(500).json({ success: false, error: err.message });
   }
 });
+
+
+// ================================================================
+// HELPER: Create Hostex reservations for all selected rooms
+// Called both by the Stripe webhook (paid) and the no-Stripe fallback.
+// ================================================================
+async function createHostexReservations({ allRoomIds, checkIn, checkOut, name, email, phone,
+    guests, specialRequests, perRoomPrice, referenceId }) {
+  const allRooms  = await matchRoomsToListings();
+  const targetIds = allRoomIds.length > 0 ? allRoomIds : [null];
+
+  for (const rid of targetIds) {
+    const matched    = allRooms.find(r => r.id === rid);
+    const propertyId = matched?.hostexId || await getPropertyId();
+    await hostexFetch('/reservations', {
+      method: 'POST',
+      body: JSON.stringify({
+        property_id:      propertyId,
+        check_in_date:    checkIn,
+        check_out_date:   checkOut,
+        guest_name:       name,
+        guest_email:      email,
+        guest_phone:      phone,
+        number_of_adults: parseInt(guests, 10) || 1,
+        number_of_guests: parseInt(guests, 10) || 1,
+        total_price:      perRoomPrice,
+        currency:         'THB',
+        remarks:          `${specialRequests || ''}${referenceId ? ` [Ref: ${referenceId}]` : ''}`.trim(),
+        channel_type:     'hostex_direct',
+        status:           'accepted',
+        creator:          'Eco Eyes Village',
+      }),
+    });
+    console.log(`  ✅ Hostex reservation: ${matched?.en || rid} (${checkIn} → ${checkOut})`);
+  }
+  roomListingCache  = null;
+  blockedDatesCache = null;
+}
+
+
+// ================================================================
+// WEBHOOK: POST /api/stripe-webhook
+// Stripe calls this after a successful payment.
+// We create the Hostex reservation HERE (not at form submit) so
+// rooms are only blocked once money is actually collected.
+// ================================================================
+async function handleStripeWebhook(req, res) {
+  const sig    = req.headers['stripe-signature'];
+  const secret = process.env.STRIPE_WEBHOOK_SECRET;
+
+  let event;
+  try {
+    if (secret) {
+      event = stripe.webhooks.constructEvent(req.body, sig, secret);
+    } else {
+      // No webhook secret set — parse body directly (dev/testing only)
+      event = JSON.parse(req.body.toString());
+      console.warn('⚠️  STRIPE_WEBHOOK_SECRET not set — skipping signature check');
+    }
+  } catch (err) {
+    console.error('Stripe webhook signature failed:', err.message);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  if (event.type === 'checkout.session.completed') {
+    const session  = event.data.object;
+    const meta     = session.metadata || {};
+    const allRoomIds = JSON.parse(meta.roomIds || '[]');
+
+    console.log(`💳 Stripe payment confirmed: ${meta.referenceId} — ฿${meta.total}`);
+
+    try {
+      await createHostexReservations({
+        allRoomIds,
+        checkIn:         meta.checkIn,
+        checkOut:        meta.checkOut,
+        name:            meta.name,
+        email:           meta.email,
+        phone:           meta.phone,
+        guests:          meta.guests,
+        specialRequests: meta.specialRequests,
+        perRoomPrice:    calcTotal(meta.checkIn, meta.checkOut),
+        referenceId:     meta.referenceId,
+      });
+
+      await sendConfirmationEmail({
+        name:            meta.name,
+        email:           meta.email,
+        checkIn:         meta.checkIn,
+        checkOut:        meta.checkOut,
+        nights:          parseInt(meta.nights, 10),
+        total:           parseInt(meta.total,  10),
+        guests:          meta.guests,
+        referenceId:     meta.referenceId,
+        specialRequests: meta.specialRequests,
+        lang:            meta.lang || 'en',
+        roomName:        meta.roomName,
+      });
+
+      console.log(`✅ Booking complete: ${meta.referenceId} for ${meta.name}`);
+    } catch (err) {
+      console.error('Post-payment processing error:', err.message);
+      // Still return 200 to Stripe so it doesn't retry — log for manual follow-up
+    }
+  }
+
+  res.json({ received: true });
+}
 
 
 // ================================================================

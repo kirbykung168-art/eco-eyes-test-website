@@ -558,8 +558,8 @@
 ═══════════════════════════════════════════ -->
 <script>
   // ── Constants ────────────────────────────────
-  const BASE_RATE    = 4500;   // Sun–Thu
-  const WEEKEND_RATE = 5500;   // Fri–Sat night
+  const BASE_RATE    = 2700;   // Sun–Thu
+  const WEEKEND_RATE = 3500;   // Fri–Sat night
   const PHOTO_BASE   = 'brand_assets/eco%20eyes%20website%20photos%20/Room%20Photos/';
 
   // Returns total cost for a stay, accounting for Fri/Sat premium.
@@ -705,7 +705,7 @@
       const tripTotal = (checkinDate && checkoutDate) ? calcTotal(checkinDate, checkoutDate) : 0;
       const rateStr = `฿${BASE_RATE.toLocaleString()}`;
       const nightLabel = lang==='th'? '/คืน' : lang==='zh'? '/晚' : '/night';
-      const weekendNote = lang==='th' ? 'ศุกร์-เสาร์ ฿5,500/คืน' : lang==='zh' ? '周五六 ฿5,500/晚' : 'Fri–Sat ฿5,500/night';
+      const weekendNote = lang==='th' ? 'ศุกร์-เสาร์ ฿3,500/คืน' : lang==='zh' ? '周五六 ฿3,500/晚' : 'Fri–Sat ฿3,500/night';
 
       card.innerHTML = `
         <div class="room-photo-wrap">
@@ -1128,12 +1128,19 @@
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.error || 'Something went wrong. Please try again.');
 
+      // Stripe Checkout — redirect to hosted payment page
+      if (data.requiresPayment && data.checkoutUrl) {
+        window.location.href = data.checkoutUrl;
+        return;
+      }
+
+      // Fallback (no Stripe) — go straight to confirmation
       const params = new URLSearchParams({
         ref:     data.ref || data.referenceId,
         checkIn: payload.checkIn, checkOut: payload.checkOut,
         nights, total: payload.total,
         name:    payload.name,
-        room:    roomName || '',
+        room:    payload.roomName || '',
       });
       window.location.href = 'booking-confirm.html?' + params.toString();
     } catch (err) {
