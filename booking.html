@@ -454,19 +454,33 @@
               </div>
             </div>
             <div>
-              <label class="form-label" for="guest-count" id="label-guests">Number of Guests</label>
-              <select id="guest-count" class="form-input">
+              <label class="form-label" for="guest-count" id="label-guests">Guests per Room</label>
+              <select id="guest-count" class="form-input" onchange="onGuestCountChange()">
                 <option value="">— Select —</option>
                 <option value="1">1 guest</option>
                 <option value="2">2 guests</option>
-                <option value="3">3 guests</option>
-                <option value="4">4 guests</option>
-                <option value="5">5 guests</option>
-                <option value="6">6 guests</option>
-                <option value="7+">7+ guests</option>
+                <option value="3">3 guests — extra bed</option>
+                <option value="4">4 guests — extra bed</option>
+              </select>
+              <p id="extra-bed-notice" style="display:none;font-family:'Jost',sans-serif;font-size:0.68rem;color:#967138;margin-top:0.4rem">Extra bed added: +฿1,000 per room</p>
+            </div>
+          </div>
+
+          <!-- Pets row -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="form-label" for="pet-count" id="label-pets">Bringing Pets?</label>
+              <select id="pet-count" class="form-input" onchange="updateRoomSummary()">
+                <option value="0">No pets</option>
+                <option value="1">1 pet  (+฿500 / night)</option>
+                <option value="2">2 pets (+฿1,000 / night)</option>
+                <option value="3">3 pets (+฿1,500 / night)</option>
+                <option value="4">4 pets (+฿2,000 / night)</option>
+                <option value="5">5 pets (+฿2,500 / night)</option>
               </select>
             </div>
           </div>
+
           <div class="mb-6">
             <label class="form-label" for="special-requests">
               <span id="label-requests">Special Requests</span>
@@ -510,6 +524,14 @@
               <div class="price-row">
                 <span class="font-sans" style="font-size:0.75rem;color:rgba(28,25,21,0.55)" id="sum-rate-label">Nightly rate</span>
                 <span class="font-sans font-medium" style="font-size:0.78rem" id="sum-rate-val">—</span>
+              </div>
+              <div class="price-row" id="sum-extra-bed-row" style="display:none">
+                <span class="font-sans" style="font-size:0.75rem;color:rgba(28,25,21,0.55)" id="sum-extra-bed-label">Extra bed</span>
+                <span class="font-sans font-medium" style="font-size:0.78rem" id="sum-extra-bed-val">+฿1,000</span>
+              </div>
+              <div class="price-row" id="sum-pet-row" style="display:none">
+                <span class="font-sans" style="font-size:0.75rem;color:rgba(28,25,21,0.55)" id="sum-pet-label">Pet fee</span>
+                <span class="font-sans font-medium" style="font-size:0.78rem" id="sum-pet-val">—</span>
               </div>
               <div class="price-row total">
                 <span class="font-sans font-medium" style="font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;color:#967138" id="sum-total-label">Total</span>
@@ -1072,12 +1094,36 @@
     validateForm();
   }
 
+  function getExtraBeds() {
+    const g = parseInt(document.getElementById('guest-count').value) || 0;
+    return g >= 3 ? 1 : 0;
+  }
+  function getPetCount() {
+    return parseInt(document.getElementById('pet-count')?.value) || 0;
+  }
+  function onGuestCountChange() {
+    const notice = document.getElementById('extra-bed-notice');
+    const rooms  = Math.max(selectedRoomIds.length, 1);
+    if (getExtraBeds() > 0) {
+      notice.style.display = '';
+      notice.textContent = `Extra bed added: +฿${(1000 * rooms).toLocaleString()}`;
+    } else {
+      notice.style.display = 'none';
+    }
+    updateRoomSummary();
+    validateForm();
+  }
+
   function updateRoomSummary() {
-    const lang  = currentLang;
-    const n     = getNights();
-    const count = selectedRoomIds.length;
-    const perRoom = (checkinDate && checkoutDate) ? calcTotal(checkinDate, checkoutDate) : 0;
-    const grand   = perRoom * count;
+    const lang     = currentLang;
+    const n        = getNights();
+    const count    = selectedRoomIds.length;
+    const perRoom  = (checkinDate && checkoutDate) ? calcTotal(checkinDate, checkoutDate) : 0;
+    const extraBed = getExtraBeds();
+    const pets     = getPetCount();
+    const extraBedFee = extraBed * 1000 * Math.max(count, 1);
+    const petFee      = pets * n * 500;
+    const grand       = perRoom * count + extraBedFee + petFee;
 
     const names = selectedRoomIds.map(id => {
       const r = ROOMS_LOCAL.find(x => x.id === id);
@@ -1092,14 +1138,39 @@
     document.getElementById('sum-checkin-val').textContent  = checkinDate  ? formatDateDisplay(checkinDate)  : '—';
     document.getElementById('sum-checkout-val').textContent = checkoutDate ? formatDateDisplay(checkoutDate) : '—';
     document.getElementById('sum-nights-val').textContent   = n > 0 ? n + (lang==='th'?' คืน':lang==='zh'?' 晚':' night'+(n!==1?'s':'')) : '—';
-    const rateLabel = `฿${BASE_RATE.toLocaleString()}–฿${WEEKEND_RATE.toLocaleString()} / ${lang==='th'?'คืน':lang==='zh'?'晚':'night'}`;
+
+    const rateLabel  = `฿${BASE_RATE.toLocaleString()}–฿${WEEKEND_RATE.toLocaleString()} / ${lang==='th'?'คืน':lang==='zh'?'晚':'night'}`;
     const roomsLabel = count > 0 ? ` × ${count} ${lang==='th'?'ห้อง':lang==='zh'?'间':'room'+(count!==1?'s':'')}` : '';
-    document.getElementById('sum-rate-val').textContent     = rateLabel + roomsLabel;
-    document.getElementById('sum-total-val').textContent    = n > 0 && count > 0 ? `฿${grand.toLocaleString()}` : '—';
+    document.getElementById('sum-rate-val').textContent = rateLabel + roomsLabel;
+
+    // Extra bed row
+    const ebRow = document.getElementById('sum-extra-bed-row');
+    if (extraBed > 0) {
+      ebRow.style.display = '';
+      document.getElementById('sum-extra-bed-val').textContent = `+฿${extraBedFee.toLocaleString()}`;
+      document.getElementById('sum-extra-bed-label').textContent =
+        count > 1 ? `Extra bed × ${count} rooms` : 'Extra bed';
+    } else {
+      ebRow.style.display = 'none';
+    }
+
+    // Pet fee row
+    const petRow = document.getElementById('sum-pet-row');
+    if (pets > 0 && n > 0) {
+      petRow.style.display = '';
+      document.getElementById('sum-pet-label').textContent =
+        `${pets} pet${pets>1?'s':''} × ${n} night${n!==1?'s':''}`;
+      document.getElementById('sum-pet-val').textContent = `+฿${petFee.toLocaleString()}`;
+    } else {
+      petRow.style.display = 'none';
+    }
+
+    document.getElementById('sum-total-val').textContent =
+      n > 0 && count > 0 ? `฿${grand.toLocaleString()}` : '—';
 
     const bannerText = count === 0 ? '—'
       : count === 1 ? names[0]
-      : `${count} ${lang==='th'?'ห้องที่เลือก':lang==='zh'?'间房间':' rooms selected'}`;
+      : `${count} ${lang==='th'?'ห้องที่เลือก':lang==='zh'?'间房间':'rooms selected'}`;
     document.getElementById('banner-room-name').textContent = bannerText;
   }
 
@@ -1122,8 +1193,9 @@
     document.getElementById('submit-btn').disabled = !ok;
     return ok;
   }
-  ['guest-name','guest-email','guest-phone','guest-count'].forEach(id => {
+  ['guest-name','guest-email','guest-phone','guest-count','pet-count'].forEach(id => {
     const el = document.getElementById(id);
+    if (!el) return;
     el.addEventListener('input',  validateForm);
     el.addEventListener('change', validateForm);
   });
@@ -1136,8 +1208,12 @@
 
     const roomLocals = selectedRoomIds.map(id => ROOMS_LOCAL.find(r => r.id === id)).filter(Boolean);
     const roomNames  = roomLocals.map(r => currentLang==='th' ? r.th : currentLang==='zh' ? r.zh : r.en);
-    const nights     = getNights();
-    const perRoom    = calcTotal(checkinDate, checkoutDate);
+    const nights      = getNights();
+    const perRoom     = calcTotal(checkinDate, checkoutDate);
+    const extraBeds   = getExtraBeds();
+    const petCount    = getPetCount();
+    const extraBedFee = extraBeds * 1000 * selectedRoomIds.length;
+    const petFee      = petCount * nights * 500;
     const payload = {
       checkIn:         formatDateISO(checkinDate),
       checkOut:        formatDateISO(checkoutDate),
@@ -1151,7 +1227,9 @@
       roomName:        roomNames.join(', '),
       lang:            currentLang,
       nights,
-      total:           perRoom * selectedRoomIds.length,
+      extraBeds,
+      petCount,
+      total:           perRoom * selectedRoomIds.length + extraBedFee + petFee,
     };
 
     const btn     = document.getElementById('submit-btn');

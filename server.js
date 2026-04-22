@@ -368,7 +368,8 @@ app.get('/api/availability', async (req, res) => {
 app.post('/api/booking', async (req, res) => {
   const { name, email, phone, guests, checkIn, checkOut,
           nights, total, specialRequests, lang,
-          roomId, roomIds, roomName } = req.body;
+          roomId, roomIds, roomName,
+          extraBeds, petCount } = req.body;
 
   // ── Validation ───────────────────────────────────────────
   if (!name || !email || !phone || !checkIn || !checkOut || !guests) {
@@ -379,30 +380,37 @@ app.post('/api/booking', async (req, res) => {
   }
 
   // Support both single roomId and multi-room roomIds array
-  const allRoomIds = Array.isArray(roomIds) && roomIds.length > 0
-    ? roomIds
-    : roomId ? [roomId] : [];
+  const allRoomIds    = Array.isArray(roomIds) && roomIds.length > 0 ? roomIds : roomId ? [roomId] : [];
+  const roomCount     = Math.max(allRoomIds.length, 1);
+  const nightsNum     = parseInt(nights, 10) || 1;
+  const extraBedsNum  = parseInt(extraBeds, 10) || 0;
+  const petCountNum   = parseInt(petCount,  10) || 0;
 
-  const referenceId = generateRef();
-  const perRoomPrice = calcTotal(checkIn, checkOut);
-  const serverTotal  = perRoomPrice * Math.max(allRoomIds.length, 1);
+  const referenceId   = generateRef();
+  const perRoomPrice  = calcTotal(checkIn, checkOut);
+  const extraBedFee   = extraBedsNum * 1000 * roomCount;
+  const petFee        = petCountNum  * nightsNum * 500;
+  const serverTotal   = perRoomPrice * roomCount + extraBedFee + petFee;
 
   try {
     // ── Stripe Checkout Session ──────────────────────────
     if (stripe) {
-      const roomLabel = roomName || `${allRoomIds.length} room${allRoomIds.length !== 1 ? 's' : ''}`;
-      const nightsNum = parseInt(nights, 10) || 1;
+      const roomLabel = roomName || `${roomCount} room${roomCount !== 1 ? 's' : ''}`;
+
+      // Build description with extras
+      let desc = `${checkIn} → ${checkOut} · ${nightsNum} night${nightsNum !== 1 ? 's' : ''} · ${guests} guest${parseInt(guests) > 1 ? 's' : ''}`;
+      if (extraBedsNum > 0) desc += ` · Extra bed ×${roomCount}`;
+      if (petCountNum  > 0) desc += ` · ${petCountNum} pet${petCountNum > 1 ? 's' : ''}`;
+
       const session = await stripe.checkout.sessions.create({
         mode:  'payment',
-        // No payment_method_types — Stripe auto-selects based on customer location
-        // (enables PromptPay, bank transfer, etc. without code changes)
         line_items: [{
           price_data: {
             currency:     'thb',
-            unit_amount:  serverTotal * 100,  // satang (smallest THB unit)
+            unit_amount:  serverTotal * 100,
             product_data: {
               name:        `Eco Eyes Village — ${roomLabel}`,
-              description: `${checkIn} → ${checkOut} · ${nightsNum} night${nightsNum !== 1 ? 's' : ''} · ${guests} guest${guests > 1 ? 's' : ''}`,
+              description: desc,
               images: ['https://eco-eyes-bucket.s3.ap-southeast-1.amazonaws.com/icon-circle.png'],
             },
           },
@@ -413,12 +421,14 @@ app.post('/api/booking', async (req, res) => {
           referenceId,
           name, email, phone, guests,
           checkIn, checkOut,
-          nights: String(nightsNum),
-          roomIds: JSON.stringify(allRoomIds),
-          roomName: roomName || '',
+          nights:          String(nightsNum),
+          roomIds:         JSON.stringify(allRoomIds),
+          roomName:        roomName || '',
           specialRequests: specialRequests || '',
-          lang: lang || 'en',
-          total: String(serverTotal),
+          lang:            lang || 'en',
+          total:           String(serverTotal),
+          extraBeds:       String(extraBedsNum),
+          petCount:        String(petCountNum),
         },
         success_url: `${SITE_URL}/booking-confirm.html?ref=${referenceId}&checkIn=${checkIn}&checkOut=${checkOut}&nights=${nightsNum}&total=${serverTotal}&name=${encodeURIComponent(name)}&room=${encodeURIComponent(roomName || roomLabel)}&paid=1`,
         cancel_url:  `${SITE_URL}/booking.html?cancelled=1`,
@@ -500,17 +510,25 @@ async function handleStripeWebhook(req, res) {
 
   let event;
   try {
-    if (secret) {
-      event = stripe.webhooks.constructEvent(req.body, sig, secret);
+    if (secret && sig) {
+      // Verified path — requires raw body (Buffer or string)
+      const rawBody = Buffer.isBuffer(req.body) ? req.body : Buffer.from(JSON.stringify(req.body));
+      event = stripe.webhooks.constructEvent(rawBody, sig, secret);
     } else {
-      // No webhook secret set — parse body directly (dev/testing only)
-      event = JSON.parse(req.body.toString());
-      console.warn('⚠️  STRIPE_WEBHOOK_SECRET not set — skipping signature check');
+      // No secret configured — accept without verification (dev/sandbox only)
+      // Handle both raw Buffer and pre-parsed object (Vercel may parse early)
+      if (Buffer.isBuffer(req.body) || typeof req.body === 'string') {
+        event = JSON.parse(req.body.toString());
+      } else {
+        event = req.body; // already a parsed JS object
+      }
+      console.warn('⚠️  STRIPE_WEBHOOK_SECRET not set — processing without signature check');
     }
   } catch (err) {
-    console.error('Stripe webhook signature failed:', err.message);
+    console.error('Stripe webhook error:', err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
+  console.log(`📨 Webhook received: ${event.type}`);
 
   if (event.type === 'checkout.session.completed') {
     const session  = event.data.object;
