@@ -417,13 +417,12 @@ app.post('/api/booking', async (req, res) => {
       return res.json({ success: true, requiresPayment: true, checkoutUrl: session.url, ref: referenceId });
     }
 
-    // ── Fallback: no Stripe key set — create Hostex reservation directly ──
-    console.warn('⚠️  STRIPE_SECRET_KEY not set — creating Hostex reservation without payment');
-    await createHostexReservations({ allRoomIds, checkIn, checkOut, name, email, phone,
-      guests, specialRequests, perRoomPrice, referenceId });
-    await sendConfirmationEmail({ name, email, checkIn, checkOut,
-      nights, total: serverTotal, guests, referenceId, specialRequests, lang, roomName });
-    res.json({ success: true, ref: referenceId, referenceId, name, checkIn, checkOut, nights, total: serverTotal, guests, roomName });
+    // ── Fallback: no Stripe key set — redirect to preview checkout page ──
+    console.warn('⚠️  STRIPE_SECRET_KEY not set — redirecting to checkout preview');
+    const nightsNum2 = parseInt(nights, 10) || 1;
+    const roomLabel2 = roomName || `${allRoomIds.length} room${allRoomIds.length !== 1 ? 's' : ''}`;
+    const previewUrl = `${SITE_URL}/checkout-preview.html?ref=${referenceId}&amount=${serverTotal}&nights=${nightsNum2}&room=${encodeURIComponent(roomLabel2)}&checkIn=${checkIn}&checkOut=${checkOut}&name=${encodeURIComponent(name)}&guests=${guests}`;
+    return res.json({ success: true, requiresPayment: true, checkoutUrl: previewUrl, ref: referenceId });
 
   } catch (err) {
     console.error('Booking error:', err.message);
