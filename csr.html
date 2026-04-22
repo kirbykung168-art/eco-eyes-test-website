@@ -24,7 +24,7 @@
     body{background:#FAF7EF;color:#1C1915;font-family:'Jost',sans-serif;overflow-x:hidden;-webkit-font-smoothing:antialiased}
     body::after{content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;opacity:0.028;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");background-size:200px}
     #nav{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:center;justify-content:space-between;padding:1.5rem 3rem;transition:background 0.7s cubic-bezier(0.16,1,0.3,1),padding 0.5s cubic-bezier(0.16,1,0.3,1)}
-    #nav.scrolled{background:rgba(28,25,21,0.96);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding:0.875rem 3rem}
+    #nav.scrolled{background:#1C1915;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding:0.875rem 3rem}
     .nav-link{font-family:'Jost',sans-serif;font-size:0.62rem;letter-spacing:0.22em;text-transform:uppercase;color:rgba(255,255,255,0.7);text-decoration:none;transition:color 0.3s ease;position:relative;white-space:nowrap}
     .nav-link::after{content:'';position:absolute;left:0;bottom:-3px;width:0;height:1px;background:#967138;transition:width 0.35s cubic-bezier(0.16,1,0.3,1)}
     .nav-link:hover,.nav-link.active{color:rgba(255,255,255,1)}
@@ -52,6 +52,54 @@
     #back-to-top.visible{opacity:1;transform:translateY(0);pointer-events:auto}
     #back-to-top:hover{background:rgba(150,113,56,0.9);border-color:rgba(150,113,56,0.9)}
     @media(max-width:1024px){#nav{padding:1.25rem 1.5rem}#nav.scrolled{padding:0.875rem 1.5rem}#back-to-top{bottom:1.5rem;right:1.5rem}}
+
+    /* ── Booking widget strip ── */
+    #bw{position:fixed;left:0;right:0;z-index:490;pointer-events:none}
+    #bw::before{content:'';position:absolute;top:-3px;left:0;right:0;height:3px;background:#1C1915;pointer-events:none}
+    #bw-bar{background:#1C1915;border-top:1px solid rgba(196,163,106,0.22);border-bottom:1px solid rgba(196,163,106,0.18);overflow:hidden;max-height:90px;opacity:1;transition:max-height 0.38s cubic-bezier(0.16,1,0.3,1),opacity 0.3s ease;pointer-events:auto}
+    #bw-bar.bw-hidden{max-height:0!important;opacity:0;pointer-events:none}
+    #bw-inner{max-width:1280px;margin:0 auto;padding:0.85rem 2.5rem;display:flex;align-items:center}
+    .bw-field{display:flex;flex-direction:column;padding:0 1.4rem;flex:1;min-width:110px;cursor:pointer}
+    .bw-lbl{font-family:'Jost',sans-serif;font-size:0.52rem;letter-spacing:0.2em;text-transform:uppercase;color:rgba(196,163,106,0.6);margin-bottom:0.3rem;pointer-events:none;user-select:none}
+    .bw-date-val{font-family:'Jost',sans-serif;font-size:0.82rem;color:#FAF7EF;border-bottom:1px solid rgba(196,163,106,0.28);padding:0.3rem 0;white-space:nowrap;transition:border-color 0.25s;pointer-events:none;user-select:none}
+    .bw-date-val.empty{color:rgba(250,247,239,0.32)}
+    .bw-field:hover .bw-date-val{border-color:#C4A36A}
+    .bw-select-wrap{display:flex;flex-direction:column;padding:0 1.4rem;flex:1;min-width:110px}
+    .bw-select{font-family:'Jost',sans-serif;font-size:0.82rem;color:#FAF7EF;background:transparent;border:none;border-bottom:1px solid rgba(196,163,106,0.28);padding:0.3rem 0;outline:none;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23C4A36A' stroke-width='2' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 0.1rem center;padding-right:1.2rem;width:100%;transition:border-color 0.25s}
+    .bw-select:hover,.bw-select:focus{border-color:#C4A36A}
+    .bw-select option{background:#1C1915;color:#FAF7EF}
+    .bw-vsep{width:1px;background:rgba(196,163,106,0.14);height:36px;flex-shrink:0;align-self:flex-end;margin-bottom:0.35rem}
+    .bw-nights{font-family:'Jost',sans-serif;font-size:0.58rem;letter-spacing:0.15em;text-transform:uppercase;color:#C4A36A;background:rgba(196,163,106,0.1);border:1px solid rgba(196,163,106,0.2);padding:0.28rem 0.75rem;white-space:nowrap}
+    .bw-cta{font-family:'Jost',sans-serif;font-size:0.6rem;letter-spacing:0.2em;text-transform:uppercase;color:#1C1915;background:#C4A36A;border:none;padding:0.68rem 1.4rem;cursor:pointer;white-space:nowrap;transition:background 0.25s}
+    .bw-cta:hover{background:#D4B47A}
+    .bw-hide{font-family:'Jost',sans-serif;font-size:0.5rem;letter-spacing:0.18em;text-transform:uppercase;color:rgba(196,163,106,0.45);background:none;border:none;cursor:pointer;padding:0.3rem 0.6rem;transition:color 0.25s;white-space:nowrap;margin-left:0.75rem}
+    .bw-hide:hover{color:#C4A36A}
+    #bw-show-tab{display:none;position:fixed;z-index:488;left:0;right:0;text-align:center;background:linear-gradient(180deg,rgba(28,25,21,0.9) 0%,rgba(28,25,21,0.5) 100%);backdrop-filter:blur(22px) saturate(1.15);-webkit-backdrop-filter:blur(22px) saturate(1.15);border-top:1px solid rgba(196,163,106,0.38);border-bottom:1px solid rgba(196,163,106,0.1);cursor:pointer;font-family:'Jost',sans-serif;font-size:0.52rem;letter-spacing:0.26em;text-transform:uppercase;color:rgba(196,163,106,0.78);padding:0.72rem 1rem;pointer-events:auto;transition:color 0.25s}
+    #bw-show-tab:hover{color:#C4A36A}
+    #bw-cal-popup{display:none;position:absolute;z-index:600;background:#fff;border:1px solid rgba(0,0,0,0.11);box-shadow:0 16px 52px rgba(0,0,0,0.22);width:360px;pointer-events:auto;font-family:'Jost',sans-serif}
+    #bw-cal-popup.open{display:block}
+    #bw-cal-header{display:flex;align-items:center;justify-content:space-between;padding:1.1rem 1.5rem 0.9rem;border-bottom:1px solid rgba(0,0,0,0.07)}
+    .bw-cal-nav{background:none;border:none;cursor:pointer;font-size:1.4rem;color:#1C1915;padding:0.1rem 0.45rem;line-height:1;opacity:0.45;transition:opacity 0.2s}
+    .bw-cal-nav:hover{opacity:1}
+    #bw-cal-month{font-size:0.78rem;letter-spacing:0.15em;text-transform:uppercase;color:#1C1915;font-weight:500;font-family:'Jost',sans-serif}
+    #bw-cal-grid{padding:1rem 1.25rem 0.6rem}
+    .bw-cal-dh-row,#bw-cal-days{display:grid;grid-template-columns:repeat(7,1fr)}
+    .bw-cal-dh-row{margin-bottom:0.2rem}
+    .bw-cal-dh{font-size:0.56rem;letter-spacing:0.06em;text-transform:uppercase;color:rgba(28,25,21,0.33);text-align:center;padding:0.35rem 0}
+    #bw-cal-days{gap:2px}
+    .bw-cd{position:relative;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:0.82rem;color:#1C1915;cursor:pointer;transition:background 0.12s;user-select:none;border-radius:1px}
+    .bw-cd:hover:not(.bw-cd-past):not(.bw-cd-empty){background:rgba(28,25,21,0.07)}
+    .bw-cd.bw-cd-empty{cursor:default}
+    .bw-cd.bw-cd-past{color:rgba(28,25,21,0.18);cursor:not-allowed}
+    .bw-cd.bw-cd-start,.bw-cd.bw-cd-end{background:#1C1915!important;color:#FAF7EF!important;border-radius:2px}
+    .bw-cd.bw-cd-range{background:rgba(28,25,21,0.09);border-radius:0}
+    .bw-cd-dot{width:3px;height:3px;border-radius:50%;margin-top:1px;flex-shrink:0;background:#5cb85c}
+    #bw-cal-footer{display:flex;align-items:center;justify-content:space-between;padding:0.85rem 1.5rem;border-top:1px solid rgba(0,0,0,0.07);background:#f8f8f8}
+    #bw-cal-range{font-size:0.72rem;color:rgba(28,25,21,0.5);line-height:1.5}
+    #bw-cal-done{font-family:'Jost',sans-serif;font-size:0.58rem;letter-spacing:0.2em;text-transform:uppercase;background:#1C1915;color:#FAF7EF;border:none;padding:0.55rem 1.15rem;cursor:pointer;transition:background 0.2s}
+    #bw-cal-done:hover:not(:disabled){background:#2A251E}
+    #bw-cal-done:disabled{background:rgba(28,25,21,0.14);color:rgba(28,25,21,0.35);cursor:not-allowed}
+    @media(max-width:767px){#bw-inner{flex-wrap:wrap;gap:0.65rem;padding:0.75rem 1rem}#bw-bar{max-height:130px}.bw-field,.bw-select-wrap{min-width:calc(50% - 1rem);padding:0 0.35rem;flex:none}.bw-vsep{display:none}#bw-cal-popup{width:min(360px,96vw)}}
   </style>
 </head>
 <body>
@@ -85,6 +133,125 @@
     <span class="block w-6 h-px bg-white/80"></span>
   </button>
 </nav>
+
+<!-- ═══ BOOKING WIDGET (fixed below nav) ═══ -->
+<div id="bw">
+  <div id="bw-bar">
+    <div id="bw-inner">
+      <div class="bw-field" id="bw-field-ci" onclick="bwCalOpen('ci',event)">
+        <span class="bw-lbl" data-en="Check-in" data-th="เช็คอิน" data-zh="入住">Check-in</span>
+        <div class="bw-date-val empty" id="bw-ci-display">Select date</div>
+      </div>
+      <div class="bw-vsep"></div>
+      <div class="bw-field" id="bw-field-co" onclick="bwCalOpen('co',event)">
+        <span class="bw-lbl" data-en="Check-out" data-th="เช็คเอาต์" data-zh="退房">Check-out</span>
+        <div class="bw-date-val empty" id="bw-co-display">Select date</div>
+      </div>
+      <div class="bw-vsep"></div>
+      <div class="bw-select-wrap">
+        <span class="bw-lbl" data-en="Guests" data-th="จำนวนผู้เข้าพัก" data-zh="客人">Guests</span>
+        <select id="bw-guests" class="bw-select">
+          <option value="1">1 guest</option>
+          <option value="2" selected>2 guests</option>
+          <option value="3">3 guests</option>
+          <option value="4">4 guests</option>
+        </select>
+      </div>
+      <div class="bw-vsep"></div>
+      <div class="bw-select-wrap">
+        <span class="bw-lbl" data-en="Rooms" data-th="ห้อง" data-zh="房间">Rooms</span>
+        <select id="bw-rooms" class="bw-select">
+          <option value="1" selected>1 room</option>
+          <option value="2">2 rooms</option>
+          <option value="3">3 rooms</option>
+        </select>
+      </div>
+      <div style="margin-left:auto;display:flex;align-items:center;gap:0.85rem;flex-shrink:0;padding-left:1.5rem;">
+        <span id="bw-nights" class="bw-nights" style="display:none"></span>
+        <button onclick="bwGo()" class="bw-cta" data-en="Check Availability" data-th="ตรวจสอบห้องว่าง" data-zh="查看空房">Check Availability</button>
+        <button onclick="bwToggle()" class="bw-hide" id="bw-hide-btn" data-en="Hide ↑" data-th="ซ่อน ↑" data-zh="隐藏 ↑">Hide ↑</button>
+      </div>
+    </div>
+  </div>
+  <div id="bw-cal-popup">
+    <div id="bw-cal-header">
+      <button class="bw-cal-nav" onclick="bwCalNav(-1,event)">&#8249;</button>
+      <span id="bw-cal-month"></span>
+      <button class="bw-cal-nav" onclick="bwCalNav(1,event)">&#8250;</button>
+    </div>
+    <div id="bw-cal-grid">
+      <div class="bw-cal-dh-row">
+        <div class="bw-cal-dh">Su</div><div class="bw-cal-dh">Mo</div><div class="bw-cal-dh">Tu</div>
+        <div class="bw-cal-dh">We</div><div class="bw-cal-dh">Th</div><div class="bw-cal-dh">Fr</div>
+        <div class="bw-cal-dh">Sa</div>
+      </div>
+      <div id="bw-cal-days"></div>
+    </div>
+    <div id="bw-cal-footer">
+      <div id="bw-cal-range">Select check-in date</div>
+      <button id="bw-cal-done" onclick="bwCalDone(event)" disabled>DONE</button>
+    </div>
+  </div>
+</div>
+<div id="bw-show-tab" onclick="bwToggle()">&#9660; Check Availability</div>
+
+<script>
+(function(){
+  var nav=document.getElementById('nav'),bw=document.getElementById('bw'),tab=document.getElementById('bw-show-tab');
+  function positionBW(){var h=nav?nav.offsetHeight:80;if(bw)bw.style.top=(h-1)+'px';if(tab)tab.style.top=(h-1)+'px';}
+  positionBW();window.addEventListener('scroll',positionBW,{passive:true});window.addEventListener('resize',positionBW,{passive:true});
+  var t1=new Date();t1.setDate(t1.getDate()+1);t1.setHours(0,0,0,0);
+  var t2=new Date();t2.setDate(t2.getDate()+2);t2.setHours(0,0,0,0);
+  window._bwCi=t1;window._bwCo=t2;bwUpdateDisplays();
+  document.addEventListener('click',function(e){var p=document.getElementById('bw-cal-popup');if(p&&p.classList.contains('open')&&!p.contains(e.target)&&!document.getElementById('bw-field-ci').contains(e.target)&&!document.getElementById('bw-field-co').contains(e.target))p.classList.remove('open');});
+  document.getElementById('bw-cal-popup').addEventListener('click',function(e){e.stopPropagation();});
+  var hidden=sessionStorage.getItem('bw-hidden')==='1';
+  if(hidden){document.getElementById('bw-bar').classList.add('bw-hidden');if(tab)tab.style.display='block';var btn=document.getElementById('bw-hide-btn');if(btn)btn.textContent='Show ↓';}
+  else{if(nav)nav.classList.add('scrolled');}
+  window._bwPos=positionBW;
+})();
+var _bwCY,_bwCM,_bwCS=0,_bwCStart=null,_bwCEnd=null,_bwCHov=null;
+var _bwCMons=['January','February','March','April','May','June','July','August','September','October','November','December'];
+function bwCalOpen(field,e){
+  if(e)e.stopPropagation();
+  var popup=document.getElementById('bw-cal-popup'),bar=document.getElementById('bw-bar'),bwEl=document.getElementById('bw');
+  popup.style.top=(bar.offsetHeight+4)+'px';
+  var bwR=bwEl.getBoundingClientRect(),fR=document.getElementById('bw-field-'+field).getBoundingClientRect();
+  var left=fR.left-bwR.left;if(left+360>bwR.width)left=Math.max(0,bwR.width-372);
+  popup.style.left=left+'px';
+  if(!popup.classList.contains('open')){_bwCStart=window._bwCi||null;_bwCEnd=window._bwCo||null;_bwCS=0;var today=new Date();today.setHours(0,0,0,0);_bwCY=(_bwCStart||today).getFullYear();_bwCM=(_bwCStart||today).getMonth();popup.classList.add('open');}
+  bwRenderCal();
+}
+function bwCalNav(dir,e){if(e)e.stopPropagation();_bwCM+=dir;if(_bwCM<0){_bwCM=11;_bwCY--;}if(_bwCM>11){_bwCM=0;_bwCY++;}bwRenderCal();}
+function bwRenderCal(){
+  var today=new Date();today.setHours(0,0,0,0);
+  document.getElementById('bw-cal-month').textContent=_bwCMons[_bwCM]+' '+_bwCY;
+  var firstDow=new Date(_bwCY,_bwCM,1).getDay(),daysInMon=new Date(_bwCY,_bwCM+1,0).getDate();
+  var grid=document.getElementById('bw-cal-days');grid.textContent='';
+  for(var i=0;i<firstDow;i++){var emp=document.createElement('div');emp.className='bw-cd bw-cd-empty';grid.appendChild(emp);}
+  for(var d=1;d<=daysInMon;d++){
+    var dt=new Date(_bwCY,_bwCM,d),isPast=dt<today;
+    var cell=document.createElement('div');cell.className='bw-cd';
+    if(isPast)cell.classList.add('bw-cd-past');
+    cell.dataset.date=dt.toISOString().split('T')[0];
+    bwApplyRange(cell,dt);
+    var num=document.createElement('span');num.textContent=d;cell.appendChild(num);
+    if(!isPast){var dot=document.createElement('span');dot.className='bw-cd-dot';cell.appendChild(dot);(function(date){cell.addEventListener('click',function(ev){ev.stopPropagation();bwCDayClick(date);});cell.addEventListener('mouseenter',function(){bwCDayHov(date);});})(dt);}
+    grid.appendChild(cell);
+  }
+  grid.addEventListener('mouseleave',function(){if(_bwCS===1&&_bwCHov){_bwCHov=null;bwUpdateRangeCls();}});
+  bwUpdateCalFtr();
+}
+function bwApplyRange(cell,dt){var s=_bwCStart,hov=_bwCEnd||(_bwCS===1?_bwCHov:null),rS=s&&hov?(s<=hov?s:hov):s,rE=s&&hov?(s<=hov?hov:s):null;if(s&&dt.getTime()===s.getTime())cell.classList.add('bw-cd-start');if(_bwCEnd&&dt.getTime()===_bwCEnd.getTime())cell.classList.add('bw-cd-end');if(rS&&rE&&dt>rS&&dt<rE)cell.classList.add('bw-cd-range');}
+function bwCDayClick(dt){if(_bwCS===0){_bwCStart=dt;_bwCEnd=null;_bwCS=1;}else{if(dt<=_bwCStart){_bwCStart=dt;_bwCEnd=null;}else{_bwCEnd=dt;_bwCS=0;}}_bwCHov=null;bwRenderCal();}
+function bwCDayHov(dt){if(_bwCS!==1)return;_bwCHov=dt;bwUpdateRangeCls();}
+function bwUpdateRangeCls(){document.querySelectorAll('#bw-cal-days .bw-cd[data-date]').forEach(function(cell){var dt=new Date(cell.dataset.date+'T00:00:00');cell.classList.remove('bw-cd-start','bw-cd-end','bw-cd-range');bwApplyRange(cell,dt);});bwUpdateCalFtr();}
+function bwUpdateCalFtr(){var disp=document.getElementById('bw-cal-range'),done=document.getElementById('bw-cal-done'),fd=function(d){return d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});};if(_bwCStart&&_bwCEnd){var n=Math.round((_bwCEnd-_bwCStart)/86400000);disp.textContent=fd(_bwCStart)+' — '+fd(_bwCEnd)+' · '+n+' night'+(n!==1?'s':'');done.disabled=false;}else if(_bwCStart){disp.textContent=fd(_bwCStart)+' — Select checkout';done.disabled=true;}else{disp.textContent='Select check-in date';done.disabled=true;}}
+function bwCalDone(e){if(e)e.stopPropagation();if(!_bwCStart||!_bwCEnd)return;window._bwCi=_bwCStart;window._bwCo=_bwCEnd;document.getElementById('bw-cal-popup').classList.remove('open');bwUpdateDisplays();}
+function bwUpdateDisplays(){var fd=function(d){return d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});};var ciD=document.getElementById('bw-ci-display'),coD=document.getElementById('bw-co-display'),pill=document.getElementById('bw-nights');if(window._bwCi){ciD.textContent=fd(window._bwCi);ciD.classList.remove('empty');}if(window._bwCo){coD.textContent=fd(window._bwCo);coD.classList.remove('empty');}if(window._bwCi&&window._bwCo){var n=Math.round((window._bwCo-window._bwCi)/86400000);if(n>0){pill.textContent=n+' night'+(n>1?'s':'');pill.style.display='';}else pill.style.display='none';}}
+function bwToggle(){var bar=document.getElementById('bw-bar'),tab=document.getElementById('bw-show-tab'),btn=document.getElementById('bw-hide-btn');document.getElementById('bw-cal-popup').classList.remove('open');var hidden=bar.classList.toggle('bw-hidden');tab.style.display=hidden?'block':'none';if(btn)btn.textContent=hidden?'Show ↓':'Hide ↑';sessionStorage.setItem('bw-hidden',hidden?'1':'0');if(window._bwPos)window._bwPos();if(window._updateScroll)window._updateScroll();else{var nav=document.getElementById('nav');if(nav){if(!hidden)nav.classList.add('scrolled');else if(window.scrollY<=60)nav.classList.remove('scrolled');}}}
+function bwGo(){if(!window._bwCi||!window._bwCo){alert('Please select check-in and check-out dates.');return;}var fmt=function(d){return d.toISOString().split('T')[0];};var g=document.getElementById('bw-guests').value,r=document.getElementById('bw-rooms').value;window.location.href='booking.html?checkIn='+fmt(window._bwCi)+'&checkOut='+fmt(window._bwCo)+'&guests='+g+'&rooms='+r;}
+</script>
 
 <button id="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C4A36A" stroke-width="1.5" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
@@ -402,11 +569,14 @@
   }, 4000);
 
   const nav = document.getElementById('nav');
-  window.addEventListener('scroll', () => {
-    nav.classList.toggle('scrolled', window.scrollY > 60);
-    document.getElementById('back-to-top').classList.toggle('visible', window.scrollY > window.innerHeight * 0.8);
-  }, { passive: true });
-  if (window.scrollY > 60) nav.classList.add('scrolled');
+  function updateScroll(){
+    var bwB=document.getElementById('bw-bar'),bwVis=bwB&&!bwB.classList.contains('bw-hidden');
+    nav.classList.toggle('scrolled',window.scrollY>60||bwVis);
+    document.getElementById('back-to-top').classList.toggle('visible',window.scrollY>window.innerHeight*0.8);
+  }
+  window._updateScroll=updateScroll;
+  window.addEventListener('scroll',updateScroll,{passive:true});
+  updateScroll();
   const mobileNav = document.getElementById('mobile-nav');
   function openMenu()  { mobileNav.classList.add('open');    document.body.style.overflow = 'hidden'; }
   function closeMenu() { mobileNav.classList.remove('open'); document.body.style.overflow = ''; }
