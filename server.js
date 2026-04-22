@@ -552,6 +552,60 @@ async function handleStripeWebhook(req, res) {
 
 
 // ================================================================
+// API: POST /api/test-payment   ⚠️  SANDBOX ONLY
+// Simulates what happens after a successful Stripe payment —
+// creates Hostex reservations and sends confirmation email —
+// WITHOUT requiring a real payment. Only works when the Stripe key
+// is a test key (sk_test_...). Use this to verify the full flow.
+//
+// Body: same as /api/booking
+// Returns: { success, referenceId, hostexCreated, emailSent }
+// ================================================================
+app.post('/api/test-payment', async (req, res) => {
+  if (!_stripeKey.startsWith('sk_test_')) {
+    return res.status(403).json({ success: false, error: 'Test endpoint disabled in live mode' });
+  }
+
+  const { name, email, phone, guests, checkIn, checkOut, nights,
+          specialRequests, lang, roomId, roomIds, roomName } = req.body;
+
+  if (!name || !email || !checkIn || !checkOut) {
+    return res.status(400).json({ success: false, error: 'Missing required fields' });
+  }
+
+  const allRoomIds    = Array.isArray(roomIds) && roomIds.length > 0 ? roomIds : roomId ? [roomId] : [];
+  const referenceId   = 'TEST-' + generateRef();
+  const perRoomPrice  = calcTotal(checkIn, checkOut);
+  const total         = perRoomPrice * Math.max(allRoomIds.length, 1);
+  const nightsNum     = parseInt(nights, 10) || 1;
+
+  console.log(`🧪 TEST PAYMENT: ${referenceId} — ${name} — ฿${total}`);
+
+  let hostexCreated = false;
+  let emailSent     = false;
+
+  try {
+    await createHostexReservations({ allRoomIds, checkIn, checkOut, name, email, phone,
+      guests, specialRequests, perRoomPrice, referenceId });
+    hostexCreated = true;
+  } catch (err) {
+    console.error('Test: Hostex failed:', err.message);
+  }
+
+  try {
+    await sendConfirmationEmail({ name, email, checkIn, checkOut, nights: nightsNum,
+      total, guests, referenceId, specialRequests, lang: lang || 'en', roomName });
+    emailSent = true;
+  } catch (err) {
+    console.error('Test: Email failed:', err.message);
+  }
+
+  res.json({ success: true, referenceId, total, hostexCreated, emailSent,
+    message: `Simulated payment complete. Hostex: ${hostexCreated ? '✅' : '❌'}  Email: ${emailSent ? '✅' : '❌'}` });
+});
+
+
+// ================================================================
 // API: GET /api/blocked-dates
 // Returns all booked date ranges across all 10 rooms for the next
 // 6 months. Used by the booking calendar to show unavailable dates.

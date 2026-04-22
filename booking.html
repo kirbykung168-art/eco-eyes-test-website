@@ -217,6 +217,13 @@
     .price-row:last-child { border-bottom: none; }
     .price-row.total { padding-top: 1rem; border-top: 1px solid rgba(150,113,56,0.3); border-bottom: none; }
 
+    /* Phone country code */
+    .phone-wrap { display: flex; border: 1px solid rgba(28,25,21,0.2); background: #fff; }
+    .phone-code-select { flex-shrink: 0; border: none; border-right: 1px solid rgba(28,25,21,0.15); background: rgba(28,25,21,0.03); padding: 0.75rem 0.5rem; font-family: 'Jost', sans-serif; font-size: 0.82rem; color: #1C1915; cursor: pointer; outline: none; appearance: none; -webkit-appearance: none; width: 6.5rem; text-align: center; }
+    .phone-code-select:focus { background: rgba(150,113,56,0.05); }
+    .phone-number-input { flex: 1; border: none; padding: 0.75rem 0.9rem; font-family: 'Jost', sans-serif; font-size: 0.82rem; color: #1C1915; background: transparent; outline: none; min-width: 0; }
+    .phone-wrap:focus-within { border-color: #967138; }
+
     /* Submit */
     .btn-submit { width: 100%; font-family: 'Jost', sans-serif; font-size: 0.62rem; letter-spacing: 0.25em; text-transform: uppercase; background: #967138; color: #FAF7EF; border: none; padding: 1.1rem 2rem; cursor: pointer; transition: background 0.35s ease; }
     .btn-submit:hover:not(:disabled) { background: #6B4F22; }
@@ -412,7 +419,39 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
               <label class="form-label" for="guest-phone" id="label-phone">Phone Number</label>
-              <input type="tel" id="guest-phone" class="form-input" autocomplete="tel">
+              <div class="phone-wrap">
+                <select id="phone-code" class="phone-code-select">
+                  <option value="+66">🇹🇭 +66</option>
+                  <option value="+44">🇬🇧 +44</option>
+                  <option value="+1">🇺🇸 +1</option>
+                  <option value="+61">🇦🇺 +61</option>
+                  <option value="+86">🇨🇳 +86</option>
+                  <option value="+81">🇯🇵 +81</option>
+                  <option value="+82">🇰🇷 +82</option>
+                  <option value="+65">🇸🇬 +65</option>
+                  <option value="+60">🇲🇾 +60</option>
+                  <option value="+62">🇮🇩 +62</option>
+                  <option value="+91">🇮🇳 +91</option>
+                  <option value="+49">🇩🇪 +49</option>
+                  <option value="+33">🇫🇷 +33</option>
+                  <option value="+39">🇮🇹 +39</option>
+                  <option value="+34">🇪🇸 +34</option>
+                  <option value="+31">🇳🇱 +31</option>
+                  <option value="+46">🇸🇪 +46</option>
+                  <option value="+41">🇨🇭 +41</option>
+                  <option value="+7">🇷🇺 +7</option>
+                  <option value="+971">🇦🇪 +971</option>
+                  <option value="+852">🇭🇰 +852</option>
+                  <option value="+886">🇹🇼 +886</option>
+                  <option value="+84">🇻🇳 +84</option>
+                  <option value="+63">🇵🇭 +63</option>
+                  <option value="+64">🇳🇿 +64</option>
+                  <option value="+27">🇿🇦 +27</option>
+                  <option value="+55">🇧🇷 +55</option>
+                  <option value="+52">🇲🇽 +52</option>
+                </select>
+                <input type="tel" id="guest-phone" class="phone-number-input" autocomplete="tel" placeholder="Phone number">
+              </div>
             </div>
             <div>
               <label class="form-label" for="guest-count" id="label-guests">Number of Guests</label>
@@ -439,10 +478,10 @@
           <div id="form-error" class="notice notice-error mb-4" style="display:none;"></div>
 
           <button id="submit-btn" class="btn-submit" onclick="submitBooking()" disabled>
-            <span id="btn-submit-text">Request to Book</span>
+            <span id="btn-submit-text">Pay Now</span>
           </button>
           <p class="font-sans mt-4" style="font-size:0.7rem;color:rgba(28,25,21,0.4);line-height:1.7" id="policy-note">
-            By submitting this request, you agree to be contacted by our team to confirm availability and finalise your booking. No payment is required at this stage.
+            You will be securely redirected to Stripe to complete payment. Your room is confirmed once payment is received.
           </p>
         </div>
 
@@ -1104,7 +1143,7 @@
       checkOut:        formatDateISO(checkoutDate),
       name:            document.getElementById('guest-name').value.trim(),
       email:           document.getElementById('guest-email').value.trim(),
-      phone:           document.getElementById('guest-phone').value.trim(),
+      phone:           (document.getElementById('phone-code').value + ' ' + document.getElementById('guest-phone').value.trim()).trim(),
       guests:          document.getElementById('guest-count').value,
       specialRequests: document.getElementById('special-requests').value.trim(),
       roomIds:         selectedRoomIds,
@@ -1147,7 +1186,7 @@
       errorEl.textContent = err.message;
       errorEl.style.display = 'block';
       btn.disabled  = false;
-      btnText.textContent = currentLang==='th' ? 'ส่งคำขอจอง' : currentLang==='zh' ? '提交预订申请' : 'Request to Book';
+      btnText.textContent = currentLang==='th' ? 'ชำระเงิน' : currentLang==='zh' ? '立即付款' : 'Pay Now';
     }
   }
 
@@ -1175,7 +1214,7 @@
     'label-guests':      { en:'Number of Guests',    th:'จำนวนผู้เข้าพัก',         zh:'入住人数' },
     'label-requests':    { en:'Special Requests',    th:'คำขอพิเศษ',               zh:'特殊要求' },
     'label-optional':    { en:'(optional)',          th:'(ถ้ามี)',                  zh:'（可选）' },
-    'btn-submit-text':   { en:'Request to Book',     th:'ส่งคำขอจอง',              zh:'提交预订申请' },
+    'btn-submit-text':   { en:'Pay Now',              th:'ชำระเงิน',                zh:'立即付款' },
     'policy-note':       { en:'By submitting this request, you agree to be contacted by our team to confirm availability and finalise your booking. No payment is required at this stage.', th:'การส่งคำขอนี้ถือว่าคุณยินยอมให้ทีมงานของเราติดต่อกลับเพื่อยืนยันการจอง ไม่จำเป็นต้องชำระเงินในขั้นตอนนี้', zh:'提交申请即表示您同意我们的团队与您联系以确认预订，本阶段无需付款。' },
     'summary-title':     { en:'Booking Summary',     th:'สรุปการจอง',              zh:'预订摘要' },
     'sum-room-label':    { en:'Room',                th:'ห้องพัก',                 zh:'房间' },
