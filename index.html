@@ -274,6 +274,36 @@
       #nav.scrolled { padding: 0.875rem 1.5rem; }
       #back-to-top { bottom: 1.5rem; right: 1.5rem; }
     }
+
+    /* ── Booking widget strip ── */
+    #bw { position:fixed; left:0; right:0; z-index:490; pointer-events:none; }
+    #bw-bar { background:#1C1915; border-bottom:1px solid rgba(196,163,106,0.18); overflow:hidden; max-height:90px; opacity:1; transition:max-height 0.38s cubic-bezier(0.16,1,0.3,1), opacity 0.3s ease; pointer-events:auto; }
+    #bw-bar.bw-hidden { max-height:0 !important; opacity:0; pointer-events:none; }
+    #bw-inner { max-width:1280px; margin:0 auto; padding:0.85rem 2.5rem; display:flex; align-items:center; }
+    .bw-field { display:flex; flex-direction:column; padding:0 1.4rem; flex:1; min-width:110px; cursor:pointer; position:relative; }
+    .bw-lbl { font-family:'Jost',sans-serif; font-size:0.52rem; letter-spacing:0.2em; text-transform:uppercase; color:rgba(196,163,106,0.6); margin-bottom:0.3rem; pointer-events:none; user-select:none; }
+    .bw-date-val { font-family:'Jost',sans-serif; font-size:0.82rem; color:#FAF7EF; border-bottom:1px solid rgba(196,163,106,0.28); padding:0.3rem 0; white-space:nowrap; transition:border-color 0.25s; pointer-events:none; user-select:none; }
+    .bw-date-val.empty { color:rgba(250,247,239,0.32); }
+    .bw-field:hover .bw-date-val { border-color:#C4A36A; }
+    .bw-date-input { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; border:none; padding:0; }
+    .bw-select-wrap { display:flex; flex-direction:column; padding:0 1.4rem; flex:1; min-width:110px; }
+    .bw-select { font-family:'Jost',sans-serif; font-size:0.82rem; color:#FAF7EF; background:transparent; border:none; border-bottom:1px solid rgba(196,163,106,0.28); padding:0.3rem 0; outline:none; cursor:pointer; appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23C4A36A' stroke-width='2' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 0.1rem center; padding-right:1.2rem; width:100%; transition:border-color 0.25s; }
+    .bw-select:hover, .bw-select:focus { border-color:#C4A36A; }
+    .bw-select option { background:#1C1915; color:#FAF7EF; }
+    .bw-vsep { width:1px; background:rgba(196,163,106,0.14); height:36px; flex-shrink:0; align-self:flex-end; margin-bottom:0.35rem; }
+    .bw-nights { font-family:'Jost',sans-serif; font-size:0.58rem; letter-spacing:0.15em; text-transform:uppercase; color:#C4A36A; background:rgba(196,163,106,0.1); border:1px solid rgba(196,163,106,0.2); padding:0.28rem 0.75rem; white-space:nowrap; }
+    .bw-cta { font-family:'Jost',sans-serif; font-size:0.6rem; letter-spacing:0.2em; text-transform:uppercase; color:#1C1915; background:#C4A36A; border:none; padding:0.68rem 1.4rem; cursor:pointer; white-space:nowrap; transition:background 0.25s; }
+    .bw-cta:hover { background:#D4B47A; }
+    .bw-hide { font-family:'Jost',sans-serif; font-size:0.5rem; letter-spacing:0.18em; text-transform:uppercase; color:rgba(196,163,106,0.45); background:none; border:none; cursor:pointer; padding:0.3rem 0.6rem; transition:color 0.25s; white-space:nowrap; margin-left:0.75rem; }
+    .bw-hide:hover { color:#C4A36A; }
+    #bw-show-tab { display:none; position:fixed; z-index:488; left:50%; transform:translateX(-50%); background:rgba(28,25,21,0.96); border:1px solid rgba(196,163,106,0.18); border-top:none; cursor:pointer; font-family:'Jost',sans-serif; font-size:0.48rem; letter-spacing:0.2em; text-transform:uppercase; color:rgba(196,163,106,0.6); padding:0.3rem 1.4rem; backdrop-filter:blur(8px); pointer-events:auto; transition:color 0.25s; }
+    #bw-show-tab:hover { color:#C4A36A; }
+    @media(max-width:767px){
+      #bw-inner { flex-wrap:wrap; gap:0.65rem; padding:0.75rem 1rem; }
+      .bw-field, .bw-select-wrap { min-width:calc(50% - 1rem); padding:0 0.35rem; flex:none; }
+      .bw-vsep { display:none; }
+      #bw-bar { max-height:130px; }
+    }
   </style>
 </head>
 <body>
@@ -315,6 +345,145 @@
     <span class="block w-6 h-px bg-white/80"></span>
   </button>
 </nav>
+
+<!-- ═══ BOOKING WIDGET (fixed below nav) ═══ -->
+<div id="bw">
+  <div id="bw-bar">
+    <div id="bw-inner">
+
+      <!-- Check-in -->
+      <div class="bw-field">
+        <span class="bw-lbl">Check-in</span>
+        <div class="bw-date-val empty" id="bw-ci-display">Select date</div>
+        <input type="date" id="bw-ci" class="bw-date-input" onchange="bwSync()" />
+      </div>
+      <div class="bw-vsep"></div>
+
+      <!-- Check-out -->
+      <div class="bw-field">
+        <span class="bw-lbl">Check-out</span>
+        <div class="bw-date-val empty" id="bw-co-display">Select date</div>
+        <input type="date" id="bw-co" class="bw-date-input" onchange="bwSync()" />
+      </div>
+      <div class="bw-vsep"></div>
+
+      <!-- Guests -->
+      <div class="bw-select-wrap">
+        <span class="bw-lbl">Guests</span>
+        <select id="bw-guests" class="bw-select">
+          <option value="1">1 guest</option>
+          <option value="2" selected>2 guests</option>
+          <option value="3">3 guests</option>
+          <option value="4">4 guests</option>
+        </select>
+      </div>
+      <div class="bw-vsep"></div>
+
+      <!-- Rooms -->
+      <div class="bw-select-wrap">
+        <span class="bw-lbl">Rooms</span>
+        <select id="bw-rooms" class="bw-select">
+          <option value="1" selected>1 room</option>
+          <option value="2">2 rooms</option>
+          <option value="3">3 rooms</option>
+        </select>
+      </div>
+
+      <!-- Actions -->
+      <div style="margin-left:auto;display:flex;align-items:center;gap:0.85rem;flex-shrink:0;padding-left:1.5rem;">
+        <span id="bw-nights" class="bw-nights" style="display:none"></span>
+        <button onclick="bwGo()" class="bw-cta">Check Availability</button>
+        <button onclick="bwToggle()" class="bw-hide" id="bw-hide-btn">Hide ↑</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+<!-- Restore tab -->
+<div id="bw-show-tab" onclick="bwToggle()">▼ Check Availability</div>
+
+<script>
+(function(){
+  const nav  = document.getElementById('nav');
+  const bw   = document.getElementById('bw');
+  const tab  = document.getElementById('bw-show-tab');
+  function positionBW(){
+    const h = nav ? nav.offsetHeight : 80;
+    if(bw)  bw.style.top  = h + 'px';
+    if(tab) tab.style.top = h + 'px';
+  }
+  positionBW();
+  window.addEventListener('scroll', positionBW, {passive:true});
+  window.addEventListener('resize', positionBW, {passive:true});
+
+  const fmt     = d => d.toISOString().split('T')[0];
+  const fmtDisp = d => d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+  const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate()+1);
+  const dayAfter  = new Date(); dayAfter.setDate(dayAfter.getDate()+2);
+
+  const ciI = document.getElementById('bw-ci');
+  const coI = document.getElementById('bw-co');
+  const ciD = document.getElementById('bw-ci-display');
+  const coD = document.getElementById('bw-co-display');
+
+  ciI.value = fmt(tomorrow); ciI.min = fmt(new Date());
+  coI.value = fmt(dayAfter); coI.min = fmt(tomorrow);
+  bwSync();
+
+  // Restore hidden state from session
+  if(sessionStorage.getItem('bw-hidden')==='1'){
+    document.getElementById('bw-bar').classList.add('bw-hidden');
+    tab.style.display = 'block';
+  }
+
+  window._bwPos = positionBW;
+})();
+
+function bwSync(){
+  const ciI = document.getElementById('bw-ci');
+  const coI = document.getElementById('bw-co');
+  const ciD = document.getElementById('bw-ci-display');
+  const coD = document.getElementById('bw-co-display');
+  const fmt = d => d.toISOString().split('T')[0];
+  const fmtDisp = d => d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+  if(ciI.value){ ciD.textContent = fmtDisp(new Date(ciI.value+'T00:00:00')); ciD.classList.remove('empty'); }
+  if(coI.value){ coD.textContent = fmtDisp(new Date(coI.value+'T00:00:00')); coD.classList.remove('empty'); }
+  // Keep checkout after checkin
+  if(ciI.value && coI.value && coI.value <= ciI.value){
+    const next = new Date(ciI.value+'T00:00:00'); next.setDate(next.getDate()+1);
+    coI.value = fmt(next);
+    coD.textContent = fmtDisp(next); coD.classList.remove('empty');
+  }
+  if(ciI.value){ const d = new Date(ciI.value+'T00:00:00'); d.setDate(d.getDate()+1); coI.min = fmt(d); }
+  // Nights pill
+  const pill = document.getElementById('bw-nights');
+  if(ciI.value && coI.value){
+    const n = Math.round((new Date(coI.value) - new Date(ciI.value)) / 86400000);
+    if(n > 0){ pill.textContent = n + ' night' + (n>1?'s':''); pill.style.display = ''; }
+    else pill.style.display = 'none';
+  }
+}
+
+function bwToggle(){
+  const bar  = document.getElementById('bw-bar');
+  const tab  = document.getElementById('bw-show-tab');
+  const btn  = document.getElementById('bw-hide-btn');
+  const hidden = bar.classList.toggle('bw-hidden');
+  tab.style.display = hidden ? 'block' : 'none';
+  if(btn) btn.textContent = hidden ? 'Show ↓' : 'Hide ↑';
+  sessionStorage.setItem('bw-hidden', hidden ? '1' : '0');
+  if(window._bwPos) window._bwPos();
+}
+
+function bwGo(){
+  const ci = document.getElementById('bw-ci').value;
+  const co = document.getElementById('bw-co').value;
+  const g  = document.getElementById('bw-guests').value;
+  const r  = document.getElementById('bw-rooms').value;
+  if(!ci || !co){ alert('Please select check-in and check-out dates.'); return; }
+  window.location.href = 'booking.html?checkIn='+ci+'&checkOut='+co+'&guests='+g+'&rooms='+r;
+}
+</script>
 
 <!-- Back to top -->
 <button id="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">
@@ -393,96 +562,6 @@
   <div class="absolute bottom-8 right-8 md:right-12 flex gap-2 items-center" id="dots"></div>
 </section>
 
-
-<!-- ═══════════════════════════════════════════
-     QUICK BOOKING WIDGET
-═══════════════════════════════════════════ -->
-<section id="booking-widget" style="background:#1C1915;border-top:1px solid rgba(196,163,106,0.25);border-bottom:1px solid rgba(196,163,106,0.25);position:relative;z-index:10;">
-  <div class="max-w-6xl mx-auto px-6 py-5 flex flex-wrap items-end gap-4 lg:gap-0">
-
-    <!-- Check-in -->
-    <div class="widget-field">
-      <label class="widget-label" id="w-checkin-label">Check-in</label>
-      <input type="date" id="w-checkin" class="widget-input" />
-    </div>
-    <div class="widget-divider"></div>
-
-    <!-- Check-out -->
-    <div class="widget-field">
-      <label class="widget-label" id="w-checkout-label">Check-out</label>
-      <input type="date" id="w-checkout" class="widget-input" />
-    </div>
-    <div class="widget-divider"></div>
-
-    <!-- Guests -->
-    <div class="widget-field">
-      <label class="widget-label" id="w-guests-label">Guests</label>
-      <select id="w-guests" class="widget-input widget-select">
-        <option value="1">1 guest</option>
-        <option value="2" selected>2 guests</option>
-        <option value="3">3 guests</option>
-        <option value="4">4 guests</option>
-      </select>
-    </div>
-    <div class="widget-divider"></div>
-
-    <!-- Rooms -->
-    <div class="widget-field">
-      <label class="widget-label" id="w-rooms-label">Rooms</label>
-      <select id="w-rooms" class="widget-input widget-select">
-        <option value="1" selected>1 room</option>
-        <option value="2">2 rooms</option>
-        <option value="3">3 rooms</option>
-      </select>
-    </div>
-
-    <!-- CTA -->
-    <div class="ml-auto flex-shrink-0">
-      <button onclick="goBooking()" class="widget-cta" id="w-cta">Check Availability</button>
-    </div>
-  </div>
-</section>
-
-<style>
-  .widget-field { display:flex; flex-direction:column; padding: 0 1.25rem; flex:1; min-width:130px; }
-  .widget-label { font-family:'Jost',sans-serif; font-size:0.5rem; letter-spacing:0.2em; text-transform:uppercase; color:rgba(196,163,106,0.65); margin-bottom:0.4rem; }
-  .widget-input { font-family:'Jost',sans-serif; font-size:0.82rem; color:#F5F0E8; background:transparent; border:none; outline:none; padding:0; width:100%; }
-  .widget-input:focus { color:#C4A36A; }
-  .widget-input::placeholder { color:rgba(245,240,232,0.3); }
-  input[type="date"].widget-input { color-scheme:dark; cursor:pointer; }
-  .widget-select { appearance:none; cursor:pointer; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23C4A36A' stroke-width='2' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 0 center; padding-right:1rem; }
-  .widget-select option { background:#1C1915; color:#F5F0E8; }
-  .widget-divider { width:1px; background:rgba(196,163,106,0.18); align-self:stretch; margin:0.25rem 0; flex-shrink:0; display:none; }
-  @media(min-width:768px){ .widget-divider { display:block; } .widget-field { flex:1; } }
-  .widget-cta { font-family:'Jost',sans-serif; font-size:0.62rem; letter-spacing:0.18em; text-transform:uppercase; color:#1C1915; background:#C4A36A; border:none; padding:0.9rem 2rem; cursor:pointer; transition:background 0.25s,transform 0.15s; white-space:nowrap; }
-  .widget-cta:hover { background:#D4B47A; transform:translateY(-1px); }
-</style>
-
-<script>
-(function(){
-  const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate()+1);
-  const dayAfter  = new Date(); dayAfter.setDate(dayAfter.getDate()+2);
-  const fmt = d => d.toISOString().split('T')[0];
-  const ci = document.getElementById('w-checkin');
-  const co = document.getElementById('w-checkout');
-  if(ci){ ci.value = fmt(tomorrow); ci.min = fmt(new Date()); }
-  if(co){ co.value = fmt(dayAfter);  co.min = fmt(tomorrow); }
-  if(ci) ci.addEventListener('change', function(){
-    const next = new Date(this.value); next.setDate(next.getDate()+1);
-    if(co && co.value <= this.value){ co.value = fmt(next); }
-    if(co) co.min = fmt(next);
-  });
-})();
-
-function goBooking(){
-  const ci = document.getElementById('w-checkin').value;
-  const co = document.getElementById('w-checkout').value;
-  const g  = document.getElementById('w-guests').value;
-  const r  = document.getElementById('w-rooms').value;
-  if(!ci||!co){ alert('Please select check-in and check-out dates.'); return; }
-  window.location.href = 'booking.html?checkIn='+ci+'&checkOut='+co+'&guests='+g+'&rooms='+r;
-}
-</script>
 
 <!-- ═══════════════════════════════════════════
      BOOKING PLATFORMS
