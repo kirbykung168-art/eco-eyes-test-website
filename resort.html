@@ -138,6 +138,83 @@
 </section>
 
 
+<!-- QUICK BOOKING WIDGET -->
+<section style="background:#1C1915;border-top:1px solid rgba(196,163,106,0.25);border-bottom:1px solid rgba(196,163,106,0.25);position:relative;z-index:10;">
+  <div class="max-w-6xl mx-auto px-6 py-5 flex flex-wrap items-end gap-4 lg:gap-0">
+    <div class="widget-field">
+      <label class="widget-label" data-en="Check-in" data-th="เช็คอิน" data-zh="入住">Check-in</label>
+      <input type="date" id="rw-checkin" class="widget-input" />
+    </div>
+    <div class="widget-divider"></div>
+    <div class="widget-field">
+      <label class="widget-label" data-en="Check-out" data-th="เช็คเอาต์" data-zh="退房">Check-out</label>
+      <input type="date" id="rw-checkout" class="widget-input" />
+    </div>
+    <div class="widget-divider"></div>
+    <div class="widget-field">
+      <label class="widget-label" data-en="Guests" data-th="จำนวนผู้เข้าพัก" data-zh="客人">Guests</label>
+      <select id="rw-guests" class="widget-input widget-select">
+        <option value="1">1 guest</option>
+        <option value="2" selected>2 guests</option>
+        <option value="3">3 guests</option>
+        <option value="4">4 guests</option>
+      </select>
+    </div>
+    <div class="widget-divider"></div>
+    <div class="widget-field">
+      <label class="widget-label" data-en="Rooms" data-th="ห้อง" data-zh="房间">Rooms</label>
+      <select id="rw-rooms" class="widget-input widget-select">
+        <option value="1" selected>1 room</option>
+        <option value="2">2 rooms</option>
+        <option value="3">3 rooms</option>
+      </select>
+    </div>
+    <div class="ml-auto flex-shrink-0">
+      <button onclick="goResortBooking()" class="widget-cta" data-en="Check Availability" data-th="ตรวจสอบห้องว่าง" data-zh="查看空房">Check Availability</button>
+    </div>
+  </div>
+</section>
+
+<style>
+  .widget-field { display:flex; flex-direction:column; padding: 0 1.25rem; flex:1; min-width:130px; }
+  .widget-label { font-family:'Jost',sans-serif; font-size:0.5rem; letter-spacing:0.2em; text-transform:uppercase; color:rgba(196,163,106,0.65); margin-bottom:0.4rem; }
+  .widget-input { font-family:'Jost',sans-serif; font-size:0.82rem; color:#F5F0E8; background:transparent; border:none; outline:none; padding:0; width:100%; }
+  .widget-input:focus { color:#C4A36A; }
+  input[type="date"].widget-input { color-scheme:dark; cursor:pointer; }
+  .widget-select { appearance:none; cursor:pointer; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23C4A36A' stroke-width='2' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 0 center; padding-right:1rem; }
+  .widget-select option { background:#1C1915; color:#F5F0E8; }
+  .widget-divider { width:1px; background:rgba(196,163,106,0.18); align-self:stretch; margin:0.25rem 0; flex-shrink:0; display:none; }
+  @media(min-width:768px){ .widget-divider { display:block; } }
+  .widget-cta { font-family:'Jost',sans-serif; font-size:0.62rem; letter-spacing:0.18em; text-transform:uppercase; color:#1C1915; background:#C4A36A; border:none; padding:0.9rem 2rem; cursor:pointer; transition:background 0.25s,transform 0.15s; white-space:nowrap; }
+  .widget-cta:hover { background:#D4B47A; transform:translateY(-1px); }
+</style>
+
+<script>
+(function(){
+  const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate()+1);
+  const dayAfter  = new Date(); dayAfter.setDate(dayAfter.getDate()+2);
+  const fmt = d => d.toISOString().split('T')[0];
+  const ci = document.getElementById('rw-checkin');
+  const co = document.getElementById('rw-checkout');
+  if(ci){ ci.value = fmt(tomorrow); ci.min = fmt(new Date()); }
+  if(co){ co.value = fmt(dayAfter);  co.min = fmt(tomorrow); }
+  if(ci) ci.addEventListener('change', function(){
+    const next = new Date(this.value); next.setDate(next.getDate()+1);
+    if(co && co.value <= this.value){ co.value = fmt(next); }
+    if(co) co.min = fmt(next);
+  });
+})();
+
+function goResortBooking(){
+  const ci = document.getElementById('rw-checkin').value;
+  const co = document.getElementById('rw-checkout').value;
+  const g  = document.getElementById('rw-guests').value;
+  const r  = document.getElementById('rw-rooms').value;
+  if(!ci||!co){ alert('Please select check-in and check-out dates.'); return; }
+  window.location.href = 'booking.html?checkIn='+ci+'&checkOut='+co+'&guests='+g+'&rooms='+r;
+}
+</script>
+
 <!-- INTRO -->
 <section class="py-32 md:py-40 bg-cream">
   <div class="max-w-7xl mx-auto px-6 md:px-12 grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-24 items-center">

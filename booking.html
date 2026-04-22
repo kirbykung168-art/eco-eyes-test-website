@@ -212,10 +212,19 @@
     select.form-input { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23967138' stroke-width='1.5' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 1rem center; padding-right: 2.5rem; }
     .form-label { display: block; font-family: 'Jost', sans-serif; font-size: 0.58rem; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(28,25,21,0.5); margin-bottom: 0.5rem; }
 
-    /* Price summary */
-    .price-row { display: flex; justify-content: space-between; align-items: baseline; padding: 0.7rem 0; border-bottom: 1px solid rgba(150,113,56,0.1); }
-    .price-row:last-child { border-bottom: none; }
-    .price-row.total { padding-top: 1rem; border-top: 1px solid rgba(150,113,56,0.3); border-bottom: none; }
+    /* ── Booking summary sidebar (dark card) ── */
+    .summary-dark-card { background: #1C1915; padding: 2rem 2rem 1.75rem; position: relative; overflow: hidden; }
+    .summary-dark-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:linear-gradient(90deg, transparent, #C4A36A 40%, transparent); }
+    .sum-lbl { font-family:'Jost',sans-serif; font-size:0.5rem; letter-spacing:0.22em; text-transform:uppercase; color:rgba(196,163,106,0.6); }
+    .sum-val  { font-family:'Jost',sans-serif; font-size:0.8rem; color:rgba(245,240,232,0.88); font-weight:500; }
+    .sum-hr   { border:none; border-top:1px solid rgba(196,163,106,0.12); margin:0.25rem 0; }
+    .sum-row  { display:flex; justify-content:space-between; align-items:baseline; padding:0.6rem 0; }
+    .sum-total-num { font-family:'Cormorant Garamond',serif; font-size:2.6rem; color:#FAF7EF; line-height:1; font-weight:300; letter-spacing:-0.01em; }
+    .btn-pay-now { width:100%; background:#C4A36A; color:#1C1915; font-family:'Jost',sans-serif; font-size:0.65rem; letter-spacing:0.25em; text-transform:uppercase; border:none; padding:1.2rem 2rem; cursor:pointer; transition:background 0.3s,transform 0.15s; font-weight:600; }
+    .btn-pay-now:hover:not(:disabled) { background:#D4B47A; transform:translateY(-1px); }
+    .btn-pay-now:disabled { background:rgba(196,163,106,0.2); color:rgba(196,163,106,0.35); cursor:not-allowed; transform:none; }
+    .sum-next-card { border:1px solid rgba(196,163,106,0.1); border-top:none; padding:1.35rem 1.75rem; background:#FAF7EF; }
+    .sum-step-num { font-family:'Jost',sans-serif; font-size:0.52rem; color:#C4A36A; width:15px; height:15px; min-width:15px; border:1px solid rgba(196,163,106,0.35); display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:2px; }
 
     /* Phone country code */
     .phone-wrap { display: flex; border: 1px solid rgba(28,25,21,0.2); background: #fff; }
@@ -224,10 +233,8 @@
     .phone-number-input { flex: 1; border: none; padding: 0.75rem 0.9rem; font-family: 'Jost', sans-serif; font-size: 0.82rem; color: #1C1915; background: transparent; outline: none; min-width: 0; }
     .phone-wrap:focus-within { border-color: #967138; }
 
-    /* Submit */
-    .btn-submit { width: 100%; font-family: 'Jost', sans-serif; font-size: 0.62rem; letter-spacing: 0.25em; text-transform: uppercase; background: #967138; color: #FAF7EF; border: none; padding: 1.1rem 2rem; cursor: pointer; transition: background 0.35s ease; }
-    .btn-submit:hover:not(:disabled) { background: #6B4F22; }
-    .btn-submit:disabled { background: rgba(150,113,56,0.3); cursor: not-allowed; }
+    /* Submit (mobile fallback — hidden on desktop where sidebar button is used) */
+    .btn-submit { display:none; }
 
     /* Notices */
     .notice { padding: 0.85rem 1.25rem; font-family: 'Jost', sans-serif; font-size: 0.78rem; line-height: 1.6; border-radius: 2px; }
@@ -489,82 +496,106 @@
             <textarea id="special-requests" class="form-input"></textarea>
           </div>
 
-          <div id="form-error" class="notice notice-error mb-4" style="display:none;"></div>
-
-          <button id="submit-btn" class="btn-submit" onclick="submitBooking()" disabled>
-            <span id="btn-submit-text">Pay Now</span>
-          </button>
-          <p class="font-sans mt-4" style="font-size:0.7rem;color:rgba(28,25,21,0.4);line-height:1.7" id="policy-note">
-            You will be securely redirected to Stripe to complete payment. Your room is confirmed once payment is received.
-          </p>
         </div>
 
         <!-- Summary sidebar -->
-        <div class="lg:col-span-2">
-          <div style="background:white;border:1px solid rgba(150,113,56,0.18);padding:1.75rem;">
-            <p class="font-sans text-[0.58rem] tracking-widest uppercase mb-4" style="color:#967138" id="summary-title">Booking Summary</p>
+        <div class="lg:col-span-2" style="position:sticky;top:2rem;">
 
-            <div id="summary-filled">
-              <div class="price-row">
-                <span class="font-sans" style="font-size:0.75rem;color:rgba(28,25,21,0.55)" id="sum-room-label">Room</span>
-                <span class="font-sans font-medium" style="font-size:0.78rem" id="sum-room-val">—</span>
+          <!-- Dark booking card -->
+          <div class="summary-dark-card">
+            <p class="sum-lbl mb-5" id="summary-title">Your Reservation</p>
+
+            <!-- Room name -->
+            <div style="margin-bottom:1.5rem;padding-bottom:1.25rem;border-bottom:1px solid rgba(196,163,106,0.12);">
+              <p class="sum-lbl mb-1" id="sum-room-label">Room</p>
+              <p style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;color:#FAF7EF;font-style:italic;font-weight:400;line-height:1.2;margin-top:0.3rem" id="sum-room-val">—</p>
+            </div>
+
+            <!-- Dates -->
+            <div style="display:grid;grid-template-columns:1fr 20px 1fr;align-items:start;gap:0.5rem;margin-bottom:1.25rem;">
+              <div>
+                <p class="sum-lbl mb-1" id="sum-checkin-label">Check-in</p>
+                <p class="sum-val" id="sum-checkin-val">—</p>
               </div>
-              <div class="price-row">
-                <span class="font-sans" style="font-size:0.75rem;color:rgba(28,25,21,0.55)" id="sum-checkin-label">Check-in</span>
-                <span class="font-sans font-medium" style="font-size:0.78rem" id="sum-checkin-val">—</span>
+              <div style="display:flex;align-items:center;justify-content:center;padding-top:1.35rem;">
+                <svg width="16" height="6" viewBox="0 0 16 6" fill="none"><line x1="0" y1="3" x2="12" y2="3" stroke="rgba(196,163,106,0.35)" stroke-width="1"/><polyline points="9,0.5 12,3 9,5.5" stroke="rgba(196,163,106,0.35)" stroke-width="1" fill="none"/></svg>
               </div>
-              <div class="price-row">
-                <span class="font-sans" style="font-size:0.75rem;color:rgba(28,25,21,0.55)" id="sum-checkout-label">Check-out</span>
-                <span class="font-sans font-medium" style="font-size:0.78rem" id="sum-checkout-val">—</span>
+              <div>
+                <p class="sum-lbl mb-1" id="sum-checkout-label">Check-out</p>
+                <p class="sum-val" id="sum-checkout-val">—</p>
               </div>
-              <div class="price-row">
-                <span class="font-sans" style="font-size:0.75rem;color:rgba(28,25,21,0.55)" id="sum-nights-label">Duration</span>
-                <span class="font-sans font-medium" style="font-size:0.78rem" id="sum-nights-val">—</span>
+            </div>
+
+            <!-- Price breakdown -->
+            <hr class="sum-hr">
+            <div class="sum-row">
+              <span class="sum-lbl" id="sum-nights-label">Duration</span>
+              <span class="sum-val" id="sum-nights-val">—</span>
+            </div>
+            <div class="sum-row">
+              <span class="sum-lbl" id="sum-rate-label">Nightly rate</span>
+              <span class="sum-val" id="sum-rate-val">—</span>
+            </div>
+            <div class="sum-row" id="sum-extra-bed-row" style="display:none">
+              <span class="sum-lbl" id="sum-extra-bed-label">Extra bed</span>
+              <span class="sum-val" style="color:#C4A36A" id="sum-extra-bed-val">+฿1,000</span>
+            </div>
+            <div class="sum-row" id="sum-pet-row" style="display:none">
+              <span class="sum-lbl" id="sum-pet-label">Pet fee</span>
+              <span class="sum-val" style="color:#C4A36A" id="sum-pet-val">—</span>
+            </div>
+
+            <!-- Total -->
+            <div style="border-top:1px solid rgba(196,163,106,0.25);margin-top:0.5rem;padding-top:1.25rem;display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:1.75rem;">
+              <div>
+                <p class="sum-lbl mb-1" id="sum-total-label">Total</p>
+                <p style="font-family:'Jost',sans-serif;font-size:0.48rem;color:rgba(196,163,106,0.4);letter-spacing:0.05em;text-transform:uppercase;">incl. all fees</p>
               </div>
-              <div class="price-row">
-                <span class="font-sans" style="font-size:0.75rem;color:rgba(28,25,21,0.55)" id="sum-rate-label">Nightly rate</span>
-                <span class="font-sans font-medium" style="font-size:0.78rem" id="sum-rate-val">—</span>
-              </div>
-              <div class="price-row" id="sum-extra-bed-row" style="display:none">
-                <span class="font-sans" style="font-size:0.75rem;color:rgba(28,25,21,0.55)" id="sum-extra-bed-label">Extra bed</span>
-                <span class="font-sans font-medium" style="font-size:0.78rem" id="sum-extra-bed-val">+฿1,000</span>
-              </div>
-              <div class="price-row" id="sum-pet-row" style="display:none">
-                <span class="font-sans" style="font-size:0.75rem;color:rgba(28,25,21,0.55)" id="sum-pet-label">Pet fee</span>
-                <span class="font-sans font-medium" style="font-size:0.78rem" id="sum-pet-val">—</span>
-              </div>
-              <div class="price-row total">
-                <span class="font-sans font-medium" style="font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;color:#967138" id="sum-total-label">Total</span>
-                <span class="font-display font-light" style="font-size:1.6rem;color:#1C1915;letter-spacing:-0.01em" id="sum-total-val">—</span>
-              </div>
+              <span class="sum-total-num" id="sum-total-val">—</span>
+            </div>
+
+            <!-- Error notice (shown here for visibility) -->
+            <div id="form-error" class="notice notice-error mb-4" style="display:none;"></div>
+
+            <!-- Pay Now button -->
+            <button id="submit-btn" class="btn-pay-now" onclick="submitBooking()" disabled>
+              <span id="btn-submit-text">Pay Now</span>
+            </button>
+
+            <!-- Stripe trust line -->
+            <div style="display:flex;align-items:center;justify-content:center;gap:0.55rem;margin-top:0.9rem;">
+              <svg width="9" height="11" viewBox="0 0 9 11" fill="none"><rect x="0.5" y="4.5" width="8" height="6" rx="1" stroke="rgba(196,163,106,0.4)" stroke-width="0.9"/><path d="M2.5 4.5V3A2 2 0 0 1 6.5 3v1.5" stroke="rgba(196,163,106,0.4)" stroke-width="0.9"/></svg>
+              <span style="font-family:'Jost',sans-serif;font-size:0.5rem;letter-spacing:0.15em;text-transform:uppercase;color:rgba(196,163,106,0.4)">Secured by Stripe</span>
             </div>
           </div>
 
-          <div style="background:rgba(43,58,32,0.06);border:1px solid rgba(43,58,32,0.12);padding:1.4rem;margin-top:0.9rem;">
-            <p class="font-sans text-[0.58rem] tracking-widest uppercase mb-3" style="color:#2B3A20" id="expect-title">What Happens Next</p>
-            <ol style="list-style:none;display:flex;flex-direction:column;gap:0.6rem;">
+          <!-- What Happens Next -->
+          <div class="sum-next-card">
+            <p class="font-sans text-[0.52rem] tracking-widest uppercase mb-3" style="color:#967138" id="expect-title">What Happens Next</p>
+            <ol style="list-style:none;display:flex;flex-direction:column;gap:0.8rem;">
               <li class="flex gap-3 items-start">
-                <span style="font-family:'Jost',sans-serif;font-size:0.6rem;background:#2B3A20;color:#FAF7EF;width:17px;height:17px;min-width:17px;display:flex;align-items:center;justify-content:center;">1</span>
-                <span class="font-sans" style="font-size:0.72rem;color:rgba(28,25,21,0.6);line-height:1.65" id="step-1">We confirm your request within 24 hours.</span>
+                <span class="sum-step-num">1</span>
+                <span class="font-sans" style="font-size:0.71rem;color:rgba(28,25,21,0.55);line-height:1.7" id="step-1">Complete payment via Stripe — takes seconds.</span>
               </li>
               <li class="flex gap-3 items-start">
-                <span style="font-family:'Jost',sans-serif;font-size:0.6rem;background:#2B3A20;color:#FAF7EF;width:17px;height:17px;min-width:17px;display:flex;align-items:center;justify-content:center;">2</span>
-                <span class="font-sans" style="font-size:0.72rem;color:rgba(28,25,21,0.6);line-height:1.65" id="step-2">You receive a confirmation email with booking reference.</span>
+                <span class="sum-step-num">2</span>
+                <span class="font-sans" style="font-size:0.71rem;color:rgba(28,25,21,0.55);line-height:1.7" id="step-2">Instant confirmation email with your booking reference.</span>
               </li>
               <li class="flex gap-3 items-start">
-                <span style="font-family:'Jost',sans-serif;font-size:0.6rem;background:#2B3A20;color:#FAF7EF;width:17px;height:17px;min-width:17px;display:flex;align-items:center;justify-content:center;">3</span>
-                <span class="font-sans" style="font-size:0.72rem;color:rgba(28,25,21,0.6);line-height:1.65" id="step-3">Our team contacts you to arrange payment.</span>
+                <span class="sum-step-num">3</span>
+                <span class="font-sans" style="font-size:0.71rem;color:rgba(28,25,21,0.55);line-height:1.7" id="step-3">Arrive and check in with your booking reference.</span>
               </li>
             </ol>
           </div>
 
-          <div class="mt-4 text-center">
-            <p class="font-sans" style="font-size:0.7rem;color:rgba(28,25,21,0.4);line-height:1.9">
-              <span id="contact-pre">Questions?</span><br>
-              <a href="tel:+66926100560" style="color:#967138">+66 92 610 0560</a><br>
-              <a href="mailto:ecoeyesvillagenaec@gmail.com" style="color:#967138">ecoeyesvillagenaec@gmail.com</a>
+          <!-- Contact -->
+          <div style="border:1px solid rgba(196,163,106,0.1);border-top:none;padding:1rem 1.75rem;text-align:center;">
+            <p class="font-sans" style="font-size:0.68rem;color:rgba(28,25,21,0.38);line-height:2">
+              <span id="contact-pre">Questions?</span>&ensp;
+              <a href="tel:+66926100560" style="color:#967138">+66 92 610 0560</a>&ensp;·&ensp;<a href="mailto:ecoeyesvillagenaec@gmail.com" style="color:#967138">Email us</a>
             </p>
           </div>
+
         </div>
 
       </div>
@@ -1294,7 +1325,7 @@
     'label-optional':    { en:'(optional)',          th:'(ถ้ามี)',                  zh:'（可选）' },
     'btn-submit-text':   { en:'Pay Now',              th:'ชำระเงิน',                zh:'立即付款' },
     'policy-note':       { en:'By submitting this request, you agree to be contacted by our team to confirm availability and finalise your booking. No payment is required at this stage.', th:'การส่งคำขอนี้ถือว่าคุณยินยอมให้ทีมงานของเราติดต่อกลับเพื่อยืนยันการจอง ไม่จำเป็นต้องชำระเงินในขั้นตอนนี้', zh:'提交申请即表示您同意我们的团队与您联系以确认预订，本阶段无需付款。' },
-    'summary-title':     { en:'Booking Summary',     th:'สรุปการจอง',              zh:'预订摘要' },
+    'summary-title':     { en:'Your Reservation',     th:'การจองของคุณ',            zh:'您的预订' },
     'sum-room-label':    { en:'Room',                th:'ห้องพัก',                 zh:'房间' },
     'sum-checkin-label': { en:'Check-in',            th:'เช็คอิน',                 zh:'入住' },
     'sum-checkout-label':{ en:'Check-out',           th:'เช็คเอาท์',               zh:'退房' },
@@ -1302,9 +1333,9 @@
     'sum-rate-label':    { en:'Nightly rate',        th:'ราคาต่อคืน',              zh:'每晚价格' },
     'sum-total-label':   { en:'Total',               th:'รวม',                    zh:'合计' },
     'expect-title':      { en:'What Happens Next',   th:'ขั้นตอนต่อไป',            zh:'后续步骤' },
-    'step-1':            { en:'We confirm your request within 24 hours.', th:'เราจะยืนยันคำขอภายใน 24 ชั่วโมง', zh:'我们将在24小时内确认您的申请。' },
-    'step-2':            { en:'You receive a confirmation email with booking reference.', th:'คุณจะได้รับอีเมลยืนยันพร้อมหมายเลขการจอง', zh:'您将收到一封含预订编号的确认邮件。' },
-    'step-3':            { en:'Our team contacts you to arrange payment.', th:'ทีมงานจะติดต่อเพื่อจัดการการชำระเงิน', zh:'我们的团队将联系您安排付款事宜。' },
+    'step-1':            { en:'Complete payment via Stripe — takes seconds.', th:'ชำระเงินผ่าน Stripe — ใช้เวลาเพียงไม่กี่วินาที', zh:'通过 Stripe 完成付款——仅需几秒钟。' },
+    'step-2':            { en:'Instant confirmation email with your booking reference.', th:'รับอีเมลยืนยันทันทีพร้อมหมายเลขการจอง', zh:'立即收到含预订编号的确认邮件。' },
+    'step-3':            { en:'Arrive and check in with your booking reference.', th:'เช็คอินด้วยหมายเลขการจองของคุณ', zh:'凭预订编号办理入住手续。' },
     'banner-label':      { en:'Selected Room',       th:'ห้องที่เลือก',             zh:'已选房间' },
     'btn-change-room':   { en:'Change Room',         th:'เปลี่ยนห้อง',              zh:'更换房间' },
     'contact-pre':       { en:'Questions?',          th:'สอบถามข้อมูล?',            zh:'有问题？' },
@@ -1340,6 +1371,30 @@
 
   // Wire up custom calendar
   initCalendar();
+
+  // Pre-fill from URL params (e.g. ?checkIn=2026-04-23&checkOut=2026-04-25&guests=2)
+  (function(){
+    const p = new URLSearchParams(window.location.search);
+    const ci = p.get('checkIn'); const co = p.get('checkOut');
+    if(ci && co){
+      const d1 = new Date(ci + 'T00:00:00'); const d2 = new Date(co + 'T00:00:00');
+      if(!isNaN(d1) && !isNaN(d2) && d2 > d1){
+        checkinDate  = d1; checkoutDate = d2;
+        const inEl  = document.getElementById('checkin-display');
+        const outEl = document.getElementById('checkout-display');
+        if(inEl)  { inEl.textContent  = formatDateDisplay(d1); inEl.classList.remove('placeholder'); }
+        if(outEl) { outEl.textContent = formatDateDisplay(d2); outEl.classList.remove('placeholder'); }
+        const btn = document.getElementById('check-avail-btn');
+        if(btn) btn.disabled = false;
+        checkAvailability();
+      }
+    }
+    const g = parseInt(p.get('guests'), 10);
+    if(g >= 1 && g <= 4){
+      const sel = document.getElementById('guest-count');
+      if(sel) { sel.value = String(g); onGuestCountChange(); }
+    }
+  })();
 
   // Apply saved language after render
   if (savedLang !== 'en') setLang(savedLang);
