@@ -28,8 +28,10 @@ const PORT = process.env.PORT || 3000;
 // ── Stripe ────────────────────────────────────────────────────
 // Only initialize if key looks real (starts with sk_test_ or sk_live_ + 20+ chars)
 const _stripeKey = process.env.STRIPE_SECRET_KEY || '';
-const stripe = /^sk_(test|live)_\w{20,}/.test(_stripeKey) ? new Stripe(_stripeKey) : null;
-if (stripe) console.log('✅ Stripe initialized');
+const stripe = /^sk_(test|live)_\w{20,}/.test(_stripeKey)
+  ? new Stripe(_stripeKey, { apiVersion: '2026-03-25.dahlia' })
+  : null;
+if (stripe) console.log('✅ Stripe initialized (API: 2026-03-25.dahlia)');
 else        console.warn('⚠️  Stripe NOT active — STRIPE_SECRET_KEY missing or placeholder');
 
 // ── Stripe webhook — must be registered BEFORE express.json() ─
@@ -386,8 +388,9 @@ app.post('/api/booking', async (req, res) => {
       const roomLabel = roomName || `${allRoomIds.length} room${allRoomIds.length !== 1 ? 's' : ''}`;
       const nightsNum = parseInt(nights, 10) || 1;
       const session = await stripe.checkout.sessions.create({
-        mode:                 'payment',
-        payment_method_types: ['card'],
+        mode:  'payment',
+        // No payment_method_types — Stripe auto-selects based on customer location
+        // (enables PromptPay, bank transfer, etc. without code changes)
         line_items: [{
           price_data: {
             currency:     'thb',
