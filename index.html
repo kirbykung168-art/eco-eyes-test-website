@@ -71,7 +71,7 @@
       transition: background 0.7s cubic-bezier(0.16,1,0.3,1), padding 0.5s cubic-bezier(0.16,1,0.3,1);
     }
     #nav.scrolled {
-      background: rgba(28,25,21,0.96);
+      background: #1C1915;
       backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
       padding: 0.875rem 3rem;
     }
@@ -352,16 +352,16 @@
     <div id="bw-inner">
 
       <!-- Check-in -->
-      <div class="bw-field">
-        <span class="bw-lbl">Check-in</span>
+      <div class="bw-field" id="bw-field-ci">
+        <span class="bw-lbl" data-en="Check-in" data-th="เช็คอิน" data-zh="入住">Check-in</span>
         <div class="bw-date-val empty" id="bw-ci-display">Select date</div>
         <input type="date" id="bw-ci" class="bw-date-input" onchange="bwSync()" />
       </div>
       <div class="bw-vsep"></div>
 
       <!-- Check-out -->
-      <div class="bw-field">
-        <span class="bw-lbl">Check-out</span>
+      <div class="bw-field" id="bw-field-co">
+        <span class="bw-lbl" data-en="Check-out" data-th="เช็คเอาต์" data-zh="退房">Check-out</span>
         <div class="bw-date-val empty" id="bw-co-display">Select date</div>
         <input type="date" id="bw-co" class="bw-date-input" onchange="bwSync()" />
       </div>
@@ -369,7 +369,7 @@
 
       <!-- Guests -->
       <div class="bw-select-wrap">
-        <span class="bw-lbl">Guests</span>
+        <span class="bw-lbl" data-en="Guests" data-th="จำนวนผู้เข้าพัก" data-zh="客人">Guests</span>
         <select id="bw-guests" class="bw-select">
           <option value="1">1 guest</option>
           <option value="2" selected>2 guests</option>
@@ -381,7 +381,7 @@
 
       <!-- Rooms -->
       <div class="bw-select-wrap">
-        <span class="bw-lbl">Rooms</span>
+        <span class="bw-lbl" data-en="Rooms" data-th="ห้อง" data-zh="房间">Rooms</span>
         <select id="bw-rooms" class="bw-select">
           <option value="1" selected>1 room</option>
           <option value="2">2 rooms</option>
@@ -392,8 +392,8 @@
       <!-- Actions -->
       <div style="margin-left:auto;display:flex;align-items:center;gap:0.85rem;flex-shrink:0;padding-left:1.5rem;">
         <span id="bw-nights" class="bw-nights" style="display:none"></span>
-        <button onclick="bwGo()" class="bw-cta">Check Availability</button>
-        <button onclick="bwToggle()" class="bw-hide" id="bw-hide-btn">Hide ↑</button>
+        <button onclick="bwGo()" class="bw-cta" data-en="Check Availability" data-th="ตรวจสอบห้องว่าง" data-zh="查看空房">Check Availability</button>
+        <button onclick="bwToggle()" class="bw-hide" id="bw-hide-btn" data-en="Hide ↑" data-th="ซ่อน ↑" data-zh="隐藏 ↑">Hide ↑</button>
       </div>
 
     </div>
@@ -407,6 +407,7 @@
   const nav  = document.getElementById('nav');
   const bw   = document.getElementById('bw');
   const tab  = document.getElementById('bw-show-tab');
+
   function positionBW(){
     const h = nav ? nav.offsetHeight : 80;
     if(bw)  bw.style.top  = h + 'px';
@@ -423,17 +424,33 @@
 
   const ciI = document.getElementById('bw-ci');
   const coI = document.getElementById('bw-co');
-  const ciD = document.getElementById('bw-ci-display');
-  const coD = document.getElementById('bw-co-display');
 
   ciI.value = fmt(tomorrow); ciI.min = fmt(new Date());
   coI.value = fmt(dayAfter); coI.min = fmt(tomorrow);
   bwSync();
 
+  // Wire date-field click → open native date picker
+  ['bw-field-ci','bw-field-co'].forEach(function(id){
+    var field = document.getElementById(id);
+    if(!field) return;
+    field.addEventListener('click', function(){
+      var inp = this.querySelector('input[type=date]');
+      if(!inp) return;
+      if(inp.showPicker){ try{ inp.showPicker(); }catch(e){ inp.focus(); } }
+      else { inp.focus(); }
+    });
+  });
+
   // Restore hidden state from session
-  if(sessionStorage.getItem('bw-hidden')==='1'){
+  var bwHiddenOnLoad = sessionStorage.getItem('bw-hidden')==='1';
+  if(bwHiddenOnLoad){
     document.getElementById('bw-bar').classList.add('bw-hidden');
-    tab.style.display = 'block';
+    if(tab) tab.style.display = 'block';
+    var btn = document.getElementById('bw-hide-btn');
+    if(btn) btn.textContent = 'Show ↓';
+  } else {
+    // Force nav dark when widget is visible
+    if(nav) nav.classList.add('scrolled');
   }
 
   window._bwPos = positionBW;
@@ -473,6 +490,9 @@ function bwToggle(){
   if(btn) btn.textContent = hidden ? 'Show ↓' : 'Hide ↑';
   sessionStorage.setItem('bw-hidden', hidden ? '1' : '0');
   if(window._bwPos) window._bwPos();
+  // Update nav dark state
+  if(window._updateScroll) window._updateScroll();
+  else { var nav=document.getElementById('nav'); if(nav){ if(!hidden) nav.classList.add('scrolled'); else if(window.scrollY<=60) nav.classList.remove('scrolled'); } }
 }
 
 function bwGo(){
@@ -1275,9 +1295,12 @@ function bwGo(){
   const nav = document.getElementById('nav');
   function updateScroll() {
     const y = window.scrollY;
-    nav.classList.toggle('scrolled', y > 60);
+    const bwBar = document.getElementById('bw-bar');
+    const bwVisible = bwBar && !bwBar.classList.contains('bw-hidden');
+    nav.classList.toggle('scrolled', y > 60 || bwVisible);
     document.getElementById('back-to-top').classList.toggle('visible', y > window.innerHeight * 0.8);
   }
+  window._updateScroll = updateScroll;
   window.addEventListener('scroll', updateScroll, { passive: true });
   updateScroll();
 
