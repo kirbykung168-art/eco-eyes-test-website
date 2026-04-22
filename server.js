@@ -48,7 +48,12 @@ const HOSTEX_API_KEY  = process.env.HOSTEX_API_KEY;
 const HOSTEX_BASE     = 'https://api.hostex.io/v3';
 const BASE_RATE       = parseInt(process.env.NIGHTLY_RATE  || '2700', 10);
 const WEEKEND_RATE    = parseInt(process.env.WEEKEND_RATE  || '3500', 10);
-const SITE_URL        = process.env.SITE_URL || 'http://localhost:3000';
+// SITE_URL: explicit env var wins; fall back to Vercel's auto-injected URL (needs https:// prefix);
+// finally fall back to localhost for local dev.
+const SITE_URL = process.env.SITE_URL
+  || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null)
+  || 'http://localhost:3000';
+console.log('🌐 SITE_URL:', SITE_URL);
 let   cachedPropertyId = process.env.HOSTEX_PROPERTY_ID || null;
 
 function calcTotal(checkIn, checkOut) {
