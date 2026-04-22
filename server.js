@@ -26,9 +26,11 @@ const app  = express();
 const PORT = process.env.PORT || 3000;
 
 // ── Stripe ────────────────────────────────────────────────────
-const stripe = process.env.STRIPE_SECRET_KEY
-  ? new Stripe(process.env.STRIPE_SECRET_KEY)
-  : null;
+// Only initialize if key looks real (starts with sk_test_ or sk_live_ + 20+ chars)
+const _stripeKey = process.env.STRIPE_SECRET_KEY || '';
+const stripe = /^sk_(test|live)_\w{20,}/.test(_stripeKey) ? new Stripe(_stripeKey) : null;
+if (stripe) console.log('✅ Stripe initialized');
+else        console.warn('⚠️  Stripe NOT active — STRIPE_SECRET_KEY missing or placeholder');
 
 // ── Stripe webhook — must be registered BEFORE express.json() ─
 // Stripe requires the raw (unparsed) body to verify the signature.
@@ -384,11 +386,12 @@ app.post('/api/booking', async (req, res) => {
       const roomLabel = roomName || `${allRoomIds.length} room${allRoomIds.length !== 1 ? 's' : ''}`;
       const nightsNum = parseInt(nights, 10) || 1;
       const session = await stripe.checkout.sessions.create({
+        mode:                 'payment',
         payment_method_types: ['card'],
         line_items: [{
           price_data: {
             currency:     'thb',
-            unit_amount:  serverTotal * 100,  // Stripe uses smallest unit (satang)
+            unit_amount:  serverTotal * 100,  // satang (smallest THB unit)
             product_data: {
               name:        `Eco Eyes Village — ${roomLabel}`,
               description: `${checkIn} → ${checkOut} · ${nightsNum} night${nightsNum !== 1 ? 's' : ''} · ${guests} guest${guests > 1 ? 's' : ''}`,
@@ -425,7 +428,8 @@ app.post('/api/booking', async (req, res) => {
     return res.json({ success: true, requiresPayment: true, checkoutUrl: previewUrl, ref: referenceId });
 
   } catch (err) {
-    console.error('Booking error:', err.message);
+    console.error('❌ Booking error:', err.message);
+    if (err.type) console.error('   Stripe error type:', err.type);  // e.g. StripeAuthenticationError
     res.status(500).json({ success: false, error: err.message });
   }
 });
