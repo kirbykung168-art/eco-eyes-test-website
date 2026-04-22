@@ -448,33 +448,40 @@ app.post('/api/booking', async (req, res) => {
 // Called both by the Stripe webhook (paid) and the no-Stripe fallback.
 // ================================================================
 async function createHostexReservations({ allRoomIds, checkIn, checkOut, name, email, phone,
-    guests, specialRequests, perRoomPrice, referenceId }) {
+    guests, specialRequests, perRoomPrice, referenceId, nights }) {
   const allRooms  = await matchRoomsToListings();
   const targetIds = allRoomIds.length > 0 ? allRoomIds : [null];
+  const nightsNum = parseInt(nights, 10) || 1;
+  // Rate per night (average across stay); Hostex requires this separate from total
+  const rateAmount = Math.round(perRoomPrice / nightsNum);
 
   for (const rid of targetIds) {
     const matched    = allRooms.find(r => r.id === rid);
     const propertyId = matched?.hostexId || await getPropertyId();
-    await hostexFetch('/reservations', {
+    const result = await hostexFetch('/reservations', {
       method: 'POST',
       body: JSON.stringify({
-        property_id:      propertyId,
-        check_in_date:    checkIn,
-        check_out_date:   checkOut,
-        guest_name:       name,
-        guest_email:      email,
-        guest_phone:      phone,
-        number_of_adults: parseInt(guests, 10) || 1,
-        number_of_guests: parseInt(guests, 10) || 1,
-        total_price:      perRoomPrice,
-        currency:         'THB',
-        remarks:          `${specialRequests || ''}${referenceId ? ` [Ref: ${referenceId}]` : ''}`.trim(),
-        channel_type:     'hostex_direct',
-        status:           'accepted',
-        creator:          'Eco Eyes Village',
+        property_id:       propertyId,
+        custom_channel_id: 4913,          // "Direct Booking" channel in Hostex
+        check_in_date:     checkIn,
+        check_out_date:    checkOut,
+        guest_name:        name,
+        guest_email:       email,
+        guest_phone:       phone || '',
+        number_of_adults:  parseInt(guests, 10) || 1,
+        number_of_guests:  parseInt(guests, 10) || 1,
+        rate_amount:       rateAmount,
+        commission_amount: 0,
+        received_amount:   perRoomPrice,
+        income_method_id:  1,             // Online/card payment
+        total_price:       perRoomPrice,
+        currency:          'THB',
+        remarks:           `${specialRequests ? specialRequests + ' — ' : ''}Paid via Stripe${referenceId ? ` [Ref: ${referenceId}]` : ''}`.trim(),
+        status:            'accepted',
       }),
     });
-    console.log(`  ✅ Hostex reservation: ${matched?.en || rid} (${checkIn} → ${checkOut})`);
+    const code = result?.data?.reservation?.reservation_code || 'unknown';
+    console.log(`  ✅ Hostex reservation: ${matched?.en || rid} — ${code} (${checkIn} → ${checkOut})`);
   }
   roomListingCache  = null;
   blockedDatesCache = null;
@@ -524,6 +531,7 @@ async function handleStripeWebhook(req, res) {
         specialRequests: meta.specialRequests,
         perRoomPrice:    calcTotal(meta.checkIn, meta.checkOut),
         referenceId:     meta.referenceId,
+        nights:          meta.nights,
       });
 
       await sendConfirmationEmail({
