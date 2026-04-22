@@ -66,7 +66,7 @@
     #back-to-top:hover{background:rgba(150,113,56,0.9);border-color:rgba(150,113,56,0.9)}
     @media(max-width:1024px){#nav{padding:1.25rem 1.5rem}#nav.scrolled{padding:0.875rem 1.5rem}#back-to-top{bottom:1.5rem;right:1.5rem}}
     #bw{position:fixed;left:0;right:0;z-index:490;pointer-events:none}
-    #bw-bar{background:#1C1915;border-bottom:1px solid rgba(196,163,106,0.18);overflow:hidden;max-height:90px;opacity:1;transition:max-height 0.38s cubic-bezier(0.16,1,0.3,1),opacity 0.3s ease;pointer-events:auto}
+    #bw-bar{background:#1C1915;border-top:1px solid rgba(196,163,106,0.22);border-bottom:1px solid rgba(196,163,106,0.18);overflow:hidden;max-height:90px;opacity:1;transition:max-height 0.38s cubic-bezier(0.16,1,0.3,1),opacity 0.3s ease;pointer-events:auto}
     #bw-bar.bw-hidden{max-height:0!important;opacity:0;pointer-events:none}
     #bw-inner{max-width:1280px;margin:0 auto;padding:0.85rem 2.5rem;display:flex;align-items:center}
     .bw-field{display:flex;flex-direction:column;padding:0 1.4rem;flex:1;min-width:110px;cursor:pointer;position:relative}
@@ -85,8 +85,8 @@
     .bw-cta:hover{background:#D4B47A}
     .bw-hide{font-family:'Jost',sans-serif;font-size:0.5rem;letter-spacing:0.18em;text-transform:uppercase;color:rgba(196,163,106,0.45);background:none;border:none;cursor:pointer;padding:0.3rem 0.6rem;transition:color 0.25s;white-space:nowrap;margin-left:0.75rem}
     .bw-hide:hover{color:#C4A36A}
-    #bw-show-tab{display:none;position:fixed;z-index:488;left:50%;transform:translateX(-50%);background:rgba(28,25,21,0.96);border:1px solid rgba(196,163,106,0.18);border-top:none;cursor:pointer;font-family:'Jost',sans-serif;font-size:0.48rem;letter-spacing:0.2em;text-transform:uppercase;color:rgba(196,163,106,0.6);padding:0.3rem 1.4rem;backdrop-filter:blur(8px);pointer-events:auto;transition:color 0.25s}
-    #bw-show-tab:hover{color:#C4A36A}
+    #bw-show-tab{display:none;position:fixed;z-index:488;left:0;right:0;text-align:center;background:rgba(28,25,21,0.97);border-bottom:1px solid rgba(196,163,106,0.22);cursor:pointer;font-family:'Jost',sans-serif;font-size:0.52rem;letter-spacing:0.22em;text-transform:uppercase;color:rgba(196,163,106,0.65);padding:0.65rem 1rem;backdrop-filter:blur(12px);pointer-events:auto;transition:color 0.25s,background 0.2s}
+    #bw-show-tab:hover{color:#C4A36A;background:#1C1915}
     @media(max-width:767px){#bw-inner{flex-wrap:wrap;gap:0.65rem;padding:0.75rem 1rem}#bw-bar{max-height:130px}.bw-field,.bw-select-wrap{min-width:calc(50% - 1rem);padding:0 0.35rem;flex:none}.bw-vsep{display:none}}
   </style>
 </head>
@@ -172,8 +172,8 @@
   const tab = document.getElementById('bw-show-tab');
   function positionBW(){
     const h = nav ? nav.offsetHeight : 80;
-    if(bw)  bw.style.top  = h+'px';
-    if(tab) tab.style.top = h+'px';
+    if(bw)  bw.style.top  = (h-1)+'px';
+    if(tab) tab.style.top = (h-1)+'px';
   }
   positionBW();
   window.addEventListener('scroll', positionBW, {passive:true});
