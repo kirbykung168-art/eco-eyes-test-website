@@ -99,7 +99,7 @@
     .bw-cd.bw-cd-past{color:rgba(28,25,21,0.18);cursor:not-allowed}
     .bw-cd.bw-cd-start,.bw-cd.bw-cd-end{background:#1C1915!important;color:#FAF7EF!important;border-radius:2px}
     .bw-cd.bw-cd-range{background:rgba(28,25,21,0.09);border-radius:0}
-    .bw-cd-dot{width:3px;height:3px;border-radius:50%;margin-top:1px;flex-shrink:0;background:#5cb85c}
+    .bw-cd-dot{width:3px;height:3px;border-radius:50%;margin-top:1px;flex-shrink:0}.bw-cd-dot-avail{background:#5cb85c}.bw-cd-dot-partial{background:#e6a817}.bw-cd-dot-full{background:rgba(28,25,21,0.18)}.bw-cd.bw-cd-fully-blocked{color:rgba(28,25,21,0.22);cursor:not-allowed}
     #bw-cal-footer{display:flex;align-items:center;justify-content:space-between;padding:0.85rem 1.5rem;border-top:1px solid rgba(0,0,0,0.07);background:#f8f8f8}
     #bw-cal-range{font-size:0.72rem;color:rgba(28,25,21,0.5);line-height:1.5}
     #bw-cal-done{font-family:'Jost',sans-serif;font-size:0.58rem;letter-spacing:0.2em;text-transform:uppercase;background:#1C1915;color:#FAF7EF;border:none;padding:0.55rem 1.15rem;cursor:pointer;transition:background 0.2s}
@@ -214,6 +214,11 @@
       <div id="bw-cal-range">Select check-in date</div>
       <button id="bw-cal-done" onclick="bwCalDone(event)" disabled>DONE</button>
     </div>
+    <div style="padding:0.5rem 1.5rem 0.75rem;display:flex;gap:1.1rem;border-top:1px solid rgba(0,0,0,0.05);">
+      <span style="display:flex;align-items:center;gap:0.35rem;font-size:0.55rem;letter-spacing:0.06em;color:rgba(28,25,21,0.4)"><span style="width:6px;height:6px;border-radius:50%;background:#5cb85c;flex-shrink:0"></span>Available</span>
+      <span style="display:flex;align-items:center;gap:0.35rem;font-size:0.55rem;letter-spacing:0.06em;color:rgba(28,25,21,0.4)"><span style="width:6px;height:6px;border-radius:50%;background:#e6a817;flex-shrink:0"></span>Partly booked</span>
+      <span style="display:flex;align-items:center;gap:0.35rem;font-size:0.55rem;letter-spacing:0.06em;color:rgba(28,25,21,0.4)"><span style="width:6px;height:6px;border-radius:50%;background:rgba(28,25,21,0.2);flex-shrink:0"></span>Fully booked</span>
+    </div>
   </div>
 </div>
 <div id="bw-show-tab" onclick="bwToggle()">&#9660; Check Availability</div>
@@ -225,7 +230,7 @@
   positionBW();window.addEventListener('scroll',positionBW,{passive:true});window.addEventListener('resize',positionBW,{passive:true});
   var t1=new Date();t1.setDate(t1.getDate()+1);t1.setHours(0,0,0,0);
   var t2=new Date();t2.setDate(t2.getDate()+2);t2.setHours(0,0,0,0);
-  window._bwCi=t1;window._bwCo=t2;bwUpdateDisplays();
+  window._bwCi=t1;window._bwCo=t2;bwUpdateDisplays();bwLoadBlockedDates();
   document.addEventListener('click',function(e){var p=document.getElementById('bw-cal-popup');if(p&&p.classList.contains('open')&&!p.contains(e.target)&&!document.getElementById('bw-field-ci').contains(e.target)&&!document.getElementById('bw-field-co').contains(e.target))p.classList.remove('open');});
   document.getElementById('bw-cal-popup').addEventListener('click',function(e){e.stopPropagation();});
   var hidden=sessionStorage.getItem('bw-hidden')==='1';
@@ -233,8 +238,9 @@
   else{if(nav)nav.classList.add('scrolled');}
   window._bwPos=positionBW;
 })();
-var _bwCY,_bwCM,_bwCS=0,_bwCStart=null,_bwCEnd=null,_bwCHov=null;
+var _bwCY,_bwCM,_bwCS=0,_bwCStart=null,_bwCEnd=null,_bwCHov=null,_bwBlockedDates=null;
 var _bwCMons=['January','February','March','April','May','June','July','August','September','October','November','December'];
+function bwLoadBlockedDates(){fetch("/api/blocked-dates").then(function(r){return r.json();}).then(function(d){_bwBlockedDates=d;if(document.getElementById("bw-cal-popup").classList.contains("open"))bwRenderCal();}).catch(function(){_bwBlockedDates={someBooked:[],fullyBlocked:[]};});}
 function bwCalOpen(field,e){
   if(e)e.stopPropagation();
   var popup=document.getElementById('bw-cal-popup'),bar=document.getElementById('bw-bar'),bwEl=document.getElementById('bw');
@@ -258,9 +264,11 @@ function bwRenderCal(){
     var cell=document.createElement('div');cell.className='bw-cd';
     if(isPast)cell.classList.add('bw-cd-past');
     cell.dataset.date=dt.toISOString().split('T')[0];
+    var dStr=cell.dataset.date,sbArr=(_bwBlockedDates&&_bwBlockedDates.someBooked)||[],fbArr=(_bwBlockedDates&&_bwBlockedDates.fullyBlocked)||[],isFullBlocked=!isPast&&fbArr.includes(dStr);
+    if(isFullBlocked)cell.classList.add('bw-cd-fully-blocked');
     bwApplyRange(cell,dt);
     var num=document.createElement('span');num.textContent=d;cell.appendChild(num);
-    if(!isPast){var dot=document.createElement('span');dot.className='bw-cd-dot';cell.appendChild(dot);(function(date){cell.addEventListener('click',function(ev){ev.stopPropagation();bwCDayClick(date);});cell.addEventListener('mouseenter',function(){bwCDayHov(date);});})(dt);}
+    if(!isPast){var dot=document.createElement('span');dot.className='bw-cd-dot';if(fbArr.includes(dStr))dot.classList.add('bw-cd-dot-full');else if(sbArr.includes(dStr))dot.classList.add('bw-cd-dot-partial');else dot.classList.add('bw-cd-dot-avail');cell.appendChild(dot);if(!isFullBlocked){(function(date){cell.addEventListener('click',function(ev){ev.stopPropagation();bwCDayClick(date);});cell.addEventListener('mouseenter',function(){bwCDayHov(date);});})(dt);}}
     grid.appendChild(cell);
   }
   grid.addEventListener('mouseleave',function(){if(_bwCS===1&&_bwCHov){_bwCHov=null;bwUpdateRangeCls();}});

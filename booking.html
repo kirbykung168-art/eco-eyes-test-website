@@ -356,6 +356,7 @@
     </h1>
     <span class="sep sep-center" style="background:rgba(196,163,106,0.5);margin:1.8rem auto;"></span>
     <p class="font-sans font-light" style="color:rgba(255,255,255,0.42);font-size:0.72rem;letter-spacing:0.15em;text-transform:uppercase;" id="page-sub">10 rooms &nbsp;·&nbsp; Each one unique &nbsp;·&nbsp; All in the heart of the forest</p>
+    <p class="font-sans" style="color:rgba(196,163,106,0.55);font-size:0.62rem;letter-spacing:0.1em;margin-top:0.9rem;" id="page-multiroom">Select one or more rooms for your stay</p>
   </div>
 </section>
 
@@ -1225,6 +1226,14 @@
       : count === 1 ? names[0]
       : `${count} ${lang==='th'?'ห้องที่เลือก':lang==='zh'?'间房间':'rooms selected'}`;
     document.getElementById('banner-room-name').textContent = bannerText;
+
+    // Update banner label and clear button for multi-room
+    document.getElementById('banner-label').textContent =
+      count <= 1 ? (lang==='th'?'ห้องที่เลือก':lang==='zh'?'已选房间':'Selected Room')
+                 : (lang==='th'?'ห้องที่เลือก':lang==='zh'?'已选房间':'Selected Rooms');
+    document.getElementById('btn-change-room').textContent =
+      count <= 1 ? (lang==='th'?'เปลี่ยนห้อง':lang==='zh'?'更换房间':'Change Room')
+                 : (lang==='th'?'ล้างการเลือก':lang==='zh'?'清除选择':'Clear All');
   }
 
   function clearRoomSelection() {
