@@ -67,7 +67,7 @@
     @media(max-width:1024px){#nav{padding:1.25rem 1.5rem}#nav.scrolled{padding:0.875rem 1.5rem}#back-to-top{bottom:1.5rem;right:1.5rem}}
     #bw{position:fixed;left:0;right:0;z-index:490;pointer-events:none}
     #bw::before{content:'';position:absolute;top:-3px;left:0;right:0;height:3px;background:#1C1915;pointer-events:none}
-    #bw-bar{background:#1C1915;border-top:1px solid rgba(196,163,106,0.22);border-bottom:1px solid rgba(196,163,106,0.18);overflow:hidden;max-height:90px;opacity:1;transition:max-height 0.38s cubic-bezier(0.16,1,0.3,1),opacity 0.3s ease;pointer-events:auto}
+    #bw-bar{background:rgba(28,25,21,0.42);backdrop-filter:blur(18px) saturate(1.1);-webkit-backdrop-filter:blur(18px) saturate(1.1);border-top:1px solid rgba(196,163,106,0.18);border-bottom:1px solid rgba(196,163,106,0.12);overflow:hidden;max-height:90px;opacity:1;transition:max-height 0.38s cubic-bezier(0.16,1,0.3,1),opacity 0.3s ease,background 0.5s cubic-bezier(0.16,1,0.3,1),border-color 0.5s ease;pointer-events:auto}body.bw-solid #bw-bar{background:#1C1915;border-top-color:rgba(196,163,106,0.22);border-bottom-color:rgba(196,163,106,0.18)}
     #bw-bar.bw-hidden{max-height:0!important;opacity:0;pointer-events:none}
     #bw-inner{max-width:1280px;margin:0 auto;padding:0.85rem 2.5rem;display:flex;align-items:center}
     .bw-field{display:flex;flex-direction:column;padding:0 1.4rem;flex:1;min-width:110px;cursor:pointer}
@@ -111,6 +111,24 @@
     #bw-cal-done:hover:not(:disabled){background:#2A251E}
     #bw-cal-done:disabled{background:rgba(28,25,21,0.14);color:rgba(28,25,21,0.35);cursor:not-allowed}
     @media(max-width:767px){#bw-inner{flex-wrap:wrap;gap:0.65rem;padding:0.75rem 1rem}#bw-bar{max-height:130px}.bw-field,.bw-select-wrap{min-width:calc(50% - 1rem);padding:0 0.35rem;flex:none}.bw-vsep{display:none}#bw-cal-popup{width:min(360px,96vw)}}
+      /* ── Display type refinement (Aman/Six Senses) ── */
+    .font-display { letter-spacing: -0.022em; }
+    h1.font-display, h2.font-display { letter-spacing: -0.032em; }
+    .font-display em, em.font-display { letter-spacing: -0.012em; }
+    p.font-sans { line-height: 1.75; }
+    .pkg-card:hover, .exp-card:hover, .platform-card:hover { box-shadow: 0 30px 70px -22px rgba(150,113,56,0.22), 0 8px 24px -8px rgba(28,25,21,0.08) !important; }
+    /* ── Phase 2: professional motion ── */
+    .reveal { transform: translateY(28px) scale(0.988); transform-origin: center bottom; }
+    .reveal.visible { transform: translateY(0) scale(1); }
+    .sep { transform-origin: center; transform: scaleX(0); transition: transform 1.4s cubic-bezier(0.16,1,0.3,1) 0.25s; }
+    .reveal.visible .sep, .reveal.visible > .sep { transform: scaleX(1); }
+    .sep.sep-immediate { transform: scaleX(1); }
+    .btn-solid-gold, .btn-outline-gold, .btn-outline-cream, .btn-outline-white {
+      transition: background 0.45s cubic-bezier(0.16,1,0.3,1), color 0.45s cubic-bezier(0.16,1,0.3,1), border-color 0.45s cubic-bezier(0.16,1,0.3,1), transform 0.45s cubic-bezier(0.16,1,0.3,1);
+    }
+    .btn-solid-gold:hover, .btn-outline-gold:hover, .btn-outline-cream:hover, .btn-outline-white:hover { transform: translateY(-1px); }
+    [data-parallax] { will-change: transform; transition: transform 0.05s linear; }
+
   </style>
 </head>
 <body>
@@ -226,9 +244,10 @@ function bwCalOpen(field,e){
   if(e)e.stopPropagation();
   var popup=document.getElementById('bw-cal-popup'),bar=document.getElementById('bw-bar'),bwEl=document.getElementById('bw');
   popup.style.top=(bar.offsetHeight+4)+'px';
-  var bwR=bwEl.getBoundingClientRect(),fR=document.getElementById('bw-field-'+field).getBoundingClientRect();
-  var left=fR.left-bwR.left;if(left+360>bwR.width)left=Math.max(0,bwR.width-372);
-  popup.style.left=left+'px';
+  var bwR=bwEl.getBoundingClientRect(),ciR=document.getElementById('bw-field-ci').getBoundingClientRect(),coR=document.getElementById('bw-field-co').getBoundingClientRect();
+  var left=ciR.left-bwR.left,popW=Math.max(420,coR.right-ciR.left);
+  if(left+popW>bwR.width)left=Math.max(0,bwR.width-popW-12);
+  popup.style.left=left+'px';popup.style.width=popW+'px';
   if(!popup.classList.contains('open')){_bwCStart=window._bwCi||null;_bwCEnd=window._bwCo||null;_bwCS=0;var today=new Date();today.setHours(0,0,0,0);_bwCY=(_bwCStart||today).getFullYear();_bwCM=(_bwCStart||today).getMonth();popup.classList.add('open');}
   bwRenderCal();
 }
@@ -283,10 +302,10 @@ function bwGo(){if(!window._bwCi||!window._bwCo){alert('Please select check-in a
 
 <!-- HERO -->
 <section class="relative h-screen overflow-hidden">
-  <img src="brand_assets/eco%20eyes%20website%20photos%20/Room%20Photos/630525041_1240272291531875_7916248610315048686_n.jpg"
+  <img src="brand_assets/eco%20eyes%20website%20photos/Room%20Photos/630525041_1240272291531875_7916248610315048686_n.jpg"
        alt="Eco Eyes Village Resort" class="absolute inset-0 w-full h-full object-cover">
-  <div class="absolute inset-0 bg-gradient-to-b from-black/50 via-black/20 to-black/65"></div>
-  <div class="absolute inset-0" style="background:radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.3) 100%)"></div>
+  <div class="absolute inset-0 pointer-events-none" style="background:linear-gradient(180deg, rgba(28,25,21,0.42) 0%, rgba(28,25,21,0.08) 38%, rgba(28,25,21,0.18) 62%, rgba(28,25,21,0.62) 100%)"></div>
+  <div class="absolute inset-0 pointer-events-none" style="background:linear-gradient(180deg, transparent 70%, rgba(28,25,21,0.35) 100%);mix-blend-mode:multiply"></div>
   <div class="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
     <p class="font-sans text-white/50 text-[0.58rem] tracking-widest uppercase mb-7 reveal" style="transition-delay:0.3s"
        data-en="Nakhon Nayok · Thailand" data-th="นครนายก · ประเทศไทย" data-zh="那空那育 · 泰国">Nakhon Nayok · Thailand</p>
@@ -341,7 +360,7 @@ function bwGo(){if(!window._bwCi||!window._bwCo){alert('Please select check-in a
     </div>
     <div class="relative reveal" style="transition-delay:0.2s">
       <div class="aspect-[3/4] overflow-hidden">
-        <img src="brand_assets/eco%20eyes%20website%20photos%20/Room%20Photos/Advettisement%20picture%20from%20room%20(important).jpg"
+        <img src="brand_assets/eco%20eyes%20website%20photos/Room%20Photos/Advettisement%20picture%20from%20room%20(important).jpg"
              alt="Eco Eyes glamping dome" loading="lazy" class="w-full h-full object-cover transition-transform duration-700 hover:scale-[1.03]">
       </div>
       <div class="absolute -bottom-5 -right-5 w-2/3 h-2/3 border border-[#967138]/15 -z-10 pointer-events-none"></div>
@@ -370,7 +389,7 @@ function bwGo(){if(!window._bwCi||!window._bwCo){alert('Please select check-in a
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
       <div class="room-card reveal" style="grid-row: span 2">
         <div class="overflow-hidden" style="height:520px">
-          <img src="brand_assets/eco%20eyes%20website%20photos%20/Room%20Photos/630525041_1240272291531875_7916248610315048686_n.jpg"
+          <img src="brand_assets/eco%20eyes%20website%20photos/Room%20Photos/630525041_1240272291531875_7916248610315048686_n.jpg"
                alt="Lakeside View Dome — Eco Eyes Village" loading="lazy" class="w-full h-full object-cover">
         </div>
         <div class="p-8">
@@ -397,7 +416,7 @@ function bwGo(){if(!window._bwCi||!window._bwCo){alert('Please select check-in a
 
       <div class="room-card reveal" style="transition-delay:0.1s">
         <div class="overflow-hidden" style="height:280px">
-          <img src="brand_assets/eco%20eyes%20website%20photos%20/Room%20Photos/Room%20picture%201.webp"
+          <img src="brand_assets/eco%20eyes%20website%20photos/Room%20Photos/Room%20picture%201.webp"
                alt="Lakeside View Dome Interior" loading="lazy" class="w-full h-full object-cover">
         </div>
         <div class="p-6">
@@ -413,7 +432,7 @@ function bwGo(){if(!window._bwCi||!window._bwCo){alert('Please select check-in a
       <div class="room-card reveal" style="transition-delay:0.2s">
         <div style="height:200px;display:grid;grid-template-columns:2fr 1fr;gap:2px;overflow:hidden">
           <div class="overflow-hidden">
-            <img src="brand_assets/eco%20eyes%20website%20photos%20/Room%20Photos/Outdoor%20patio%20picture.webp"
+            <img src="brand_assets/eco%20eyes%20website%20photos/Room%20Photos/Outdoor%20patio%20picture.webp"
                  alt="Outdoor Patio" loading="lazy" class="w-full h-full object-cover">
           </div>
           <div style="display:grid;grid-template-rows:1fr 1fr;gap:2px">
@@ -422,7 +441,7 @@ function bwGo(){if(!window._bwCi||!window._bwCo){alert('Please select check-in a
                    alt="Deck" loading="lazy" class="w-full h-full object-cover">
             </div>
             <div class="overflow-hidden">
-              <img src="brand_assets/eco%20eyes%20website%20photos%20/Advertisement%20Photos/Advertisement%20photo%20for%20outisde%20room%20balcony.jpg"
+              <img src="brand_assets/eco%20eyes%20website%20photos/Advertisement%20Photos/Advertisement%20photo%20for%20outisde%20room%20balcony.jpg"
                    alt="Room Balcony" loading="lazy" class="w-full h-full object-cover">
             </div>
           </div>
@@ -441,16 +460,16 @@ function bwGo(){if(!window._bwCi||!window._bwCo){alert('Please select check-in a
     <!-- Room photo strip -->
     <div class="grid grid-cols-4 gap-2 mt-4">
       <div class="overflow-hidden aspect-video reveal">
-        <img src="brand_assets/eco%20eyes%20website%20photos%20/Room%20Photos/Scenic%20room%20picture%20.webp" alt="" loading="lazy" class="w-full h-full object-cover">
+        <img src="brand_assets/eco%20eyes%20website%20photos/Room%20Photos/Scenic%20room%20picture%20.webp" alt="" loading="lazy" class="w-full h-full object-cover">
       </div>
       <div class="overflow-hidden aspect-video reveal" style="transition-delay:0.08s">
-        <img src="brand_assets/eco%20eyes%20website%20photos%20/Room%20Photos/Bathroom%20picture%201.webp" alt="" loading="lazy" class="w-full h-full object-cover">
+        <img src="brand_assets/eco%20eyes%20website%20photos/Room%20Photos/Bathroom%20picture%201.webp" alt="" loading="lazy" class="w-full h-full object-cover">
       </div>
       <div class="overflow-hidden aspect-video reveal" style="transition-delay:0.16s">
-        <img src="brand_assets/eco%20eyes%20website%20photos%20/Room%20Photos/view%20from%20inside%20the%20room.jpg" alt="" loading="lazy" class="w-full h-full object-cover">
+        <img src="brand_assets/eco%20eyes%20website%20photos/Room%20Photos/view%20from%20inside%20the%20room.jpg" alt="" loading="lazy" class="w-full h-full object-cover">
       </div>
       <div class="overflow-hidden aspect-video reveal" style="transition-delay:0.24s">
-        <img src="brand_assets/eco%20eyes%20website%20photos%20/Room%20Photos/outdoor%20room%20view.jpg" alt="" loading="lazy" class="w-full h-full object-cover">
+        <img src="brand_assets/eco%20eyes%20website%20photos/Room%20Photos/outdoor%20room%20view.jpg" alt="" loading="lazy" class="w-full h-full object-cover">
       </div>
     </div>
   </div>
@@ -587,7 +606,7 @@ function bwGo(){if(!window._bwCi||!window._bwCo){alert('Please select check-in a
 <section class="overflow-hidden">
   <div class="grid grid-cols-1 md:grid-cols-2">
     <div class="relative overflow-hidden" style="min-height:480px">
-      <img src="brand_assets/eco%20eyes%20website%20photos%20/Spa%20Photos/yogo%20on%20lake.jpg"
+      <img src="brand_assets/eco%20eyes%20website%20photos/Spa%20Photos/yogo%20on%20lake.jpg"
            alt="Yoga on the lake at Eco Eyes Village" class="absolute inset-0 w-full h-full object-cover" loading="lazy">
     </div>
     <div class="bg-forest flex items-center">
@@ -675,23 +694,23 @@ function bwGo(){if(!window._bwCi||!window._bwCo){alert('Please select check-in a
 <script>
   /* --- Room gallery auto-scroll --- */
   const ROOM_PHOTOS = [
-    'brand_assets/eco%20eyes%20website%20photos%20/Room%20Photos/630525041_1240272291531875_7916248610315048686_n.jpg',
-    'brand_assets/eco%20eyes%20website%20photos%20/Room%20Photos/Room%20picture%201.webp',
-    'brand_assets/eco%20eyes%20website%20photos%20/Room%20Photos/Room%20picture%202.webp',
-    'brand_assets/eco%20eyes%20website%20photos%20/Room%20Photos/Room%20picture%203.webp',
-    'brand_assets/eco%20eyes%20website%20photos%20/Room%20Photos/Room%20picture%204.webp',
-    'brand_assets/eco%20eyes%20website%20photos%20/Room%20Photos/Room%20picture%205.webp',
-    'brand_assets/eco%20eyes%20website%20photos%20/Room%20Photos/Scenic%20room%20picture%20.webp',
-    'brand_assets/eco%20eyes%20website%20photos%20/Room%20Photos/Bathroom%20picture%201.webp',
-    'brand_assets/eco%20eyes%20website%20photos%20/Room%20Photos/bathroom%202.webp',
-    'brand_assets/eco%20eyes%20website%20photos%20/Room%20Photos/Outdoor%20patio%20picture.webp',
-    'brand_assets/eco%20eyes%20website%20photos%20/Room%20Photos/inside%20room%20table.jpg',
-    'brand_assets/eco%20eyes%20website%20photos%20/Room%20Photos/outdoor%20room%20view.jpg',
-    'brand_assets/eco%20eyes%20website%20photos%20/Room%20Photos/room%20scenic.jpg',
-    'brand_assets/eco%20eyes%20website%20photos%20/Room%20Photos/room%20view.jpg',
-    'brand_assets/eco%20eyes%20website%20photos%20/Room%20Photos/view%20from%20inside%20the%20room.jpg',
-    'brand_assets/eco%20eyes%20website%20photos%20/Room%20Photos/picture%20of%20lights.webp',
-    'brand_assets/eco%20eyes%20website%20photos%20/Room%20Photos/Advettisement%20picture%20from%20room%20(important).jpg',
+    'brand_assets/eco%20eyes%20website%20photos/Room%20Photos/630525041_1240272291531875_7916248610315048686_n.jpg',
+    'brand_assets/eco%20eyes%20website%20photos/Room%20Photos/Room%20picture%201.webp',
+    'brand_assets/eco%20eyes%20website%20photos/Room%20Photos/Room%20picture%202.webp',
+    'brand_assets/eco%20eyes%20website%20photos/Room%20Photos/Room%20picture%203.webp',
+    'brand_assets/eco%20eyes%20website%20photos/Room%20Photos/Room%20picture%204.webp',
+    'brand_assets/eco%20eyes%20website%20photos/Room%20Photos/Room%20picture%205.webp',
+    'brand_assets/eco%20eyes%20website%20photos/Room%20Photos/Scenic%20room%20picture%20.webp',
+    'brand_assets/eco%20eyes%20website%20photos/Room%20Photos/Bathroom%20picture%201.webp',
+    'brand_assets/eco%20eyes%20website%20photos/Room%20Photos/bathroom%202.webp',
+    'brand_assets/eco%20eyes%20website%20photos/Room%20Photos/Outdoor%20patio%20picture.webp',
+    'brand_assets/eco%20eyes%20website%20photos/Room%20Photos/inside%20room%20table.jpg',
+    'brand_assets/eco%20eyes%20website%20photos/Room%20Photos/outdoor%20room%20view.jpg',
+    'brand_assets/eco%20eyes%20website%20photos/Room%20Photos/room%20scenic.jpg',
+    'brand_assets/eco%20eyes%20website%20photos/Room%20Photos/room%20view.jpg',
+    'brand_assets/eco%20eyes%20website%20photos/Room%20Photos/view%20from%20inside%20the%20room.jpg',
+    'brand_assets/eco%20eyes%20website%20photos/Room%20Photos/picture%20of%20lights.webp',
+    'brand_assets/eco%20eyes%20website%20photos/Room%20Photos/Advettisement%20picture%20from%20room%20(important).jpg',
   ];
   function rShuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
   const rCells = Array.from(document.querySelectorAll('.gal-cell img'));
@@ -711,6 +730,7 @@ function bwGo(){if(!window._bwCi||!window._bwCo){alert('Please select check-in a
     const bwBar = document.getElementById('bw-bar');
     const bwVisible = bwBar && !bwBar.classList.contains('bw-hidden');
     nav.classList.toggle('scrolled', window.scrollY > 60 || bwVisible);
+    document.body.classList.toggle('bw-solid', window.scrollY > window.innerHeight * 0.85);
     document.getElementById('back-to-top').classList.toggle('visible', window.scrollY > window.innerHeight * 0.8);
   }
   window._updateScroll = updateScroll;

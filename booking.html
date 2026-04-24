@@ -262,6 +262,23 @@
       .date-sep { display: none; }
       .btn-check { margin-left: 0; width: 100%; text-align: center; }
     }
+      /* ── Display type refinement (Aman/Six Senses) ── */
+    .font-display { letter-spacing: -0.022em; }
+    h1.font-display, h2.font-display { letter-spacing: -0.032em; }
+    .font-display em, em.font-display { letter-spacing: -0.012em; }
+    p.font-sans { line-height: 1.75; }
+    .pkg-card:hover, .exp-card:hover, .platform-card:hover { box-shadow: 0 30px 70px -22px rgba(150,113,56,0.22), 0 8px 24px -8px rgba(28,25,21,0.08) !important; }
+    /* ── Phase 2: professional motion ── */
+    .reveal { transform: translateY(28px) scale(0.988); transform-origin: center bottom; }
+    .reveal.visible { transform: translateY(0) scale(1); }
+    .sep { transform-origin: center; transform: scaleX(0); transition: transform 1.4s cubic-bezier(0.16,1,0.3,1) 0.25s; }
+    .reveal.visible .sep, .reveal.visible > .sep { transform: scaleX(1); }
+    .sep.sep-immediate { transform: scaleX(1); }
+    .btn-solid-gold, .btn-outline-gold, .btn-outline-cream, .btn-outline-white {
+      transition: background 0.45s cubic-bezier(0.16,1,0.3,1), color 0.45s cubic-bezier(0.16,1,0.3,1), border-color 0.45s cubic-bezier(0.16,1,0.3,1), transform 0.45s cubic-bezier(0.16,1,0.3,1);
+    }
+    .btn-solid-gold:hover, .btn-outline-gold:hover, .btn-outline-cream:hover, .btn-outline-white:hover { transform: translateY(-1px); }
+
   </style>
 </head>
 <body>
@@ -327,7 +344,7 @@
 ═══════════════════════════════════════════ -->
 <section style="padding-top:7rem;padding-bottom:4rem;background:#1C1915;position:relative;overflow:hidden;">
   <!-- Faint forest texture overlay -->
-  <div style="position:absolute;inset:0;opacity:0.07;background-image:url('brand_assets/eco%20eyes%20website%20photos%20/Room%20Photos/Room%20picture%201.webp');background-size:cover;background-position:center;"></div>
+  <div style="position:absolute;inset:0;opacity:0.07;background-image:url('brand_assets/eco%20eyes%20website%20photos/Room%20Photos/Room%20picture%201.webp');background-size:cover;background-position:center;"></div>
   <!-- Gradient fade at bottom -->
   <div style="position:absolute;left:0;right:0;bottom:0;height:60%;background:linear-gradient(to bottom,transparent,#1C1915);pointer-events:none;"></div>
   <!-- Decorative gold line -->
@@ -657,7 +674,7 @@
   // ── Constants ────────────────────────────────
   const BASE_RATE    = 2700;   // Sun–Thu
   const WEEKEND_RATE = 3500;   // Fri–Sat night
-  const PHOTO_BASE   = 'brand_assets/eco%20eyes%20website%20photos%20/Room%20Photos/';
+  const PHOTO_BASE   = 'brand_assets/eco%20eyes%20website%20photos/Room%20Photos/';
 
   // Returns total cost for a stay, accounting for Fri/Sat premium.
   // "night of Fri" = guest sleeps Friday = date.getDay() === 5

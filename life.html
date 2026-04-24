@@ -62,7 +62,7 @@
     /* ── Booking widget strip ── */
     #bw{position:fixed;left:0;right:0;z-index:490;pointer-events:none}
     #bw::before{content:'';position:absolute;top:-3px;left:0;right:0;height:3px;background:#1C1915;pointer-events:none}
-    #bw-bar{background:#1C1915;border-top:1px solid rgba(196,163,106,0.22);border-bottom:1px solid rgba(196,163,106,0.18);overflow:hidden;max-height:90px;opacity:1;transition:max-height 0.38s cubic-bezier(0.16,1,0.3,1),opacity 0.3s ease;pointer-events:auto}
+    #bw-bar{background:rgba(28,25,21,0.42);backdrop-filter:blur(18px) saturate(1.1);-webkit-backdrop-filter:blur(18px) saturate(1.1);border-top:1px solid rgba(196,163,106,0.18);border-bottom:1px solid rgba(196,163,106,0.12);overflow:hidden;max-height:90px;opacity:1;transition:max-height 0.38s cubic-bezier(0.16,1,0.3,1),opacity 0.3s ease,background 0.5s cubic-bezier(0.16,1,0.3,1),border-color 0.5s ease;pointer-events:auto}body.bw-solid #bw-bar{background:#1C1915;border-top-color:rgba(196,163,106,0.22);border-bottom-color:rgba(196,163,106,0.18)}
     #bw-bar.bw-hidden{max-height:0!important;opacity:0;pointer-events:none}
     #bw-inner{max-width:1280px;margin:0 auto;padding:0.85rem 2.5rem;display:flex;align-items:center}
     .bw-field{display:flex;flex-direction:column;padding:0 1.4rem;flex:1;min-width:110px;cursor:pointer}
@@ -106,6 +106,24 @@
     #bw-cal-done:hover:not(:disabled){background:#2A251E}
     #bw-cal-done:disabled{background:rgba(28,25,21,0.14);color:rgba(28,25,21,0.35);cursor:not-allowed}
     @media(max-width:767px){#bw-inner{flex-wrap:wrap;gap:0.65rem;padding:0.75rem 1rem}#bw-bar{max-height:130px}.bw-field,.bw-select-wrap{min-width:calc(50% - 1rem);padding:0 0.35rem;flex:none}.bw-vsep{display:none}#bw-cal-popup{width:min(360px,96vw)}}
+      /* ── Display type refinement (Aman/Six Senses) ── */
+    .font-display { letter-spacing: -0.022em; }
+    h1.font-display, h2.font-display { letter-spacing: -0.032em; }
+    .font-display em, em.font-display { letter-spacing: -0.012em; }
+    p.font-sans { line-height: 1.75; }
+    .pkg-card:hover, .exp-card:hover, .platform-card:hover { box-shadow: 0 30px 70px -22px rgba(150,113,56,0.22), 0 8px 24px -8px rgba(28,25,21,0.08) !important; }
+    /* ── Phase 2: professional motion ── */
+    .reveal { transform: translateY(28px) scale(0.988); transform-origin: center bottom; }
+    .reveal.visible { transform: translateY(0) scale(1); }
+    .sep { transform-origin: center; transform: scaleX(0); transition: transform 1.4s cubic-bezier(0.16,1,0.3,1) 0.25s; }
+    .reveal.visible .sep, .reveal.visible > .sep { transform: scaleX(1); }
+    .sep.sep-immediate { transform: scaleX(1); }
+    .btn-solid-gold, .btn-outline-gold, .btn-outline-cream, .btn-outline-white {
+      transition: background 0.45s cubic-bezier(0.16,1,0.3,1), color 0.45s cubic-bezier(0.16,1,0.3,1), border-color 0.45s cubic-bezier(0.16,1,0.3,1), transform 0.45s cubic-bezier(0.16,1,0.3,1);
+    }
+    .btn-solid-gold:hover, .btn-outline-gold:hover, .btn-outline-cream:hover, .btn-outline-white:hover { transform: translateY(-1px); }
+    [data-parallax] { will-change: transform; transition: transform 0.05s linear; }
+
   </style>
 </head>
 <body>
@@ -221,9 +239,10 @@ function bwCalOpen(field,e){
   if(e)e.stopPropagation();
   var popup=document.getElementById('bw-cal-popup'),bar=document.getElementById('bw-bar'),bwEl=document.getElementById('bw');
   popup.style.top=(bar.offsetHeight+4)+'px';
-  var bwR=bwEl.getBoundingClientRect(),fR=document.getElementById('bw-field-'+field).getBoundingClientRect();
-  var left=fR.left-bwR.left;if(left+360>bwR.width)left=Math.max(0,bwR.width-372);
-  popup.style.left=left+'px';
+  var bwR=bwEl.getBoundingClientRect(),ciR=document.getElementById('bw-field-ci').getBoundingClientRect(),coR=document.getElementById('bw-field-co').getBoundingClientRect();
+  var left=ciR.left-bwR.left,popW=Math.max(420,coR.right-ciR.left);
+  if(left+popW>bwR.width)left=Math.max(0,bwR.width-popW-12);
+  popup.style.left=left+'px';popup.style.width=popW+'px';
   if(!popup.classList.contains('open')){_bwCStart=window._bwCi||null;_bwCEnd=window._bwCo||null;_bwCS=0;var today=new Date();today.setHours(0,0,0,0);_bwCY=(_bwCStart||today).getFullYear();_bwCM=(_bwCStart||today).getMonth();popup.classList.add('open');}
   bwRenderCal();
 }
@@ -278,10 +297,10 @@ function bwGo(){if(!window._bwCi||!window._bwCo){alert('Please select check-in a
 
 <!-- HERO -->
 <section class="relative h-screen overflow-hidden">
-  <img src="brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Resort%20Activities/woman%20doing%20yoga%20by%20the%20lake.jpg"
+  <img src="brand_assets/eco%20eyes%20website%20photos/Photos%20of%20Resort%20Activities/woman%20doing%20yoga%20by%20the%20lake.jpg"
        alt="Experiences at Eco Eyes Village" class="absolute inset-0 w-full h-full object-cover" style="object-position:center 30%">
-  <div class="absolute inset-0 bg-gradient-to-b from-black/55 via-black/15 to-black/65"></div>
-  <div class="absolute inset-0" style="background:radial-gradient(ellipse at center, transparent 45%, rgba(0,0,0,0.3) 100%)"></div>
+  <div class="absolute inset-0 pointer-events-none" style="background:linear-gradient(180deg, rgba(28,25,21,0.42) 0%, rgba(28,25,21,0.08) 38%, rgba(28,25,21,0.18) 62%, rgba(28,25,21,0.62) 100%)"></div>
+  <div class="absolute inset-0 pointer-events-none" style="background:linear-gradient(180deg, transparent 70%, rgba(28,25,21,0.35) 100%);mix-blend-mode:multiply"></div>
   <div class="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
     <p class="font-sans text-white/50 text-[0.58rem] tracking-widest uppercase mb-7 reveal" style="transition-delay:0.3s"
        data-en="Tours · Wellness · Education" data-th="ทัวร์ · สุขภาพ · การศึกษา" data-zh="游览 · 健康 · 教育">Tours · Wellness · Education</p>
@@ -315,7 +334,7 @@ function bwGo(){if(!window._bwCi||!window._bwCo){alert('Please select check-in a
       <!-- Morning Yoga -->
       <div class="act-card reveal group">
         <div class="overflow-hidden" style="height:300px">
-          <img src="brand_assets/eco%20eyes%20website%20photos%20/Spa%20Photos/yogo%20on%20lake.jpg"
+          <img src="brand_assets/eco%20eyes%20website%20photos/Spa%20Photos/yogo%20on%20lake.jpg"
                alt="Morning Yoga" loading="lazy" class="w-full h-full object-cover">
         </div>
         <div class="p-8">
@@ -338,7 +357,7 @@ function bwGo(){if(!window._bwCi||!window._bwCo){alert('Please select check-in a
       <!-- Bird Watching -->
       <div class="act-card reveal group" style="transition-delay:0.12s">
         <div class="overflow-hidden" style="height:300px">
-          <img src="brand_assets/eco%20eyes%20website%20photos%20/Environment%20Photos/Animal%20picture%20in%20resort.jpg"
+          <img src="brand_assets/eco%20eyes%20website%20photos/Environment%20Photos/Animal%20picture%20in%20resort.jpg"
                alt="Bird Watching" loading="lazy" class="w-full h-full object-cover">
         </div>
         <div class="p-8">
@@ -361,7 +380,7 @@ function bwGo(){if(!window._bwCi||!window._bwCo){alert('Please select check-in a
       <!-- Tree Planting -->
       <div class="act-card reveal group" style="transition-delay:0.12s">
         <div class="overflow-hidden" style="height:300px">
-          <img src="brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20customers/Guided%20forest%20walk.jpeg"
+          <img src="brand_assets/eco%20eyes%20website%20photos/Photos%20of%20customers/Guided%20forest%20walk.jpeg"
                alt="Tree Planting" loading="lazy" class="w-full h-full object-cover">
         </div>
         <div class="p-8">
@@ -384,7 +403,7 @@ function bwGo(){if(!window._bwCi||!window._bwCo){alert('Please select check-in a
       <!-- Forest Trail -->
       <div class="act-card reveal group" style="transition-delay:0.24s">
         <div class="overflow-hidden" style="height:300px">
-          <img src="brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20the%20resort%20/Touring%20resort%20(important).jpg"
+          <img src="brand_assets/eco%20eyes%20website%20photos/Photos%20of%20the%20resort%20/Touring%20resort%20(important).jpg"
                alt="Forest Trail" loading="lazy" class="w-full h-full object-cover">
         </div>
         <div class="p-8">
@@ -407,7 +426,7 @@ function bwGo(){if(!window._bwCi||!window._bwCo){alert('Please select check-in a
       <!-- Bike Rental -->
       <div class="act-card reveal group" style="transition-delay:0.12s">
         <div class="overflow-hidden" style="height:300px">
-          <img src="brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Resort%20Activities/Picture%20of%20rentable%20bikes.jpg"
+          <img src="brand_assets/eco%20eyes%20website%20photos/Photos%20of%20Resort%20Activities/Picture%20of%20rentable%20bikes.jpg"
                alt="Bike Rental" loading="lazy" class="w-full h-full object-cover">
         </div>
         <div class="p-8">
@@ -431,11 +450,11 @@ function bwGo(){if(!window._bwCi||!window._bwCo){alert('Please select check-in a
       <div class="act-card reveal group" style="transition-delay:0.24s">
         <div class="overflow-hidden" style="height:300px;display:grid;grid-template-columns:1fr 1fr;gap:2px">
           <div class="overflow-hidden">
-            <img src="brand_assets/eco%20eyes%20website%20photos%20/CSR%20photos/Educaiton%205.jpeg"
+            <img src="brand_assets/eco%20eyes%20website%20photos/CSR%20photos/Educaiton%205.jpeg"
                  alt="Nature Classroom" loading="lazy" class="w-full h-full object-cover">
           </div>
           <div class="overflow-hidden">
-            <img src="brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Resort%20Activities/People%20enjoying%20activies%20(painting).jpg"
+            <img src="brand_assets/eco%20eyes%20website%20photos/Photos%20of%20Resort%20Activities/People%20enjoying%20activies%20(painting).jpg"
                  alt="Activities at Eco Eyes" loading="lazy" class="w-full h-full object-cover">
           </div>
         </div>
@@ -488,7 +507,7 @@ function bwGo(){if(!window._bwCi||!window._bwCo){alert('Please select check-in a
       </div>
       <div class="overflow-hidden rounded-xl reveal" style="border:1px solid rgba(196,163,106,0.15);display:grid;grid-template-columns:1fr 1fr">
         <div style="overflow:hidden;min-height:360px">
-          <img src="brand_assets/eco%20eyes%20website%20photos%20/Spa%20Photos/Massages.jpg"
+          <img src="brand_assets/eco%20eyes%20website%20photos/Spa%20Photos/Massages.jpg"
                alt="Massages at Eco Eyes Spa" loading="lazy" class="w-full h-full object-cover">
         </div>
         <div class="flex flex-col justify-center" style="padding:3rem">
@@ -540,7 +559,7 @@ function bwGo(){if(!window._bwCi||!window._bwCo){alert('Please select check-in a
         <!-- Infrared Sauna -->
         <div class="overflow-hidden rounded-xl reveal" style="border:1px solid rgba(196,163,106,0.15)">
           <div style="height:180px;overflow:hidden">
-            <img src="brand_assets/eco%20eyes%20website%20photos%20/Spa%20Photos/Sauna%20photo.jpg"
+            <img src="brand_assets/eco%20eyes%20website%20photos/Spa%20Photos/Sauna%20photo.jpg"
                  alt="Infrared Sauna" loading="lazy" class="w-full h-full object-cover transition-transform duration-700 hover:scale-105">
           </div>
           <div class="p-5">
@@ -556,7 +575,7 @@ function bwGo(){if(!window._bwCi||!window._bwCo){alert('Please select check-in a
         <!-- H2Cell Hydrogen -->
         <div class="overflow-hidden rounded-xl reveal" style="border:1px solid rgba(196,163,106,0.15);transition-delay:0.08s">
           <div style="height:180px;overflow:hidden">
-            <img src="brand_assets/eco%20eyes%20website%20photos%20/Spa%20Photos/Beauty%20services%20photo.jpg"
+            <img src="brand_assets/eco%20eyes%20website%20photos/Spa%20Photos/Beauty%20services%20photo.jpg"
                  alt="H2Cell Hydrogen" loading="lazy" class="w-full h-full object-cover transition-transform duration-700 hover:scale-105">
           </div>
           <div class="p-5">
@@ -572,7 +591,7 @@ function bwGo(){if(!window._bwCi||!window._bwCo){alert('Please select check-in a
         <!-- Multipure Essential Bath -->
         <div class="overflow-hidden rounded-xl reveal" style="border:1px solid rgba(196,163,106,0.15);transition-delay:0.16s">
           <div style="height:180px;overflow:hidden">
-            <img src="brand_assets/eco%20eyes%20website%20photos%20/Spa%20Photos/Wellness%20bath.jpg"
+            <img src="brand_assets/eco%20eyes%20website%20photos/Spa%20Photos/Wellness%20bath.jpg"
                  alt="Multipure Essential Bath" loading="lazy" class="w-full h-full object-cover transition-transform duration-700 hover:scale-105">
           </div>
           <div class="p-5">
@@ -588,7 +607,7 @@ function bwGo(){if(!window._bwCi||!window._bwCo){alert('Please select check-in a
         <!-- Ice Bath -->
         <div class="overflow-hidden rounded-xl reveal" style="border:1px solid rgba(196,163,106,0.15);transition-delay:0.24s">
           <div style="height:180px;overflow:hidden">
-            <img src="brand_assets/eco%20eyes%20website%20photos%20/Spa%20Photos/Wellness%20bath%20.jpg"
+            <img src="brand_assets/eco%20eyes%20website%20photos/Spa%20Photos/Wellness%20bath%20.jpg"
                  alt="Ice Bath" loading="lazy" class="w-full h-full object-cover transition-transform duration-700 hover:scale-105">
           </div>
           <div class="p-5">
@@ -619,7 +638,7 @@ function bwGo(){if(!window._bwCi||!window._bwCo){alert('Please select check-in a
 
         <div class="overflow-hidden rounded-xl reveal" style="border:1px solid rgba(196,163,106,0.15)">
           <div style="height:160px;overflow:hidden">
-            <img src="brand_assets/eco%20eyes%20website%20photos%20/Spa%20Photos/Sauna%20photo%20without%20persons.jpg"
+            <img src="brand_assets/eco%20eyes%20website%20photos/Spa%20Photos/Sauna%20photo%20without%20persons.jpg"
                  alt="Spa Package" loading="lazy" class="w-full h-full object-cover transition-transform duration-700 hover:scale-105">
           </div>
           <div class="p-5">
@@ -634,7 +653,7 @@ function bwGo(){if(!window._bwCi||!window._bwCo){alert('Please select check-in a
 
         <div class="overflow-hidden rounded-xl reveal" style="border:1px solid rgba(196,163,106,0.15);transition-delay:0.1s">
           <div style="height:160px;overflow:hidden">
-            <img src="brand_assets/eco%20eyes%20website%20photos%20/Spa%20Photos/Sauna%20photo%20without%20persons.jpg"
+            <img src="brand_assets/eco%20eyes%20website%20photos/Spa%20Photos/Sauna%20photo%20without%20persons.jpg"
                  alt="Spa Package" loading="lazy" class="w-full h-full object-cover transition-transform duration-700 hover:scale-105">
           </div>
           <div class="p-5">
@@ -649,7 +668,7 @@ function bwGo(){if(!window._bwCi||!window._bwCo){alert('Please select check-in a
 
         <div class="overflow-hidden rounded-xl reveal" style="border:1px solid rgba(196,163,106,0.15);transition-delay:0.2s">
           <div style="height:160px;overflow:hidden">
-            <img src="brand_assets/eco%20eyes%20website%20photos%20/Spa%20Photos/Sauna%20photo%20without%20persons.jpg"
+            <img src="brand_assets/eco%20eyes%20website%20photos/Spa%20Photos/Sauna%20photo%20without%20persons.jpg"
                  alt="Spa Package" loading="lazy" class="w-full h-full object-cover transition-transform duration-700 hover:scale-105">
           </div>
           <div class="p-5">
@@ -671,7 +690,7 @@ function bwGo(){if(!window._bwCi||!window._bwCo){alert('Please select check-in a
 
         <div class="overflow-hidden rounded-xl reveal" style="border:1px solid rgba(196,163,106,0.15)">
           <div style="height:160px;overflow:hidden">
-            <img src="brand_assets/eco%20eyes%20website%20photos%20/Spa%20Photos/Sauna%20photo%20without%20persons.jpg"
+            <img src="brand_assets/eco%20eyes%20website%20photos/Spa%20Photos/Sauna%20photo%20without%20persons.jpg"
                  alt="Spa Package" loading="lazy" class="w-full h-full object-cover transition-transform duration-700 hover:scale-105">
           </div>
           <div class="p-5">
@@ -686,7 +705,7 @@ function bwGo(){if(!window._bwCi||!window._bwCo){alert('Please select check-in a
 
         <div class="overflow-hidden rounded-xl reveal" style="border:1px solid rgba(196,163,106,0.15);transition-delay:0.1s">
           <div style="height:160px;overflow:hidden">
-            <img src="brand_assets/eco%20eyes%20website%20photos%20/Spa%20Photos/Sauna%20photo%20without%20persons.jpg"
+            <img src="brand_assets/eco%20eyes%20website%20photos/Spa%20Photos/Sauna%20photo%20without%20persons.jpg"
                  alt="Spa Package" loading="lazy" class="w-full h-full object-cover transition-transform duration-700 hover:scale-105">
           </div>
           <div class="p-5">
@@ -701,7 +720,7 @@ function bwGo(){if(!window._bwCi||!window._bwCo){alert('Please select check-in a
 
         <div class="overflow-hidden rounded-xl reveal" style="border:1px solid rgba(196,163,106,0.15);transition-delay:0.2s">
           <div style="height:160px;overflow:hidden">
-            <img src="brand_assets/eco%20eyes%20website%20photos%20/Spa%20Photos/Sauna%20photo%20without%20persons.jpg"
+            <img src="brand_assets/eco%20eyes%20website%20photos/Spa%20Photos/Sauna%20photo%20without%20persons.jpg"
                  alt="Spa Package" loading="lazy" class="w-full h-full object-cover transition-transform duration-700 hover:scale-105">
           </div>
           <div class="p-5">
@@ -730,7 +749,7 @@ function bwGo(){if(!window._bwCi||!window._bwCo){alert('Please select check-in a
   <div class="grid grid-cols-1 lg:grid-cols-2">
     <!-- Guide Photo -->
     <div class="relative overflow-hidden" style="min-height:520px">
-      <img src="brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Resort%20Activities/eco%20tour%20showing%20forest.jpg"
+      <img src="brand_assets/eco%20eyes%20website%20photos/Photos%20of%20Resort%20Activities/eco%20tour%20showing%20forest.jpg"
            alt="Eco Eyes Village Nature Guide" class="absolute inset-0 w-full h-full object-cover">
       <div class="absolute inset-0 bg-gradient-to-r from-transparent to-black/10"></div>
     </div>
@@ -877,19 +896,19 @@ function bwGo(){if(!window._bwCi||!window._bwCo){alert('Please select check-in a
       <!-- Pet photo grid -->
       <div class="grid grid-cols-2 gap-3 reveal" style="transition-delay:0.15s">
         <div class="overflow-hidden rounded-xl" style="height:220px">
-          <img src="brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20customers/135597401_2369458959867619_6403367373833976103_n.jpg"
+          <img src="brand_assets/eco%20eyes%20website%20photos/Photos%20of%20customers/135597401_2369458959867619_6403367373833976103_n.jpg"
                alt="Pets at Eco Eyes Village" loading="lazy" class="w-full h-full object-cover transition-transform duration-700 hover:scale-105">
         </div>
         <div class="overflow-hidden rounded-xl" style="height:220px">
-          <img src="brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20customers/546265500_1120061190219653_6581704505766282779_n.jpg"
+          <img src="brand_assets/eco%20eyes%20website%20photos/Photos%20of%20customers/546265500_1120061190219653_6581704505766282779_n.jpg"
                alt="Pets enjoying Eco Eyes" loading="lazy" class="w-full h-full object-cover transition-transform duration-700 hover:scale-105">
         </div>
         <div class="overflow-hidden rounded-xl" style="height:220px">
-          <img src="brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20customers/594073263_1189587646600340_3402655317300481628_n.jpg"
+          <img src="brand_assets/eco%20eyes%20website%20photos/Photos%20of%20customers/594073263_1189587646600340_3402655317300481628_n.jpg"
                alt="Happy pets at resort" loading="lazy" class="w-full h-full object-cover transition-transform duration-700 hover:scale-105">
         </div>
         <div class="overflow-hidden rounded-xl" style="height:220px">
-          <img src="brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20customers/556109687_1135989495293489_7522699387726675277_n.jpg"
+          <img src="brand_assets/eco%20eyes%20website%20photos/Photos%20of%20customers/556109687_1135989495293489_7522699387726675277_n.jpg"
                alt="Pets exploring nature" loading="lazy" class="w-full h-full object-cover transition-transform duration-700 hover:scale-105">
         </div>
       </div>
@@ -898,7 +917,7 @@ function bwGo(){if(!window._bwCi||!window._bwCo){alert('Please select check-in a
     <!-- More pet photos row -->
     <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-20 reveal">
       <div class="overflow-hidden rounded-xl" style="height:200px">
-        <img src="brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20customers/586478013_1180972477461857_8441569356010353176_n.jpg"
+        <img src="brand_assets/eco%20eyes%20website%20photos/Photos%20of%20customers/586478013_1180972477461857_8441569356010353176_n.jpg"
              alt="Pet at Eco Eyes" loading="lazy" class="w-full h-full object-cover transition-transform duration-700 hover:scale-105">
       </div>
       <div class="overflow-hidden rounded-xl" style="height:200px">
@@ -906,7 +925,7 @@ function bwGo(){if(!window._bwCi||!window._bwCo){alert('Please select check-in a
              alt="Pet friendly at Eco Eyes" loading="lazy" class="w-full h-full object-cover transition-transform duration-700 hover:scale-105">
       </div>
       <div class="overflow-hidden rounded-xl" style="height:200px">
-        <img src="brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20customers/552943575_1130259619199810_534224729956828959_n.jpg"
+        <img src="brand_assets/eco%20eyes%20website%20photos/Photos%20of%20customers/552943575_1130259619199810_534224729956828959_n.jpg"
              alt="Pets enjoying the resort" loading="lazy" class="w-full h-full object-cover transition-transform duration-700 hover:scale-105">
       </div>
       <div class="overflow-hidden rounded-xl" style="height:200px">
@@ -996,7 +1015,7 @@ function bwGo(){if(!window._bwCi||!window._bwCo){alert('Please select check-in a
 <section class="overflow-hidden">
   <div class="grid grid-cols-1 lg:grid-cols-2">
     <div class="relative overflow-hidden" style="min-height:500px">
-      <img src="brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20the%20resort%20/advertisement%20picture%20important%20.jpg"
+      <img src="brand_assets/eco%20eyes%20website%20photos/Photos%20of%20the%20resort%20/advertisement%20picture%20important%20.jpg"
            alt="Eco Eyes Village resort atmosphere" class="absolute inset-0 w-full h-full object-cover" loading="lazy">
     </div>
     <div class="bg-forest flex flex-col justify-center px-12 py-16 reveal" style="transition-delay:0.15s">
@@ -1066,36 +1085,36 @@ function bwGo(){if(!window._bwCi||!window._bwCo){alert('Please select check-in a
 <script>
   /* ---------- Gallery photo pool ---------- */
   const GAL_PHOTOS = [
-    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20customers/480573911_968549258704181_9197831482062585690_n.jpg',
-    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20customers/498593412_1034446502114456_4492274431703170196_n.jpg',
-    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20customers/503804604_1044051067820666_3108810073178487327_n.jpg',
-    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20customers/528014065_1091796016379504_5415576769853420259_n.jpg',
-    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20customers/532052636_1098008019091637_53982468948912012_n.jpg',
-    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20customers/533404904_1101327735426332_5677602636046903597_n.jpg',
-    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20customers/537093510_1106229754936130_1918480986265088444_n.jpg',
-    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20customers/540680570_1113919710833801_107649291727535930_n.jpg',
-    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20customers/552943575_1130259619199810_534224729956828959_n.jpg',
-    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20customers/556109687_1135989495293489_7522699387726675277_n.jpg',
-    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20customers/584984557_1179739390918499_8931179310867136163_n.jpg',
-    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20customers/586478013_1180972477461857_8441569356010353176_n.jpg',
-    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20customers/588016859_1181637280728710_5794987737898247759_n.jpg',
-    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20customers/593617707_1189587786600326_4788972704341082295_n.jpg',
-    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20customers/633461704_1240272311531873_2050326213786005447_n.jpg',
-    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20customers/649180870_1261829916042779_8852563340290694152_n.jpg',
-    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Resort%20Activities/Mindfulness%20session%20photo.jpg',
-    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Resort%20Activities/outdoor%20yoga.jpg',
-    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Resort%20Activities/eco%20tour%20showing%20forest.jpg',
-    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Resort%20Activities/camping.jpg',
-    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Resort%20Activities/garden%20camping%20activites%202.jpg',
-    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Resort%20Activities/picture%20of%20resort%20activties.jpg',
-    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Resort%20Activities/Group%20mindfullness%20activties.jpg',
-    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Resort%20Activities/woman%20doing%20yoga%20by%20the%20lake.jpg',
-    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Resort%20Activities/nighttime%20resort%20socializing%20activites.jpg',
-    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Resort%20Activities/People%20enjoying%20activies%20(painting).jpg',
-    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Resort%20Activities/scenic%20garden%20camping%20activites.jpg',
-    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Resort%20Activities/Sound%20wellness%20session.jpg',
-    'brand_assets/eco%20eyes%20website%20photos%20/Spa%20Photos/yogo%20on%20lake.jpg',
-    'brand_assets/eco%20eyes%20website%20photos%20/Spa%20Photos/Yoga%201.jpg',
+    'brand_assets/eco%20eyes%20website%20photos/Photos%20of%20customers/480573911_968549258704181_9197831482062585690_n.jpg',
+    'brand_assets/eco%20eyes%20website%20photos/Photos%20of%20customers/498593412_1034446502114456_4492274431703170196_n.jpg',
+    'brand_assets/eco%20eyes%20website%20photos/Photos%20of%20customers/503804604_1044051067820666_3108810073178487327_n.jpg',
+    'brand_assets/eco%20eyes%20website%20photos/Photos%20of%20customers/528014065_1091796016379504_5415576769853420259_n.jpg',
+    'brand_assets/eco%20eyes%20website%20photos/Photos%20of%20customers/532052636_1098008019091637_53982468948912012_n.jpg',
+    'brand_assets/eco%20eyes%20website%20photos/Photos%20of%20customers/533404904_1101327735426332_5677602636046903597_n.jpg',
+    'brand_assets/eco%20eyes%20website%20photos/Photos%20of%20customers/537093510_1106229754936130_1918480986265088444_n.jpg',
+    'brand_assets/eco%20eyes%20website%20photos/Photos%20of%20customers/540680570_1113919710833801_107649291727535930_n.jpg',
+    'brand_assets/eco%20eyes%20website%20photos/Photos%20of%20customers/552943575_1130259619199810_534224729956828959_n.jpg',
+    'brand_assets/eco%20eyes%20website%20photos/Photos%20of%20customers/556109687_1135989495293489_7522699387726675277_n.jpg',
+    'brand_assets/eco%20eyes%20website%20photos/Photos%20of%20customers/584984557_1179739390918499_8931179310867136163_n.jpg',
+    'brand_assets/eco%20eyes%20website%20photos/Photos%20of%20customers/586478013_1180972477461857_8441569356010353176_n.jpg',
+    'brand_assets/eco%20eyes%20website%20photos/Photos%20of%20customers/588016859_1181637280728710_5794987737898247759_n.jpg',
+    'brand_assets/eco%20eyes%20website%20photos/Photos%20of%20customers/593617707_1189587786600326_4788972704341082295_n.jpg',
+    'brand_assets/eco%20eyes%20website%20photos/Photos%20of%20customers/633461704_1240272311531873_2050326213786005447_n.jpg',
+    'brand_assets/eco%20eyes%20website%20photos/Photos%20of%20customers/649180870_1261829916042779_8852563340290694152_n.jpg',
+    'brand_assets/eco%20eyes%20website%20photos/Photos%20of%20Resort%20Activities/Mindfulness%20session%20photo.jpg',
+    'brand_assets/eco%20eyes%20website%20photos/Photos%20of%20Resort%20Activities/outdoor%20yoga.jpg',
+    'brand_assets/eco%20eyes%20website%20photos/Photos%20of%20Resort%20Activities/eco%20tour%20showing%20forest.jpg',
+    'brand_assets/eco%20eyes%20website%20photos/Photos%20of%20Resort%20Activities/camping.jpg',
+    'brand_assets/eco%20eyes%20website%20photos/Photos%20of%20Resort%20Activities/garden%20camping%20activites%202.jpg',
+    'brand_assets/eco%20eyes%20website%20photos/Photos%20of%20Resort%20Activities/picture%20of%20resort%20activties.jpg',
+    'brand_assets/eco%20eyes%20website%20photos/Photos%20of%20Resort%20Activities/Group%20mindfullness%20activties.jpg',
+    'brand_assets/eco%20eyes%20website%20photos/Photos%20of%20Resort%20Activities/woman%20doing%20yoga%20by%20the%20lake.jpg',
+    'brand_assets/eco%20eyes%20website%20photos/Photos%20of%20Resort%20Activities/nighttime%20resort%20socializing%20activites.jpg',
+    'brand_assets/eco%20eyes%20website%20photos/Photos%20of%20Resort%20Activities/People%20enjoying%20activies%20(painting).jpg',
+    'brand_assets/eco%20eyes%20website%20photos/Photos%20of%20Resort%20Activities/scenic%20garden%20camping%20activites.jpg',
+    'brand_assets/eco%20eyes%20website%20photos/Photos%20of%20Resort%20Activities/Sound%20wellness%20session.jpg',
+    'brand_assets/eco%20eyes%20website%20photos/Spa%20Photos/yogo%20on%20lake.jpg',
+    'brand_assets/eco%20eyes%20website%20photos/Spa%20Photos/Yoga%201.jpg',
   ];
 
   /* Shuffle and fill grid cells — all cells change simultaneously */
@@ -1121,6 +1140,7 @@ function bwGo(){if(!window._bwCi||!window._bwCo){alert('Please select check-in a
   function updateScroll(){
     var bwB=document.getElementById('bw-bar'),bwVis=bwB&&!bwB.classList.contains('bw-hidden');
     nav.classList.toggle('scrolled',window.scrollY>60||bwVis);
+    document.body.classList.toggle('bw-solid',window.scrollY>window.innerHeight*0.85);
     document.getElementById('back-to-top').classList.toggle('visible',window.scrollY>window.innerHeight*0.8);
   }
   window._updateScroll=updateScroll;

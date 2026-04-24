@@ -54,7 +54,33 @@
       font-family: 'Jost', sans-serif;
       overflow-x: hidden;
       -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
     }
+    /* ── Display type refinement ── */
+    .font-display { letter-spacing: -0.022em; }
+    h1.font-display, h2.font-display { letter-spacing: -0.032em; }
+    .font-display em, em.font-display { letter-spacing: -0.012em; }
+    p.font-sans { line-height: 1.75; }
+
+    /* ── Phase 2: professional motion ── */
+    /* Refined reveal: subtle scale-up on top of existing translateY */
+    .reveal { transform: translateY(28px) scale(0.988); transform-origin: center bottom; }
+    .reveal.visible { transform: translateY(0) scale(1); }
+    /* Animated separator: draws from 0 to full width on reveal */
+    .sep { transform-origin: center; transform: scaleX(0); transition: transform 1.4s cubic-bezier(0.16,1,0.3,1) 0.25s; }
+    .reveal.visible .sep, .visible > .sep, .reveal.visible > .sep { transform: scaleX(1); }
+    .sep.sep-immediate { transform: scaleX(1); }
+    /* Subtle CTA hover lift */
+    .btn-solid-gold, .btn-outline-gold, .btn-outline-cream, .btn-outline-white, .direct-book-btn {
+      transition: background 0.45s cubic-bezier(0.16,1,0.3,1), color 0.45s cubic-bezier(0.16,1,0.3,1), border-color 0.45s cubic-bezier(0.16,1,0.3,1), transform 0.45s cubic-bezier(0.16,1,0.3,1), box-shadow 0.45s cubic-bezier(0.16,1,0.3,1);
+    }
+    .btn-solid-gold:hover, .btn-outline-gold:hover, .btn-outline-cream:hover, .btn-outline-white:hover, .direct-book-btn:hover {
+      transform: translateY(-1px);
+    }
+    /* Hero slide subtle parallax wrapper (Y-translate via JS) */
+    #hero .hero-slide { will-change: transform, opacity; }
+    /* Image card subtle warm filter to unify palette */
+    .exp-card .card-img, .gal-item img { filter: saturate(1.02) contrast(1.02); }
     body::after {
       content: '';
       position: fixed; inset: 0;
@@ -182,7 +208,7 @@
       display: flex; flex-direction: column; align-items: center; text-align: center; gap: 1rem;
       transition: border-color 0.3s ease, background 0.3s ease, transform 0.4s cubic-bezier(0.16,1,0.3,1);
     }
-    .platform-card:hover { border-color: rgba(150,113,56,0.6); background: rgba(150,113,56,0.06); transform: translateY(-4px); }
+    .platform-card:hover { border-color: rgba(196,163,106,0.55); background: rgba(196,163,106,0.05); transform: translateY(-3px); box-shadow: 0 20px 50px -20px rgba(196,163,106,0.25); }
     /* ── Direct booking hero card ── */
     .direct-book-card {
       display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 2rem;
@@ -217,7 +243,7 @@
       padding: 2.5rem 2rem; display: flex; flex-direction: column;
       transition: border-color 0.3s ease, box-shadow 0.4s cubic-bezier(0.16,1,0.3,1), transform 0.4s cubic-bezier(0.16,1,0.3,1);
     }
-    .pkg-card:hover { border-color: rgba(150,113,56,0.4); box-shadow: 0 16px 48px rgba(150,113,56,0.12), 0 4px 12px rgba(0,0,0,0.06); transform: translateY(-6px); }
+    .pkg-card:hover { border-color: rgba(150,113,56,0.45); box-shadow: 0 30px 70px -22px rgba(150,113,56,0.22), 0 8px 24px -8px rgba(28,25,21,0.08); transform: translateY(-6px); }
     .pkg-card.featured { background: #2B3A20; border-color: #2B3A20; }
 
     /* ── Review cards ── */
@@ -277,8 +303,19 @@
 
     /* ── Booking widget strip ── */
     #bw { position:fixed; left:0; right:0; z-index:490; pointer-events:none; }
-    #bw::before { content:''; position:absolute; top:-3px; left:0; right:0; height:3px; background:#1C1915; pointer-events:none; }
-    #bw-bar { background:#1C1915; border-top:1px solid rgba(196,163,106,0.22); border-bottom:1px solid rgba(196,163,106,0.18); overflow:hidden; max-height:90px; opacity:1; transition:max-height 0.38s cubic-bezier(0.16,1,0.3,1), opacity 0.3s ease; pointer-events:auto; }
+    #bw::before { content:''; position:absolute; top:-1px; left:0; right:0; height:1px; background:rgba(196,163,106,0.18); pointer-events:none; transition:background 0.5s ease; }
+    body.bw-solid #bw::before { background:#1C1915; height:3px; top:-3px; }
+    #bw-bar {
+      background:rgba(28,25,21,0.42);
+      backdrop-filter: blur(18px) saturate(1.1);
+      -webkit-backdrop-filter: blur(18px) saturate(1.1);
+      border-top:1px solid rgba(196,163,106,0.18);
+      border-bottom:1px solid rgba(196,163,106,0.12);
+      overflow:hidden; max-height:90px; opacity:1;
+      transition:max-height 0.38s cubic-bezier(0.16,1,0.3,1), opacity 0.3s ease, background 0.5s cubic-bezier(0.16,1,0.3,1), border-color 0.5s ease;
+      pointer-events:auto;
+    }
+    body.bw-solid #bw-bar { background:#1C1915; border-top-color:rgba(196,163,106,0.22); border-bottom-color:rgba(196,163,106,0.18); }
     #bw-bar.bw-hidden { max-height:0 !important; opacity:0; pointer-events:none; }
     #bw-inner { max-width:1280px; margin:0 auto; padding:0.85rem 2.5rem; display:flex; align-items:center; }
     .bw-field { display:flex; flex-direction:column; padding:0 1.4rem; flex:1; min-width:110px; cursor:pointer; }
@@ -504,14 +541,17 @@ function bwCalOpen(field, e){
   var bar   = document.getElementById('bw-bar');
   var bwEl  = document.getElementById('bw');
 
-  // Position below the bar
+  // Position below the bar — ALWAYS anchored to check-in field
+  // so the calendar feels like ONE unified date picker for both fields
   popup.style.top = (bar.offsetHeight+4)+'px';
   var bwRect    = bwEl.getBoundingClientRect();
-  var fldRect   = document.getElementById('bw-field-'+field).getBoundingClientRect();
-  var left      = fldRect.left - bwRect.left;
-  var popW      = 360;
+  var ciRect    = document.getElementById('bw-field-ci').getBoundingClientRect();
+  var coRect    = document.getElementById('bw-field-co').getBoundingClientRect();
+  var left      = ciRect.left - bwRect.left;
+  var popW      = Math.max(420, (coRect.right - ciRect.left)); // span both date fields
   if(left + popW > bwRect.width) left = Math.max(0, bwRect.width - popW - 12);
   popup.style.left = left+'px';
+  popup.style.width = popW+'px';
 
   if(!popup.classList.contains('open')){
     _bwCStart = window._bwCi||null; _bwCEnd = window._bwCo||null; _bwCS = 0;
@@ -688,29 +728,28 @@ function bwGo(){
   <div class="hero-slide"       style="background-image:url('https://eco-eyes-bucket.s3.ap-southeast-1.amazonaws.com/eco_eyes_photo/8.jpeg')"></div>
   <div class="hero-slide"       style="background-image:url('https://eco-eyes-bucket.s3.ap-southeast-1.amazonaws.com/eco_eyes_photo/10.jpeg')"></div>
 
-  <div class="absolute inset-0 bg-gradient-to-b from-black/55 via-black/20 to-black/70 pointer-events-none"></div>
-  <div class="absolute inset-0 bg-gradient-to-r from-black/25 to-transparent pointer-events-none"></div>
-  <div class="absolute inset-0 pointer-events-none" style="background:radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.35) 100%)"></div>
+  <div class="absolute inset-0 pointer-events-none" style="background:linear-gradient(180deg, rgba(28,25,21,0.42) 0%, rgba(28,25,21,0.08) 38%, rgba(28,25,21,0.18) 62%, rgba(28,25,21,0.62) 100%)"></div>
+  <div class="absolute inset-0 pointer-events-none" style="background:linear-gradient(180deg, transparent 70%, rgba(28,25,21,0.35) 100%);mix-blend-mode:multiply"></div>
 
   <div class="absolute inset-0 flex flex-col items-center justify-center text-center px-6 pointer-events-none">
-    <p class="font-sans text-white/50 text-[0.58rem] tracking-widest uppercase mb-7 reveal"
-       style="transition-delay:0.4s" id="hero-label">Nakhon Nayok &nbsp;·&nbsp; Thailand</p>
+    <p class="font-sans text-white/55 text-[0.6rem] uppercase mb-9 reveal"
+       style="transition-delay:0.4s;letter-spacing:0.42em" id="hero-label">Nakhon Nayok &nbsp;·&nbsp; Thailand</p>
 
-    <h1 class="font-display text-white font-light leading-none tracking-tight reveal"
-        style="font-size:clamp(4rem,10vw,9rem);transition-delay:0.65s">
-      <span id="h1-line1">Eco Eyes</span><br><em id="h1-line2">Village</em>
+    <h1 class="font-display text-white font-light leading-[0.98] reveal"
+        style="font-size:clamp(4rem,10vw,9rem);transition-delay:0.65s;letter-spacing:-0.035em">
+      <span id="h1-line1">Eco Eyes</span><br><em id="h1-line2" style="letter-spacing:-0.025em">Village</em>
     </h1>
 
-    <span class="sep sep-center reveal" style="transition-delay:0.88s;background:#C4A36A;"></span>
+    <span class="sep sep-center reveal" style="transition-delay:0.88s;background:#C4A36A;width:64px;margin:2.2rem auto;"></span>
 
-    <p class="font-display text-white/75 font-light italic reveal"
-       style="font-size:clamp(1.2rem,2.5vw,1.8rem);transition-delay:1s;letter-spacing:0.01em"
+    <p class="font-display text-white/80 font-light italic reveal"
+       style="font-size:clamp(1.2rem,2.4vw,1.75rem);transition-delay:1s;letter-spacing:0.005em"
        id="hero-slogan">Where Nature is the Luxury</p>
 
-    <p class="font-sans text-white/50 text-[0.65rem] tracking-widest uppercase mt-4 reveal"
-       style="transition-delay:1.15s" id="hero-tagline">A Nature Classroom For All</p>
+    <p class="font-sans text-white/45 text-[0.62rem] uppercase mt-5 reveal"
+       style="transition-delay:1.15s;letter-spacing:0.38em" id="hero-tagline">A Nature Classroom For All</p>
 
-    <div class="flex flex-wrap items-center justify-center gap-4 mt-10 reveal pointer-events-auto"
+    <div class="flex flex-wrap items-center justify-center gap-5 mt-12 reveal pointer-events-auto"
          style="transition-delay:1.35s">
       <a href="booking.html" class="btn-solid-gold" id="hero-cta1">Book Your Stay</a>
       <a href="#about"       class="btn-outline-white" id="hero-cta2">Explore</a>
@@ -1079,7 +1118,7 @@ function bwGo(){
   <div class="grid grid-cols-1 md:grid-cols-2">
 
     <div class="relative overflow-hidden" style="min-height:520px">
-      <img src="brand_assets/eco%20eyes%20website%20photos%20/Environment%20Photos/animal%20picture%20in%20resort%20(bird).jpg"
+      <img src="brand_assets/eco%20eyes%20website%20photos/Environment%20Photos/animal%20picture%20in%20resort%20(bird).jpg"
            alt="Wildlife at Eco Eyes Village"
            class="absolute inset-0 w-full h-full object-cover" style="object-position:center 20%" loading="lazy">
       <div class="absolute inset-0" style="background:rgba(43,58,32,0.2)"></div>
@@ -1440,6 +1479,8 @@ function bwGo(){
     const bwBar = document.getElementById('bw-bar');
     const bwVisible = bwBar && !bwBar.classList.contains('bw-hidden');
     nav.classList.toggle('scrolled', y > 60 || bwVisible);
+    // Booking widget glass→solid: solid once user scrolls past hero
+    document.body.classList.toggle('bw-solid', y > window.innerHeight * 0.85);
     document.getElementById('back-to-top').classList.toggle('visible', y > window.innerHeight * 0.8);
   }
   window._updateScroll = updateScroll;
@@ -1569,27 +1610,27 @@ function bwGo(){
 
   // ── Home gallery auto-scroll ──────────────────
   const HOME_PHOTOS = [
-    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Resort%20Activities/Mindfulness%20session%20photo.jpg',
-    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Resort%20Activities/outdoor%20yoga.jpg',
-    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Resort%20Activities/eco%20tour%20showing%20forest.jpg',
-    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Resort%20Activities/camping.jpg',
-    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Resort%20Activities/garden%20camping%20activites%202.jpg',
-    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Resort%20Activities/picture%20of%20resort%20activties.jpg',
-    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Resort%20Activities/Group%20mindfullness%20activties.jpg',
-    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Resort%20Activities/woman%20doing%20yoga%20by%20the%20lake.jpg',
-    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Resort%20Activities/nighttime%20resort%20socializing%20activites.jpg',
-    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Resort%20Activities/scenic%20garden%20camping%20activites.jpg',
-    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Resort%20Activities/Sound%20wellness%20session.jpg',
-    'brand_assets/eco%20eyes%20website%20photos%20/Photos%20of%20Resort%20Activities/People%20enjoying%20activies%20(painting).jpg',
-    'brand_assets/eco%20eyes%20website%20photos%20/Advertisement%20Photos/Lakeside%20view%20of%20rooms.jpg',
-    'brand_assets/eco%20eyes%20website%20photos%20/Advertisement%20Photos/Pet%20friendly%20.jpg',
-    'brand_assets/eco%20eyes%20website%20photos%20/Advertisement%20Photos/Picture%20of%20reception%20house.jpg',
-    'brand_assets/eco%20eyes%20website%20photos%20/Advertisement%20Photos/Room%20promotional%20pic%20of%20outdoor%20tbale.jpg',
-    'brand_assets/eco%20eyes%20website%20photos%20/Advertisement%20Photos/Two%20girls%20sipping%20on%20coffee%20outside%20eco%20cafe%20good%20photo.jpg',
-    'brand_assets/eco%20eyes%20website%20photos%20/Advertisement%20Photos/advertisement%20photo%20of%20entrance%20to%20eco%20eyes%20.jpg',
-    'brand_assets/eco%20eyes%20website%20photos%20/Advertisement%20Photos/Advertisement%20photo%20for%20outisde%20room%20balcony.jpg',
-    'brand_assets/eco%20eyes%20website%20photos%20/Advertisement%20Photos/597933999_1196598075899297_7015008611099947661_n.jpg',
-    'brand_assets/eco%20eyes%20website%20photos%20/Advertisement%20Photos/599005559_1196597985899306_8332139074048892777_n.jpg',
+    'brand_assets/eco%20eyes%20website%20photos/Photos%20of%20Resort%20Activities/Mindfulness%20session%20photo.jpg',
+    'brand_assets/eco%20eyes%20website%20photos/Photos%20of%20Resort%20Activities/outdoor%20yoga.jpg',
+    'brand_assets/eco%20eyes%20website%20photos/Photos%20of%20Resort%20Activities/eco%20tour%20showing%20forest.jpg',
+    'brand_assets/eco%20eyes%20website%20photos/Photos%20of%20Resort%20Activities/camping.jpg',
+    'brand_assets/eco%20eyes%20website%20photos/Photos%20of%20Resort%20Activities/garden%20camping%20activites%202.jpg',
+    'brand_assets/eco%20eyes%20website%20photos/Photos%20of%20Resort%20Activities/picture%20of%20resort%20activties.jpg',
+    'brand_assets/eco%20eyes%20website%20photos/Photos%20of%20Resort%20Activities/Group%20mindfullness%20activties.jpg',
+    'brand_assets/eco%20eyes%20website%20photos/Photos%20of%20Resort%20Activities/woman%20doing%20yoga%20by%20the%20lake.jpg',
+    'brand_assets/eco%20eyes%20website%20photos/Photos%20of%20Resort%20Activities/nighttime%20resort%20socializing%20activites.jpg',
+    'brand_assets/eco%20eyes%20website%20photos/Photos%20of%20Resort%20Activities/scenic%20garden%20camping%20activites.jpg',
+    'brand_assets/eco%20eyes%20website%20photos/Photos%20of%20Resort%20Activities/Sound%20wellness%20session.jpg',
+    'brand_assets/eco%20eyes%20website%20photos/Photos%20of%20Resort%20Activities/People%20enjoying%20activies%20(painting).jpg',
+    'brand_assets/eco%20eyes%20website%20photos/Advertisement%20Photos/Lakeside%20view%20of%20rooms.jpg',
+    'brand_assets/eco%20eyes%20website%20photos/Advertisement%20Photos/Pet%20friendly%20.jpg',
+    'brand_assets/eco%20eyes%20website%20photos/Advertisement%20Photos/Picture%20of%20reception%20house.jpg',
+    'brand_assets/eco%20eyes%20website%20photos/Advertisement%20Photos/Room%20promotional%20pic%20of%20outdoor%20tbale.jpg',
+    'brand_assets/eco%20eyes%20website%20photos/Advertisement%20Photos/Two%20girls%20sipping%20on%20coffee%20outside%20eco%20cafe%20good%20photo.jpg',
+    'brand_assets/eco%20eyes%20website%20photos/Advertisement%20Photos/advertisement%20photo%20of%20entrance%20to%20eco%20eyes%20.jpg',
+    'brand_assets/eco%20eyes%20website%20photos/Advertisement%20Photos/Advertisement%20photo%20for%20outisde%20room%20balcony.jpg',
+    'brand_assets/eco%20eyes%20website%20photos/Advertisement%20Photos/597933999_1196598075899297_7015008611099947661_n.jpg',
+    'brand_assets/eco%20eyes%20website%20photos/Advertisement%20Photos/599005559_1196597985899306_8332139074048892777_n.jpg',
   ];
   function hShuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
   const hCells = Array.from(document.querySelectorAll('.home-gal-cell img'));
