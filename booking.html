@@ -447,6 +447,11 @@
               <input type="email" id="guest-email" class="form-input" autocomplete="email">
             </div>
           </div>
+          <div class="mb-4">
+            <label class="form-label" for="guest-email-confirm" id="label-email-confirm">Confirm Email Address</label>
+            <input type="email" id="guest-email-confirm" class="form-input" autocomplete="email">
+            <p id="email-mismatch-hint" style="display:none;color:#b94545;font-family:'Jost',sans-serif;font-size:0.62rem;margin-top:0.4rem;letter-spacing:0.05em;">Emails do not match</p>
+          </div>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
               <label class="form-label" for="guest-phone" id="label-phone">Phone Number</label>
@@ -580,6 +585,9 @@
 
             <!-- Error notice (shown here for visibility) -->
             <div id="form-error" class="notice notice-error mb-4" style="display:none;"></div>
+
+            <!-- Disabled-button reason hint (lists missing required fields) -->
+            <div id="btn-disabled-reason" aria-live="polite" style="display:none;font-family:'Jost',sans-serif;font-size:0.58rem;letter-spacing:0.12em;color:rgba(196,163,106,0.78);text-align:center;margin-bottom:0.85rem;line-height:1.7;text-transform:uppercase;"></div>
 
             <!-- Pay Now button -->
             <button id="submit-btn" class="btn-pay-now" onclick="submitBooking()" disabled>
@@ -1246,17 +1254,66 @@
   }
 
   // ── Form validation ───────────────────────────
+  // Translations for the missing-field hint shown above the Pay Now button.
+  // Inlined here (rather than in the T object) because the hint text is composed
+  // dynamically from a list of missing items, which doesn't fit T's id-based pattern.
+  const HINT_T = {
+    prefix:     { en:'To enable payment, please complete', th:'เพื่อชำระเงิน กรุณากรอก', zh:'请填写以下信息以付款' },
+    dates:      { en:'dates',                  th:'วันที่',                 zh:'日期'      },
+    room:       { en:'room',                   th:'ห้องพัก',                 zh:'房间'      },
+    name:       { en:'name',                   th:'ชื่อ',                    zh:'姓名'      },
+    email:      { en:'valid email',            th:'อีเมลที่ถูกต้อง',          zh:'有效邮箱'   },
+    emailMatch: { en:'matching email confirmation', th:'อีเมลยืนยันให้ตรงกัน', zh:'确认邮箱匹配' },
+    phone:      { en:'phone number',           th:'เบอร์โทร',                zh:'电话'      },
+    guests:     { en:'number of guests',       th:'จำนวนผู้เข้าพัก',          zh:'人数'      },
+    mismatch:   { en:'Emails do not match',    th:'อีเมลไม่ตรงกัน',           zh:'邮箱不匹配' },
+  };
+  const hintT = (k) => HINT_T[k]?.[currentLang] || HINT_T[k]?.en || k;
+
   function validateForm() {
-    const name   = document.getElementById('guest-name').value.trim();
-    const email  = document.getElementById('guest-email').value.trim();
-    const phone  = document.getElementById('guest-phone').value.trim();
-    const guests = document.getElementById('guest-count').value;
-    const ok = selectedRoomIds.length > 0 && checkinDate && checkoutDate && name &&
-               /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && phone && guests;
+    const name         = document.getElementById('guest-name').value.trim();
+    const email        = document.getElementById('guest-email').value.trim();
+    const emailConfirm = (document.getElementById('guest-email-confirm')?.value || '').trim();
+    const phone        = document.getElementById('guest-phone').value.trim();
+    const guests       = document.getElementById('guest-count').value;
+    const validEmail   = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    const emailsMatch  = validEmail && email === emailConfirm;
+
+    // Build a list of human-readable missing items in form-order
+    const missing = [];
+    if (!checkinDate || !checkoutDate) missing.push(hintT('dates'));
+    if (selectedRoomIds.length === 0)  missing.push(hintT('room'));
+    if (!name)                         missing.push(hintT('name'));
+    if (!validEmail)                   missing.push(hintT('email'));
+    else if (!emailsMatch)             missing.push(hintT('emailMatch'));
+    if (!phone)                        missing.push(hintT('phone'));
+    if (!guests)                       missing.push(hintT('guests'));
+
+    const ok = missing.length === 0;
     document.getElementById('submit-btn').disabled = !ok;
+
+    // Inline mismatch hint next to the Confirm Email field — only appears once
+    // the user has started typing the confirmation (avoids nagging on empty)
+    const mismatchEl = document.getElementById('email-mismatch-hint');
+    if (mismatchEl) {
+      const show = emailConfirm.length > 0 && email !== emailConfirm;
+      mismatchEl.style.display = show ? 'block' : 'none';
+      if (show) mismatchEl.textContent = hintT('mismatch');
+    }
+
+    // Overall disabled-button reason banner
+    const hintEl = document.getElementById('btn-disabled-reason');
+    if (hintEl) {
+      if (ok) {
+        hintEl.style.display = 'none';
+      } else {
+        hintEl.textContent = hintT('prefix') + ': ' + missing.join(' · ');
+        hintEl.style.display = 'block';
+      }
+    }
     return ok;
   }
-  ['guest-name','guest-email','guest-phone','guest-count','pet-count'].forEach(id => {
+  ['guest-name','guest-email','guest-email-confirm','guest-phone','guest-count','pet-count'].forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
     el.addEventListener('input',  validateForm);
@@ -1351,6 +1408,7 @@
     'section-guests':    { en:'Guest Details',       th:'ข้อมูลผู้เข้าพัก',        zh:'住客信息' },
     'label-name':        { en:'Full Name',           th:'ชื่อ-นามสกุล',            zh:'姓名' },
     'label-email':       { en:'Email Address',       th:'อีเมล',                  zh:'电子邮箱' },
+    'label-email-confirm':{ en:'Confirm Email Address', th:'ยืนยันอีเมล',          zh:'确认电子邮箱' },
     'label-phone':       { en:'Phone Number',        th:'เบอร์โทรศัพท์',           zh:'电话号码' },
     'label-guests':      { en:'Number of Guests',    th:'จำนวนผู้เข้าพัก',         zh:'入住人数' },
     'label-requests':    { en:'Special Requests',    th:'คำขอพิเศษ',               zh:'特殊要求' },
