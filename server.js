@@ -804,6 +804,8 @@ app.get('/api/debug/hostex', async (req, res) => {
       `/calendars?property_id=${sampleId}&start_date=${req.query.checkIn}&end_date=${req.query.checkOut}`,
       `/availability?property_id=${sampleId}&start_date=${req.query.checkIn}&end_date=${req.query.checkOut}`,
       `/availabilities?property_id=${sampleId}&start_date=${req.query.checkIn}&end_date=${req.query.checkOut}`,
+      // CORRECT param (plural) — what production code uses
+      `/availabilities?property_ids=${sampleId}&start_date=${req.query.checkIn}&end_date=${req.query.checkOut}`,
       `/inventory?property_id=${sampleId}&start_date=${req.query.checkIn}&end_date=${req.query.checkOut}`,
       // Pagination probes on reservations
       `/reservations?property_id=${sampleId}&start_date=${req.query.checkIn}&end_date=${req.query.checkOut}&page=1&per_page=100`,
@@ -818,6 +820,9 @@ app.get('/api/debug/hostex', async (req, res) => {
       try {
         const r = await hostexFetch(path);
         const top = r && typeof r === 'object' ? Object.keys(r) : null;
+        // For /availabilities probes, capture the FULL response so we can
+        // inspect the actual shape Hostex returns (essential for parser fix).
+        const includeRaw = path.includes('/availabilities');
         out.endpoint_probes[path] = {
           ok: true,
           top_keys: top,
@@ -827,11 +832,37 @@ app.get('/api/debug/hostex', async (req, res) => {
           data_array_lengths: r?.data && typeof r.data === 'object'
             ? Object.fromEntries(Object.entries(r.data).filter(([,v]) => Array.isArray(v)).map(([k,v]) => [k, v.length]))
             : null,
+          raw_sample: includeRaw ? r : undefined,
         };
       } catch (e) {
         out.endpoint_probes[path] = { ok: false, error: e.message };
       }
     }
+
+    // Sample parsed reservations for the sample listing with limit=100 —
+    // lets us verify whether overlapping reservations are actually returned.
+    try {
+      if (sampleId) {
+        const r = await hostexFetch(`/reservations?property_id=${sampleId}&start_date=${req.query.checkIn}&end_date=${req.query.checkOut}&limit=100`);
+        const list = extractList(r);
+        out.sample_reservations_full = {
+          count: list.length,
+          dates: list.map(x => ({
+            from: x.check_in_date,
+            to: x.check_out_date,
+            status: x.status,
+            property_id: x.property_id,
+          })),
+        };
+        // Filter to overlaps with the request window
+        const reqIn = new Date(req.query.checkIn);
+        const reqOut = new Date(req.query.checkOut);
+        out.sample_reservations_overlap = list
+          .filter(x => x.check_in_date && x.check_out_date)
+          .filter(x => new Date(x.check_in_date) < reqOut && new Date(x.check_out_date) > reqIn)
+          .map(x => ({ from: x.check_in_date, to: x.check_out_date, status: x.status }));
+      }
+    } catch (e) { out.sample_reservations_error = e.message; }
   }
 
   res.json(out);
