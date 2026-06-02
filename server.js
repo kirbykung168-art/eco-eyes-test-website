@@ -787,20 +787,48 @@ app.get('/api/debug/hostex', async (req, res) => {
       }
     } catch (e) { out.reservations_error = e.message; }
 
-    // Calendar sample — critical for diagnosing calendar-block-vs-reservation
-    // discrepancies (the bug that caused availability false-positives on
-    // dates with calendar blocks but no reservation records).
-    // ?listingId=… overrides which listing to sample (default: first matched).
-    try {
-      const sampleId = req.query.listingId || out.room_matching?.find(r => r.hostexId)?.hostexId;
-      if (sampleId) {
-        out.sample_calendar_listing_id = sampleId;
-        out.sample_calendar_raw = await hostexFetch(
-          `/calendar?listing_id=${sampleId}&start_date=${req.query.checkIn}&end_date=${req.query.checkOut}`
-        );
-        out.sample_calendar_parsed = extractList(out.sample_calendar_raw);
+    // EXPLORATORY: try several Hostex endpoint variations to find the one
+    // that returns calendar/availability data. Each is wrapped so a 404 on
+    // one path doesn't abort the others.
+    out.endpoint_probes = {};
+    const sampleId = req.query.listingId || out.room_matching?.find(r => r.hostexId)?.hostexId;
+    const probes = [
+      // Calendar/availability endpoint name variants
+      `/calendar?listing_id=${sampleId}&start_date=${req.query.checkIn}&end_date=${req.query.checkOut}`,
+      `/calendar?property_id=${sampleId}&start_date=${req.query.checkIn}&end_date=${req.query.checkOut}`,
+      `/listings/${sampleId}/calendar?start_date=${req.query.checkIn}&end_date=${req.query.checkOut}`,
+      `/properties/${sampleId}/calendar?start_date=${req.query.checkIn}&end_date=${req.query.checkOut}`,
+      `/calendars?property_id=${sampleId}&start_date=${req.query.checkIn}&end_date=${req.query.checkOut}`,
+      `/availability?property_id=${sampleId}&start_date=${req.query.checkIn}&end_date=${req.query.checkOut}`,
+      `/availabilities?property_id=${sampleId}&start_date=${req.query.checkIn}&end_date=${req.query.checkOut}`,
+      `/inventory?property_id=${sampleId}&start_date=${req.query.checkIn}&end_date=${req.query.checkOut}`,
+      // Pagination probes on reservations
+      `/reservations?property_id=${sampleId}&start_date=${req.query.checkIn}&end_date=${req.query.checkOut}&page=1&per_page=100`,
+      `/reservations?property_id=${sampleId}&start_date=${req.query.checkIn}&end_date=${req.query.checkOut}&limit=100`,
+      `/reservations?property_id=${sampleId}&start_date=${req.query.checkIn}&end_date=${req.query.checkOut}&page_size=100`,
+      // Try date-narrowed reservation query (does the filter actually work?)
+      `/reservations?property_id=${sampleId}&check_in_date_from=${req.query.checkIn}&check_in_date_to=${req.query.checkOut}`,
+      // Listings endpoint (in case rooms are "listings" not "properties")
+      `/listings`,
+    ];
+    for (const path of probes) {
+      try {
+        const r = await hostexFetch(path);
+        const top = r && typeof r === 'object' ? Object.keys(r) : null;
+        out.endpoint_probes[path] = {
+          ok: true,
+          top_keys: top,
+          error_code: r?.error_code,
+          error_msg: r?.error_msg,
+          data_keys: r?.data && typeof r.data === 'object' ? Object.keys(r.data) : null,
+          data_array_lengths: r?.data && typeof r.data === 'object'
+            ? Object.fromEntries(Object.entries(r.data).filter(([,v]) => Array.isArray(v)).map(([k,v]) => [k, v.length]))
+            : null,
+        };
+      } catch (e) {
+        out.endpoint_probes[path] = { ok: false, error: e.message };
       }
-    } catch (e) { out.calendar_error = e.message; }
+    }
   }
 
   res.json(out);
