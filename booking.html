@@ -1117,18 +1117,36 @@
     notice.textContent = currentLang==='th' ? 'กำลังตรวจสอบห้องว่าง…' : currentLang==='zh' ? '正在查询可用房间…' : 'Checking room availability…';
     notice.style.display = 'block';
 
+    // Helper: fail-closed branch — show all rooms unavailable + a friendly
+    // notice pointing users to LINE/Messenger. Triggered when the server
+    // signals success:false OR when the fetch/parse itself fails.
+    const showAvailUnreachable = () => {
+      notice.className = 'notice notice-error mb-6';
+      notice.textContent = currentLang === 'th'
+        ? 'ขณะนี้ไม่สามารถตรวจสอบห้องว่างได้แบบเรียลไทม์ กรุณาติดต่อเราผ่าน LINE หรือ Messenger เพื่อจองห้องพัก'
+        : currentLang === 'zh'
+        ? '目前无法实时查询空房，请通过 LINE 或 Messenger 联系我们预订'
+        : 'Live availability check is temporarily unavailable — please contact us via LINE or Messenger to book your stay.';
+      notice.style.display = 'block';
+      // Fail-closed: mark every room unavailable rather than risk an overbooking.
+      serverRooms = ROOMS_LOCAL.map(r => ({ id: r.id, available: false }));
+      renderRooms(buildAvailMap(serverRooms));
+    };
+
     try {
       const ci = formatDateISO(checkinDate);
       const co = formatDateISO(checkoutDate);
       const res  = await fetch(`/api/rooms?checkIn=${ci}&checkOut=${co}`);
       const data = await res.json();
-      serverRooms = data.rooms || ROOMS_LOCAL.map(r => ({ id: r.id, available: true }));
+      if (data.success === false || !Array.isArray(data.rooms)) {
+        showAvailUnreachable();
+        return;
+      }
+      serverRooms = data.rooms;
       notice.style.display = 'none';
       renderRooms(buildAvailMap(serverRooms));
     } catch (e) {
-      notice.style.display = 'none';
-      serverRooms = ROOMS_LOCAL.map(r => ({ id: r.id, available: true }));
-      renderRooms(buildAvailMap(serverRooms));
+      showAvailUnreachable();
     }
   }
 

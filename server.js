@@ -69,22 +69,34 @@ function calcTotal(checkIn, checkOut) {
 }
 
 // ── Universal Hostex list extractor ──────────────────────────
-// Hostex v3 wraps responses as { error_code:200, data: { properties:[...] } }
-// but endpoint shape varies (list, reservations, properties, etc.)
+// Hostex v3 wraps responses as { error_code:200, data: { <key>:[...] } }
+// where <key> varies by endpoint (properties, reservations, calendars, ...).
+// Add new keys here when a new endpoint is integrated.
 function extractList(data) {
   if (!data) return [];
   if (Array.isArray(data)) return data;
-  // data.data.* — nested object with named array
-  if (data.data?.properties   && Array.isArray(data.data.properties))   return data.data.properties;
-  if (data.data?.reservations && Array.isArray(data.data.reservations)) return data.data.reservations;
-  if (data.data?.list         && Array.isArray(data.data.list))         return data.data.list;
-  if (data.data?.orders       && Array.isArray(data.data.orders))       return data.data.orders;
+  // data.data.* — nested object with named array (most common Hostex v3 shape)
+  if (data.data?.properties     && Array.isArray(data.data.properties))     return data.data.properties;
+  if (data.data?.reservations   && Array.isArray(data.data.reservations))   return data.data.reservations;
+  if (data.data?.list           && Array.isArray(data.data.list))           return data.data.list;
+  if (data.data?.orders         && Array.isArray(data.data.orders))         return data.data.orders;
+  // Calendar endpoint variants — Hostex returns day-level availability under
+  // several possible keys depending on the API version / endpoint variant.
+  // We accept any of these so isListingAvailable's calendar check actually fires.
+  if (data.data?.calendars      && Array.isArray(data.data.calendars))      return data.data.calendars;
+  if (data.data?.calendar       && Array.isArray(data.data.calendar))       return data.data.calendar;
+  if (data.data?.availability   && Array.isArray(data.data.availability))   return data.data.availability;
+  if (data.data?.availabilities && Array.isArray(data.data.availabilities)) return data.data.availabilities;
+  if (data.data?.days           && Array.isArray(data.data.days))           return data.data.days;
+  if (data.data?.nights         && Array.isArray(data.data.nights))         return data.data.nights;
   // data.data itself is array
-  if (data.data               && Array.isArray(data.data))               return data.data;
+  if (data.data                 && Array.isArray(data.data))                return data.data;
   // top-level named arrays
-  if (data.properties         && Array.isArray(data.properties))         return data.properties;
-  if (data.reservations       && Array.isArray(data.reservations))       return data.reservations;
-  if (data.list               && Array.isArray(data.list))               return data.list;
+  if (data.properties           && Array.isArray(data.properties))          return data.properties;
+  if (data.reservations         && Array.isArray(data.reservations))        return data.reservations;
+  if (data.list                 && Array.isArray(data.list))                return data.list;
+  if (data.calendars            && Array.isArray(data.calendars))           return data.calendars;
+  if (data.calendar             && Array.isArray(data.calendar))            return data.calendar;
   return [];
 }
 
@@ -183,25 +195,39 @@ async function isListingAvailable(listingId, checkIn, checkOut) {
   const reqIn  = new Date(checkIn);
   const reqOut = new Date(checkOut);
 
-  // Try calendar endpoint first — day-by-day is the most reliable
+  // ── Source 1: Calendar — catches calendar blocks (Airbnb/Booking.com sync,
+  // manual blocks, owner stays) that have no Hostex reservation record.
+  // This is the AUTHORITATIVE source when it returns data.
+  let calendarSawBlock = false;
+  let calendarHadData  = false;
   try {
     const calData = await hostexFetch(
       `/calendar?listing_id=${listingId}&start_date=${checkIn}&end_date=${checkOut}`
     );
     const days = extractList(calData);
     if (days.length > 0) {
-      const blocked = days.some(d =>
-        d.available === false || d.status === 'blocked' || d.status === 'unavailable'
-      );
-      console.log(`  Calendar check listing ${listingId}: ${blocked ? '❌ BLOCKED' : '✅ available'}`);
-      return !blocked;
+      calendarHadData = true;
+      // Defensive field-name handling — Hostex returns availability under
+      // several possible keys depending on listing channel & API version.
+      calendarSawBlock = days.some(d => {
+        if (d.available === false || d.is_available === false) return true;
+        if (d.is_blocked === true || d.blocked === true)      return true;
+        const status = (d.status || d.availability || '').toString().toLowerCase();
+        return status === 'blocked' || status === 'unavailable' || status === 'reserved' || status === 'booked';
+      });
+      console.log(`  Calendar check listing ${listingId}: ${calendarSawBlock ? '❌ BLOCKED' : '✅ available'} (${days.length} days)`);
+      // Calendar is the authoritative source — return immediately when it has data
+      return !calendarSawBlock;
+    } else {
+      console.warn(`  Calendar returned no days for listing ${listingId} — falling back to reservations`);
     }
   } catch (e) {
     console.warn(`  Calendar endpoint failed for ${listingId}:`, e.message);
   }
 
-  // Fall back: query reservations with a wide window (90 days before check-in)
-  // to catch reservations that started earlier but overlap our dates.
+  // ── Source 2: Reservations — fallback when calendar returned no data.
+  // Wide window (90 days before check-in) catches reservations that started
+  // earlier but overlap our requested dates.
   try {
     const wideStart = new Date(reqIn.getTime() - 90 * 86400000).toISOString().split('T')[0];
     const data = await hostexFetch(
@@ -210,13 +236,11 @@ async function isListingAvailable(listingId, checkIn, checkOut) {
     const list = extractList(data);
     console.log(`  Reservations for listing ${listingId}: ${list.length} found`);
 
-    // Use an exclusion list — only skip statuses that definitely free the room.
-    // This catches 'pending check-in', 'checked in', 'checked_in', etc.
+    // Exclusion list — only skip statuses that definitively free the room.
     const CANCELLED = ['cancelled', 'canceled', 'rejected', 'declined', 'expired', 'no_show', 'noshow'];
     const conflict = list
       .filter(r => !CANCELLED.includes((r.status || '').toLowerCase().replace(/ /g, '_')))
       .some(r => {
-        // Hostex v3 uses check_in_date / check_out_date
         const bIn  = new Date(r.check_in_date  || r.check_in  || r.checkin  || r.start_date);
         const bOut = new Date(r.check_out_date || r.check_out || r.checkout || r.end_date);
         if (isNaN(bIn) || isNaN(bOut)) return false;
@@ -228,7 +252,9 @@ async function isListingAvailable(listingId, checkIn, checkOut) {
     return !conflict;
   } catch (e) {
     console.warn(`  Reservations fetch failed for listing ${listingId}:`, e.message);
-    return true;
+    // Fail-closed: both calendar AND reservations failed. Treat as unavailable
+    // rather than risk an overbooking. Guest can contact us via LINE/Messenger.
+    return false;
   }
 }
 
@@ -268,8 +294,11 @@ app.get('/api/rooms', async (req, res) => {
       if (room.hostexId && req.query.checkIn && req.query.checkOut) {
         console.log(`Checking availability for ${room.en} (hostexId: ${room.hostexId})`);
         available = await isListingAvailable(room.hostexId, req.query.checkIn, req.query.checkOut);
-      } else if (!room.hostexId) {
-        console.warn(`No hostexId matched for ${room.en} — showing as available`);
+      } else if (!room.hostexId && req.query.checkIn && req.query.checkOut) {
+        // Fail-closed: without a Hostex listing match we cannot verify availability
+        // for the requested dates. Mark unavailable rather than risk an overbooking.
+        console.warn(`No hostexId matched for ${room.en} — marking unavailable (fail-closed)`);
+        available = false;
       }
 
       return {
@@ -287,10 +316,14 @@ app.get('/api/rooms', async (req, res) => {
     res.json({ success: true, rooms: roomsWithAvail, nightlyRate: BASE_RATE });
   } catch (err) {
     console.error('Rooms error:', err.message);
-    // Fall back: return all rooms as available
+    // Fail-closed: if we can't reach Hostex at all, mark every room unavailable
+    // and surface an error flag so the frontend can show a "contact us" message.
+    // This is the deliberate safety policy — overbooking is worse than lost bookings.
     res.json({
-      success: true,
-      rooms: ROOMS.map(r => ({ ...r, available: true, blocked: [], nightlyRate: BASE_RATE })),
+      success: false,
+      error: 'availability_check_failed',
+      message: err.message,
+      rooms: ROOMS.map(r => ({ ...r, available: false, blocked: [], nightlyRate: BASE_RATE })),
       nightlyRate: BASE_RATE,
     });
   }
@@ -646,53 +679,84 @@ app.get('/api/blocked-dates', async (req, res) => {
   const today  = new Date().toISOString().split('T')[0];
   const future = new Date(Date.now() + 180 * 86400000).toISOString().split('T')[0];
 
+  // Returns a Set of YYYY-MM-DD strings that are blocked for this room.
+  // Calendar is AUTHORITATIVE — it catches both reservations and pure
+  // calendar blocks (Airbnb/Booking.com sync, manual blocks). Reservations
+  // is a fallback only used when the calendar endpoint returns no days.
+  async function getBlockedDatesForRoom(room) {
+    const blocked = new Set();
+    let calendarHadData = false;
+    try {
+      const calData = await hostexFetch(
+        `/calendar?listing_id=${room.hostexId}&start_date=${today}&end_date=${future}`
+      );
+      const days = extractList(calData);
+      if (days.length > 0) {
+        calendarHadData = true;
+        for (const d of days) {
+          const isBlocked = d.available === false || d.is_available === false
+            || d.is_blocked === true || d.blocked === true
+            || ['blocked','unavailable','reserved','booked'].includes((d.status || d.availability || '').toString().toLowerCase());
+          if (isBlocked) {
+            const date = d.date || d.day;
+            if (date) blocked.add(date);
+          }
+        }
+      }
+    } catch (e) {
+      console.warn(`blocked-dates calendar failed for ${room.en}:`, e.message);
+    }
+    if (calendarHadData) return blocked;
+
+    // Fallback: reservations (only reached if calendar returned empty)
+    const CANCELLED = ['cancelled','canceled','rejected','declined','expired','no_show','noshow'];
+    try {
+      const data = await hostexFetch(
+        `/reservations?property_id=${room.hostexId}&start_date=${today}&end_date=${future}`
+      );
+      extractList(data)
+        .filter(r => !CANCELLED.includes((r.status || '').toLowerCase().replace(/ /g, '_')))
+        .forEach(r => {
+          const from = r.check_in_date  || r.check_in  || r.start_date;
+          const to   = r.check_out_date || r.check_out || r.end_date;
+          if (!from || !to) return;
+          const cur = new Date(from);
+          const end = new Date(to);
+          while (cur < end) {
+            blocked.add(cur.toISOString().split('T')[0]);
+            cur.setDate(cur.getDate() + 1);
+          }
+        });
+    } catch (e) {
+      console.warn(`blocked-dates reservations failed for ${room.en}:`, e.message);
+    }
+    return blocked;
+  }
+
   try {
     const rooms = await matchRoomsToListings();
-    const CANCELLED = ['cancelled','canceled','rejected','declined','expired','no_show','noshow'];
-
-    // Fetch reservations for all rooms in parallel
-    const allRoomRanges = await Promise.all(
-      rooms.filter(r => r.hostexId).map(async (room) => {
-        try {
-          const data = await hostexFetch(
-            `/reservations?property_id=${room.hostexId}&start_date=${today}&end_date=${future}`
-          );
-          return extractList(data)
-            .filter(r => !CANCELLED.includes((r.status || '').toLowerCase().replace(/ /g, '_')))
-            .map(r => ({
-              roomId: room.id,
-              from: r.check_in_date  || r.check_in  || r.start_date,
-              to:   r.check_out_date || r.check_out || r.end_date,
-            }))
-            .filter(r => r.from && r.to);
-        } catch { return []; }
-      })
+    const datesPerRoom = await Promise.all(
+      rooms.filter(r => r.hostexId).map(getBlockedDatesForRoom)
     );
 
-    const flat = allRoomRanges.flat();
-
-    // Count rooms booked per date to identify fully-blocked days
+    // Count how many rooms are blocked per date → identify fully-blocked days
     const dateCounts = {};
-    flat.forEach(({ from, to }) => {
-      const cur = new Date(from);
-      const end = new Date(to);
-      while (cur < end) {
-        const d = cur.toISOString().split('T')[0];
-        dateCounts[d] = (dateCounts[d] || 0) + 1;
-        cur.setDate(cur.getDate() + 1);
-      }
-    });
+    datesPerRoom.forEach(set => set.forEach(d => {
+      dateCounts[d] = (dateCounts[d] || 0) + 1;
+    }));
 
-    const totalRooms = rooms.filter(r => r.hostexId).length || ROOMS.length;
-    const someBooked = Object.keys(dateCounts);
+    const totalRooms   = rooms.filter(r => r.hostexId).length || ROOMS.length;
+    const someBooked   = Object.keys(dateCounts);
     const fullyBlocked = someBooked.filter(d => dateCounts[d] >= totalRooms);
 
-    blockedDatesCache = { success: true, someBooked, fullyBlocked, ranges: flat };
+    blockedDatesCache = { success: true, someBooked, fullyBlocked };
     blockedDatesCacheTime = Date.now();
     res.json(blockedDatesCache);
   } catch (err) {
     console.error('blocked-dates error:', err.message);
-    res.json({ success: false, someBooked: [], fullyBlocked: [], ranges: [] });
+    // Fail-closed shape: empty arrays so the frontend can't pretend things
+    // are available; success:false signals the issue to anything that checks.
+    res.json({ success: false, error: err.message, someBooked: [], fullyBlocked: [] });
   }
 });
 
@@ -722,6 +786,21 @@ app.get('/api/debug/hostex', async (req, res) => {
         out.sample_reservations_parsed = extractList(out.sample_reservations_raw);
       }
     } catch (e) { out.reservations_error = e.message; }
+
+    // Calendar sample — critical for diagnosing calendar-block-vs-reservation
+    // discrepancies (the bug that caused availability false-positives on
+    // dates with calendar blocks but no reservation records).
+    // ?listingId=… overrides which listing to sample (default: first matched).
+    try {
+      const sampleId = req.query.listingId || out.room_matching?.find(r => r.hostexId)?.hostexId;
+      if (sampleId) {
+        out.sample_calendar_listing_id = sampleId;
+        out.sample_calendar_raw = await hostexFetch(
+          `/calendar?listing_id=${sampleId}&start_date=${req.query.checkIn}&end_date=${req.query.checkOut}`
+        );
+        out.sample_calendar_parsed = extractList(out.sample_calendar_raw);
+      }
+    } catch (e) { out.calendar_error = e.message; }
   }
 
   res.json(out);
