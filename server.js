@@ -68,6 +68,41 @@ function calcTotal(checkIn, checkOut) {
   return total;
 }
 
+// ── Helper: extract day-level availability records from /availabilities ──
+// Hostex returns:
+//   { data: { properties: [{ id, availabilities: [{date, available, remarks}, ...] }] } }
+// This flattens the nested structure to a list of { date, available, ... } day objects
+// that callers can iterate directly. Returns [] for any unexpected shape.
+function extractAvailabilityDays(calData) {
+  const properties = calData?.data?.properties;
+  if (!Array.isArray(properties)) return [];
+  return properties.flatMap(p => Array.isArray(p?.availabilities) ? p.availabilities : []);
+}
+
+// ── Helper: iterate the dates a guest is actually staying ────
+// For a check-in→check-out window, only the nights from check_in through
+// (check_out - 1 day) need to be available — the check-out date itself is
+// the next guest's check-in and doesn't block our stay.
+function stayDateSet(checkIn, checkOut) {
+  const set = new Set();
+  const cur = new Date(checkIn);
+  const end = new Date(checkOut);
+  while (cur < end) {
+    set.add(cur.toISOString().split('T')[0]);
+    cur.setDate(cur.getDate() + 1);
+  }
+  return set;
+}
+
+// ── Helper: is a Hostex day record "blocked"? ──
+// Handles the field-name variations Hostex uses across channels/versions.
+function isDayBlocked(d) {
+  if (d.available === false || d.is_available === false) return true;
+  if (d.is_blocked === true || d.blocked === true) return true;
+  const status = (d.status || d.availability || '').toString().toLowerCase();
+  return ['blocked','unavailable','reserved','booked'].includes(status);
+}
+
 // ── Universal Hostex list extractor ──────────────────────────
 // Hostex v3 wraps responses as { error_code:200, data: { <key>:[...] } }
 // where <key> varies by endpoint (properties, reservations, calendars, ...).
@@ -206,17 +241,14 @@ async function isListingAvailable(listingId, checkIn, checkOut) {
     const calData = await hostexFetch(
       `/availabilities?property_ids=${listingId}&start_date=${checkIn}&end_date=${checkOut}`
     );
-    const days = extractList(calData);
+    const days = extractAvailabilityDays(calData);
     if (days.length > 0) {
       calendarHadData = true;
-      // Defensive field-name handling — Hostex returns availability under
-      // several possible keys depending on listing channel & API version.
-      calendarSawBlock = days.some(d => {
-        if (d.available === false || d.is_available === false) return true;
-        if (d.is_blocked === true || d.blocked === true)      return true;
-        const status = (d.status || d.availability || '').toString().toLowerCase();
-        return status === 'blocked' || status === 'unavailable' || status === 'reserved' || status === 'booked';
-      });
+      // Only check the nights actually being stayed (check_in through
+      // check_out-1). The check-out date itself is the next guest's
+      // check-in and doesn't block us.
+      const stayDates = stayDateSet(checkIn, checkOut);
+      calendarSawBlock = days.some(d => stayDates.has(d.date || d.day) && isDayBlocked(d));
       console.log(`  Calendar check listing ${listingId}: ${calendarSawBlock ? '❌ BLOCKED' : '✅ available'} (${days.length} days)`);
       // Calendar is the authoritative source — return immediately when it has data
       return !calendarSawBlock;
@@ -370,10 +402,8 @@ app.get('/api/availability', async (req, res) => {
       const calData = await hostexFetch(
         `/availabilities?property_ids=${propertyId}&start_date=${start}&end_date=${end}`
       );
-      const days = extractList(calData);
-      blockedDates = days
-        .filter(d => d.available === false || d.status === 'blocked' || d.status === 'unavailable')
-        .map(d => d.date);
+      const days = extractAvailabilityDays(calData);
+      blockedDates = days.filter(isDayBlocked).map(d => d.date || d.day).filter(Boolean);
     } catch (e) {
       console.warn('Calendar fetch failed:', e.message);
     }
@@ -693,14 +723,11 @@ app.get('/api/blocked-dates', async (req, res) => {
       const calData = await hostexFetch(
         `/availabilities?property_ids=${room.hostexId}&start_date=${today}&end_date=${future}`
       );
-      const days = extractList(calData);
+      const days = extractAvailabilityDays(calData);
       if (days.length > 0) {
         calendarHadData = true;
         for (const d of days) {
-          const isBlocked = d.available === false || d.is_available === false
-            || d.is_blocked === true || d.blocked === true
-            || ['blocked','unavailable','reserved','booked'].includes((d.status || d.availability || '').toString().toLowerCase());
-          if (isBlocked) {
+          if (isDayBlocked(d)) {
             const date = d.date || d.day;
             if (date) blocked.add(date);
           }
