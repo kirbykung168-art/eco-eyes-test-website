@@ -6,26 +6,25 @@
   <title>Book Your Stay — Eco Eyes Village</title>
   <meta name="description" content="Reserve your stay at Eco Eyes Village. Choose from 10 unique rooms named after celestial bodies, set in 30+ Rai of protected rainforest in Nakhon Nayok, Thailand." />
 
+  <!-- Open Graph / Twitter Card / Canonical -->
+  <meta property="og:type"        content="website" />
+  <meta property="og:site_name"   content="Eco Eyes Village" />
+  <meta property="og:title"       content="Book Your Stay — Eco Eyes Village" />
+  <meta property="og:description" content="Reserve directly. 10 lakeside domes named after celestial bodies, from ฿2,700/night, in 30+ rai of protected rainforest." />
+  <meta property="og:image"       content="https://eco-eyes-bucket.s3.ap-southeast-1.amazonaws.com/eco_eyes_photo/9.jpeg" />
+  <meta property="og:url"         content="https://ecoeyesvillage.com/booking.html" />
+  <meta name="twitter:card"        content="summary_large_image" />
+  <meta name="twitter:title"       content="Book Your Stay — Eco Eyes Village" />
+  <meta name="twitter:description" content="Reserve directly. 10 lakeside domes named after celestial bodies, from ฿2,700/night." />
+  <meta name="twitter:image"       content="https://eco-eyes-bucket.s3.ap-southeast-1.amazonaws.com/eco_eyes_photo/9.jpeg" />
+  <link rel="canonical"            href="https://ecoeyesvillage.com/booking.html" />
+
   <link rel="icon" type="image/png" href="https://eco-eyes-bucket.s3.ap-southeast-1.amazonaws.com/icon-circle.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500;1,600&family=Jost:wght@200;300;400;500;600&display=swap" rel="stylesheet">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            cream: '#FAF7EF', 'cream-mid': '#F0E9D8', 'cream-dk': '#E3D8C2',
-            gold: '#967138', 'gold-lt': '#C4A36A', 'gold-pale': '#E8D9BE', 'gold-dk': '#6B4F22',
-            dark: '#1C1915', 'dark-mid': '#2A251E', forest: '#2B3A20', 'forest-lt': '#3D5230', moss: '#5C6B47',
-          },
-          fontFamily: { display: ['"Cormorant Garamond"', 'serif'], sans: ['Jost', 'sans-serif'] },
-          letterSpacing: { widest: '0.25em', widester: '0.4em' },
-        }
-      }
-    }
-  </script>
+  <!-- Tailwind (self-hosted, purged) — config lives in /tailwind.config.js; rebuild with `npm run build:css` -->
+  <link rel="stylesheet" href="/tailwind.css">
 
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }

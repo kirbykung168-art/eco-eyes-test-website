@@ -5,19 +5,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Contact — Eco Eyes Village</title>
   <meta name="description" content="Visit Eco Eyes Village in Nakhon Nayok, Thailand. Call +66 92 610 0560, follow us on Instagram @ecoeyesvillage, or find us at 188 Moo 9, Sarika, Nakhon Nayok 26000." />
+
+  <!-- Open Graph / Twitter Card / Canonical -->
+  <meta property="og:type"        content="website" />
+  <meta property="og:site_name"   content="Eco Eyes Village" />
+  <meta property="og:title"       content="Contact — Eco Eyes Village" />
+  <meta property="og:description" content="Visit Eco Eyes Village in Nakhon Nayok, Thailand. Call +66 92 610 0560 to book direct." />
+  <meta property="og:image"       content="https://eco-eyes-bucket.s3.ap-southeast-1.amazonaws.com/eco_eyes_photo/9.jpeg" />
+  <meta property="og:url"         content="https://ecoeyesvillage.com/contact.html" />
+  <meta name="twitter:card"        content="summary_large_image" />
+  <meta name="twitter:title"       content="Contact — Eco Eyes Village" />
+  <meta name="twitter:description" content="Visit Eco Eyes Village in Nakhon Nayok, Thailand. Call +66 92 610 0560 to book direct." />
+  <meta name="twitter:image"       content="https://eco-eyes-bucket.s3.ap-southeast-1.amazonaws.com/eco_eyes_photo/9.jpeg" />
+  <link rel="canonical"            href="https://ecoeyesvillage.com/contact.html" />
   <link rel="icon" type="image/png" href="https://eco-eyes-bucket.s3.ap-southeast-1.amazonaws.com/icon-circle.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500;1,600&family=Jost:wght@200;300;400;500;600&display=swap" rel="stylesheet">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: { extend: {
-        colors: { cream:'#FAF7EF','cream-mid':'#F0E9D8',gold:'#967138','gold-lt':'#C4A36A',dark:'#1C1915',forest:'#2B3A20' },
-        fontFamily: { display:['"Cormorant Garamond"','serif'], sans:['Jost','sans-serif'] }
-      }}
-    }
-  </script>
+  <!-- Tailwind (self-hosted, purged) — config lives in /tailwind.config.js; rebuild with `npm run build:css` -->
+  <link rel="stylesheet" href="/tailwind.css">
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     html{scroll-behavior:smooth}
@@ -302,8 +308,17 @@ function bwGo(){if(!window._bwCi||!window._bwCo){alert('Please select check-in a
 
 <!-- HERO -->
 <section class="relative overflow-hidden" style="height:60vh;min-height:380px">
-  <img src="brand_assets/eco%20eyes%20website%20photos/Photos%20of%20the%20resort/aerial%20view%20of%20whole%20resort.jpg"
-       alt="Eco Eyes Village, Nakhon Nayok" class="absolute inset-0 w-full h-full object-cover">
+  <!-- LCP hero — responsive via wsrv.nl image proxy (WebP, multiple widths) -->
+  <img src="https://wsrv.nl/?url=ecoeyesvillage.com/brand_assets/eco%20eyes%20website%20photos/Photos%20of%20the%20resort/aerial%20view%20of%20whole%20resort.jpg&w=1280&output=webp"
+       srcset="https://wsrv.nl/?url=ecoeyesvillage.com/brand_assets/eco%20eyes%20website%20photos/Photos%20of%20the%20resort/aerial%20view%20of%20whole%20resort.jpg&w=640&output=webp 640w,
+               https://wsrv.nl/?url=ecoeyesvillage.com/brand_assets/eco%20eyes%20website%20photos/Photos%20of%20the%20resort/aerial%20view%20of%20whole%20resort.jpg&w=960&output=webp 960w,
+               https://wsrv.nl/?url=ecoeyesvillage.com/brand_assets/eco%20eyes%20website%20photos/Photos%20of%20the%20resort/aerial%20view%20of%20whole%20resort.jpg&w=1280&output=webp 1280w,
+               https://wsrv.nl/?url=ecoeyesvillage.com/brand_assets/eco%20eyes%20website%20photos/Photos%20of%20the%20resort/aerial%20view%20of%20whole%20resort.jpg&w=1920&output=webp 1920w"
+       sizes="100vw"
+       alt="Eco Eyes Village, Nakhon Nayok"
+       class="absolute inset-0 w-full h-full object-cover"
+       fetchpriority="high"
+       decoding="async">
   <div class="absolute inset-0 pointer-events-none" style="background:linear-gradient(180deg, rgba(28,25,21,0.42) 0%, rgba(28,25,21,0.08) 38%, rgba(28,25,21,0.18) 62%, rgba(28,25,21,0.62) 100%)"></div>
   <div class="absolute inset-0 pointer-events-none" style="background:linear-gradient(180deg, transparent 70%, rgba(28,25,21,0.35) 100%);mix-blend-mode:multiply"></div>
   <div class="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
@@ -519,14 +534,14 @@ function bwGo(){if(!window._bwCi||!window._bwCo){alert('Please select check-in a
     </h2>
     <span class="sep sep-center" style="background:#967138;margin-bottom:1.6rem"></span>
     <p class="font-sans text-white/45 text-[0.875rem] leading-[1.85] mb-10"
-       data-en="Reserve directly through our booking partners — Booking.com, Agoda, Tripadvisor, or Trip.com — for the best availability."
-       data-th="จองโดยตรงผ่านพันธมิตรการจองของเรา — Booking.com, Agoda, Tripadvisor หรือ Trip.com — เพื่อความพร้อมใช้งานที่ดีที่สุด"
-       data-zh="通过我们的预订合作伙伴直接预订——Booking.com、Agoda、Tripadvisor或Trip.com——获取最佳房源。">
-      Reserve directly through our booking partners — Booking.com, Agoda, Tripadvisor, or Trip.com — for the best availability.
+       data-en="Book direct with us — best available rate, real-time availability, and no booking-platform commission."
+       data-th="จองตรงกับเรา — ราคาดีที่สุด ห้องว่างแบบเรียลไทม์ และไม่มีค่าคอมมิชชั่นจากแพลตฟอร์มภายนอก"
+       data-zh="直接向我们预订 — 最优价格，实时房况，无中介佣金。">
+      Book direct with us — best available rate, real-time availability, and no booking-platform commission.
     </p>
     <div class="flex flex-wrap justify-center gap-4">
-      <a href="resort.html" class="btn-solid-gold"
-         data-en="View Rooms &amp; Rates" data-th="ดูห้องและราคา" data-zh="查看房间与价格">View Rooms &amp; Rates</a>
+      <a href="booking.html" class="btn-solid-gold"
+         data-en="Book Your Stay" data-th="จองที่พัก" data-zh="立即预订">Book Your Stay</a>
       <a href="tel:+66926100560" class="btn-outline-gold" style="color:#C4A36A;border-color:rgba(150,113,56,0.5);"
          data-en="Call Us Directly" data-th="โทรหาเราโดยตรง" data-zh="直接致电我们">Call Us Directly</a>
     </div>

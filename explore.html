@@ -5,19 +5,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Explore Nakhon Nayok — Eco Eyes Village</title>
   <meta name="description" content="Discover the natural wonders of Nakhon Nayok — Sarika Waterfall, Khao Yai National Park, Haew Narok Waterfall, and Khun Dan Dam. A destination guide from Eco Eyes Village." />
+
+  <!-- Open Graph / Twitter Card / Canonical -->
+  <meta property="og:type"        content="website" />
+  <meta property="og:site_name"   content="Eco Eyes Village" />
+  <meta property="og:title"       content="Explore Nakhon Nayok — Eco Eyes Village" />
+  <meta property="og:description" content="Waterfalls, mountains, and national parks within 2 hours of Bangkok — a destination guide from Eco Eyes Village." />
+  <meta property="og:image"       content="https://eco-eyes-bucket.s3.ap-southeast-1.amazonaws.com/eco_eyes_photo/9.jpeg" />
+  <meta property="og:url"         content="https://ecoeyesvillage.com/explore.html" />
+  <meta name="twitter:card"        content="summary_large_image" />
+  <meta name="twitter:title"       content="Explore Nakhon Nayok — Eco Eyes Village" />
+  <meta name="twitter:description" content="Waterfalls, mountains, and national parks within 2 hours of Bangkok." />
+  <meta name="twitter:image"       content="https://eco-eyes-bucket.s3.ap-southeast-1.amazonaws.com/eco_eyes_photo/9.jpeg" />
+  <link rel="canonical"            href="https://ecoeyesvillage.com/explore.html" />
   <link rel="icon" type="image/png" href="https://eco-eyes-bucket.s3.ap-southeast-1.amazonaws.com/icon-circle.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500;1,600&family=Jost:wght@200;300;400;500;600&display=swap" rel="stylesheet">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: { extend: {
-        colors: { cream:'#FAF7EF','cream-mid':'#F0E9D8',gold:'#967138','gold-lt':'#C4A36A',dark:'#1C1915',forest:'#2B3A20' },
-        fontFamily: { display:['"Cormorant Garamond"','serif'], sans:['Jost','sans-serif'] }
-      }}
-    }
-  </script>
+  <!-- Tailwind (self-hosted, purged) — config lives in /tailwind.config.js; rebuild with `npm run build:css` -->
+  <link rel="stylesheet" href="/tailwind.css">
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     html{scroll-behavior:smooth}
@@ -301,8 +307,17 @@ function bwGo(){if(!window._bwCi||!window._bwCo){alert('Please select check-in a
 
 <!-- HERO -->
 <section class="relative h-screen overflow-hidden">
-  <img src="brand_assets/eco%20eyes%20website%20photos/Environment%20Photos/turtle%201.jpg"
-       alt="Nakhon Nayok, Thailand" class="absolute inset-0 w-full h-full object-cover">
+  <!-- LCP hero — responsive via wsrv.nl image proxy (WebP, multiple widths) -->
+  <img src="https://wsrv.nl/?url=ecoeyesvillage.com/brand_assets/eco%20eyes%20website%20photos/Environment%20Photos/turtle%201.jpg&w=1280&output=webp"
+       srcset="https://wsrv.nl/?url=ecoeyesvillage.com/brand_assets/eco%20eyes%20website%20photos/Environment%20Photos/turtle%201.jpg&w=640&output=webp 640w,
+               https://wsrv.nl/?url=ecoeyesvillage.com/brand_assets/eco%20eyes%20website%20photos/Environment%20Photos/turtle%201.jpg&w=960&output=webp 960w,
+               https://wsrv.nl/?url=ecoeyesvillage.com/brand_assets/eco%20eyes%20website%20photos/Environment%20Photos/turtle%201.jpg&w=1280&output=webp 1280w,
+               https://wsrv.nl/?url=ecoeyesvillage.com/brand_assets/eco%20eyes%20website%20photos/Environment%20Photos/turtle%201.jpg&w=1920&output=webp 1920w"
+       sizes="100vw"
+       alt="Nakhon Nayok, Thailand"
+       class="absolute inset-0 w-full h-full object-cover"
+       fetchpriority="high"
+       decoding="async">
   <div class="absolute inset-0 pointer-events-none" style="background:linear-gradient(180deg, rgba(28,25,21,0.42) 0%, rgba(28,25,21,0.08) 38%, rgba(28,25,21,0.18) 62%, rgba(28,25,21,0.62) 100%)"></div>
   <div class="absolute inset-0 pointer-events-none" style="background:linear-gradient(180deg, transparent 70%, rgba(28,25,21,0.35) 100%);mix-blend-mode:multiply"></div>
   <div class="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
@@ -567,6 +582,27 @@ function bwGo(){if(!window._bwCi||!window._bwCo){alert('Please select check-in a
       <a href="contact.html" class="btn-outline-cream"
          data-en="Get Exact Directions" data-th="รับเส้นทางที่แน่นอน" data-zh="获取精确路线">Get Exact Directions</a>
     </div>
+  </div>
+</section>
+
+
+<!-- BOOK YOUR STAY CTA -->
+<section class="py-24 bg-dark text-center">
+  <div class="max-w-2xl mx-auto px-6 reveal">
+    <p class="font-sans text-gold text-[0.62rem] tracking-widest uppercase mb-6"
+       data-en="Ready to Visit?" data-th="พร้อมมาเยี่ยมชม?" data-zh="准备好来访了吗?">Ready to Visit?</p>
+    <h2 class="font-display text-white font-light mb-4" style="font-size:clamp(2.2rem,4vw,3.5rem)">
+      <span data-en="Book Your" data-th="จอง" data-zh="预订您的">Book Your</span> <em data-en="Stay" data-th="ที่พัก" data-zh="住宿">Stay</em>
+    </h2>
+    <span class="sep sep-center" style="background:#967138;margin-bottom:1.6rem"></span>
+    <p class="font-sans text-white/45 text-[0.875rem] leading-[1.85] mb-3"
+       data-en="Stay in one of 10 lakeside domes in Nakhon Nayok. Real-time availability, instant confirmation, best rate guaranteed."
+       data-th="พักในโดมริมทะเลสาบ 10 หลังในนครนายก ห้องว่างแบบเรียลไทม์ ยืนยันทันที ราคาดีที่สุด"
+       data-zh="入住那空那育的10座湖畔穹顶之一。实时房况，即时确认，最优价格保证。">Stay in one of 10 lakeside domes in Nakhon Nayok. Real-time availability, instant confirmation, best rate guaranteed.</p>
+    <p class="font-sans text-gold text-[0.78rem] tracking-wide mb-10"
+       data-en="from ฿2,700 / night" data-th="เริ่มต้น ฿2,700 / คืน" data-zh="低至 ฿2,700 / 晚">from ฿2,700 / night</p>
+    <a href="booking.html" class="btn-solid-gold"
+       data-en="Book Your Stay" data-th="จองที่พัก" data-zh="立即预订">Book Your Stay</a>
   </div>
 </section>
 

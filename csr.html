@@ -5,19 +5,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Conservation &amp; CSR — Eco Eyes Village</title>
   <meta name="description" content="Eco Eyes Village conservation mission — reforestation, community education, and sustainable development in Nakhon Nayok, Thailand." />
+
+  <!-- Open Graph / Twitter Card / Canonical -->
+  <meta property="og:type"        content="website" />
+  <meta property="og:site_name"   content="Eco Eyes Village" />
+  <meta property="og:title"       content="Conservation & CSR — Eco Eyes Village" />
+  <meta property="og:description" content="Reforestation, community education, and partnerships with schools for the visually impaired. The mission behind Eco Eyes Village." />
+  <meta property="og:image"       content="https://eco-eyes-bucket.s3.ap-southeast-1.amazonaws.com/eco_eyes_photo/9.jpeg" />
+  <meta property="og:url"         content="https://ecoeyesvillage.com/csr.html" />
+  <meta name="twitter:card"        content="summary_large_image" />
+  <meta name="twitter:title"       content="Conservation & CSR — Eco Eyes Village" />
+  <meta name="twitter:description" content="Reforestation, community education, and partnerships with schools for the visually impaired." />
+  <meta name="twitter:image"       content="https://eco-eyes-bucket.s3.ap-southeast-1.amazonaws.com/eco_eyes_photo/9.jpeg" />
+  <link rel="canonical"            href="https://ecoeyesvillage.com/csr.html" />
   <link rel="icon" type="image/png" href="https://eco-eyes-bucket.s3.ap-southeast-1.amazonaws.com/icon-circle.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500;1,600&family=Jost:wght@200;300;400;500;600&display=swap" rel="stylesheet">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: { extend: {
-        colors: { cream:'#FAF7EF','cream-mid':'#F0E9D8',gold:'#967138','gold-lt':'#C4A36A',dark:'#1C1915',forest:'#2B3A20' },
-        fontFamily: { display:['"Cormorant Garamond"','serif'], sans:['Jost','sans-serif'] }
-      }}
-    }
-  </script>
+  <!-- Tailwind (self-hosted, purged) — config lives in /tailwind.config.js; rebuild with `npm run build:css` -->
+  <link rel="stylesheet" href="/tailwind.css">
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     html{scroll-behavior:smooth}
@@ -301,8 +307,18 @@ function bwGo(){if(!window._bwCi||!window._bwCo){alert('Please select check-in a
 
 <!-- HERO -->
 <section class="relative h-screen overflow-hidden">
-  <img src="brand_assets/eco%20eyes%20website%20photos/CSR%20photos/Working%20with%20organisations%201.jpg"
-       alt="Conservation at Eco Eyes Village" class="absolute inset-0 w-full h-full object-cover" style="object-position:center 40%">
+  <!-- LCP hero — responsive via wsrv.nl image proxy (WebP, multiple widths) -->
+  <img src="https://wsrv.nl/?url=ecoeyesvillage.com/brand_assets/eco%20eyes%20website%20photos/CSR%20photos/Working%20with%20organisations%201.jpg&w=1280&output=webp"
+       srcset="https://wsrv.nl/?url=ecoeyesvillage.com/brand_assets/eco%20eyes%20website%20photos/CSR%20photos/Working%20with%20organisations%201.jpg&w=640&output=webp 640w,
+               https://wsrv.nl/?url=ecoeyesvillage.com/brand_assets/eco%20eyes%20website%20photos/CSR%20photos/Working%20with%20organisations%201.jpg&w=960&output=webp 960w,
+               https://wsrv.nl/?url=ecoeyesvillage.com/brand_assets/eco%20eyes%20website%20photos/CSR%20photos/Working%20with%20organisations%201.jpg&w=1280&output=webp 1280w,
+               https://wsrv.nl/?url=ecoeyesvillage.com/brand_assets/eco%20eyes%20website%20photos/CSR%20photos/Working%20with%20organisations%201.jpg&w=1920&output=webp 1920w"
+       sizes="100vw"
+       alt="Conservation at Eco Eyes Village"
+       class="absolute inset-0 w-full h-full object-cover"
+       style="object-position:center 40%"
+       fetchpriority="high"
+       decoding="async">
   <div class="absolute inset-0 pointer-events-none" style="background:linear-gradient(180deg, rgba(28,25,21,0.42) 0%, rgba(28,25,21,0.08) 38%, rgba(28,25,21,0.18) 62%, rgba(28,25,21,0.62) 100%)"></div>
   <div class="absolute inset-0 pointer-events-none" style="background:linear-gradient(180deg, transparent 70%, rgba(28,25,21,0.35) 100%);mix-blend-mode:multiply"></div>
   <div class="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
@@ -361,7 +377,7 @@ function bwGo(){if(!window._bwCi||!window._bwCo){alert('Please select check-in a
 
 
 <!-- THE NAME — EYES & BLIND CHILDREN -->
-<section class="py-32 bg-dark overflow-hidden">
+<section id="eyes" class="py-32 bg-dark overflow-hidden">
   <div class="max-w-7xl mx-auto px-6 md:px-12">
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 md:gap-24 items-center">
       <div class="reveal order-2 lg:order-1">

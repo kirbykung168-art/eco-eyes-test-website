@@ -6,6 +6,19 @@
   <title>Eco Eyes Village — Where Nature is the Luxury</title>
   <meta name="description" content="Eco Eyes Village is a luxury eco-resort and nature conservatory in Nakhon Nayok, Thailand. Glamping, nature walks, Eco Café, and conservation in 30+ Rai of protected rainforest." />
 
+  <!-- Open Graph / Twitter Card / Canonical -->
+  <meta property="og:type"        content="website" />
+  <meta property="og:site_name"   content="Eco Eyes Village" />
+  <meta property="og:title"       content="Eco Eyes Village — Where Nature is the Luxury" />
+  <meta property="og:description" content="Luxury eco-resort and nature conservatory in Nakhon Nayok, Thailand. Glamping in 10 lakeside domes set in 30+ rai of protected rainforest." />
+  <meta property="og:image"       content="https://eco-eyes-bucket.s3.ap-southeast-1.amazonaws.com/eco_eyes_photo/9.jpeg" />
+  <meta property="og:url"         content="https://ecoeyesvillage.com/" />
+  <meta name="twitter:card"        content="summary_large_image" />
+  <meta name="twitter:title"       content="Eco Eyes Village — Where Nature is the Luxury" />
+  <meta name="twitter:description" content="Luxury eco-resort and nature conservatory in Nakhon Nayok, Thailand. Glamping in 10 lakeside domes set in 30+ rai of protected rainforest." />
+  <meta name="twitter:image"       content="https://eco-eyes-bucket.s3.ap-southeast-1.amazonaws.com/eco_eyes_photo/9.jpeg" />
+  <link rel="canonical"            href="https://ecoeyesvillage.com/" />
+
   <link rel="icon" type="image/png" href="https://eco-eyes-bucket.s3.ap-southeast-1.amazonaws.com/icon-circle.png">
   <link rel="preload" as="image" href="https://eco-eyes-bucket.s3.ap-southeast-1.amazonaws.com/eco_eyes_photo/9.jpeg">
 
@@ -13,37 +26,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500;1,600&family=Jost:wght@200;300;400;500;600&display=swap" rel="stylesheet">
 
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            cream:       '#FAF7EF',
-            'cream-mid': '#F0E9D8',
-            'cream-dk':  '#E3D8C2',
-            gold:        '#967138',
-            'gold-lt':   '#C4A36A',
-            'gold-pale': '#E8D9BE',
-            'gold-dk':   '#6B4F22',
-            dark:        '#1C1915',
-            'dark-mid':  '#2A251E',
-            forest:      '#2B3A20',
-            'forest-lt': '#3D5230',
-            moss:        '#5C6B47',
-          },
-          fontFamily: {
-            display: ['"Cormorant Garamond"', 'serif'],
-            sans:    ['Jost', 'sans-serif'],
-          },
-          letterSpacing: {
-            widest:   '0.25em',
-            widester: '0.4em',
-          },
-        }
-      }
-    }
-  </script>
+  <!-- Tailwind (self-hosted, purged) — config lives in /tailwind.config.js; rebuild with `npm run build:css` -->
+  <link rel="stylesheet" href="/tailwind.css">
 
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -127,6 +111,13 @@
 
     /* ── Hero ── */
     #hero { position: relative; height: 100vh; overflow: hidden; }
+    /* Desktop only: offset hero centered content so the eyebrow ("Nakhon Nayok · Thailand")
+       lands BELOW the sticky booking-widget bar instead of overlapping it on shorter
+       desktop viewports (1280×800, 1440×900, etc.). Mobile keeps the original centering
+       because the widget sits in a different position there. */
+    @media (min-width: 1024px) {
+      #hero-content { padding-top: 150px; padding-bottom: 30px; }
+    }
     .hero-slide {
       position: absolute; inset: 0;
       background-size: cover; background-position: center;
@@ -759,7 +750,7 @@ function bwGo(){
   <div class="absolute inset-0 pointer-events-none" style="background:linear-gradient(180deg, rgba(28,25,21,0.42) 0%, rgba(28,25,21,0.08) 38%, rgba(28,25,21,0.18) 62%, rgba(28,25,21,0.62) 100%)"></div>
   <div class="absolute inset-0 pointer-events-none" style="background:linear-gradient(180deg, transparent 70%, rgba(28,25,21,0.35) 100%);mix-blend-mode:multiply"></div>
 
-  <div class="absolute inset-0 flex flex-col items-center justify-center text-center px-6 pointer-events-none">
+  <div id="hero-content" class="absolute inset-0 flex flex-col items-center justify-center text-center px-6 pointer-events-none">
     <p class="font-sans text-white/55 text-[0.6rem] uppercase mb-9 reveal"
        style="transition-delay:0.4s;letter-spacing:0.42em" id="hero-label">Nakhon Nayok &nbsp;·&nbsp; Thailand</p>
 
@@ -782,6 +773,9 @@ function bwGo(){
       <a href="booking.html" class="btn-solid-gold" id="hero-cta1">Book Your Stay</a>
       <a href="#about"       class="btn-outline-white" id="hero-cta2">Explore</a>
     </div>
+    <p class="font-sans text-gold text-[0.6rem] tracking-[0.3em] uppercase mt-5 reveal" id="hero-price"
+       style="transition-delay:1.55s"
+       data-en="from ฿2,700 / night" data-th="เริ่มต้น ฿2,700 / คืน" data-zh="低至 ฿2,700 / 晚">from ฿2,700 / night</p>
   </div>
 
   <div class="scroll-cue">
@@ -1178,6 +1172,31 @@ function bwGo(){
       </div>
     </div>
 
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════
+     EYES STORY TEASER (deep-links into csr.html)
+═══════════════════════════════════════════ -->
+<section class="py-24 md:py-32 bg-dark">
+  <div class="max-w-3xl mx-auto px-6 md:px-12 text-center reveal">
+    <p class="font-sans text-gold text-[0.62rem] tracking-widest uppercase mb-5"
+       data-en="Why 'Eyes'?" data-th="ทำไม 'อายส์'?" data-zh="为什么叫'眼睛'?">Why 'Eyes'?</p>
+    <h2 class="font-display text-white font-light mb-4" style="font-size:clamp(2rem,3.5vw,3rem)">
+      <span data-en="A Forest for" data-th="ป่าสำหรับ" data-zh="一片森林，献给">A Forest for</span> <em data-en="Every Sense" data-th="ทุกประสาทสัมผัส" data-zh="每一种感官">Every Sense</em>
+    </h2>
+    <span class="sep sep-center" style="background:#C4A36A"></span>
+    <p class="font-sans text-white/65 text-[0.95rem] leading-[1.9] mt-6 mb-3"
+       data-en="The 'Eyes' in our name began with blind and visually-impaired children — a commitment to a forest that everyone can experience, not just everyone who can see."
+       data-th="'อายส์' ในชื่อของเราเริ่มต้นจากเด็กตาบอดและผู้พิการทางสายตา — ความมุ่งมั่นที่จะทำให้ป่าเป็นที่ทุกคนสัมผัสได้ ไม่ใช่เพียงผู้ที่มองเห็น"
+       data-zh="我们名字中的'眼睛'，始于盲童和视障儿童——致力于让森林成为每一个人都能体验的地方，而不仅仅是看得见的人。">The 'Eyes' in our name began with blind and visually-impaired children — a commitment to a forest that everyone can experience, not just everyone who can see.</p>
+    <p class="font-sans text-white/45 text-[0.875rem] leading-[1.85] mb-8"
+       data-en="Multi-sensory trails, tactile classrooms, and partnerships with schools for the visually impaired remain at the heart of what we do."
+       data-th="เส้นทางป่าแบบหลายประสาทสัมผัส ห้องเรียนเชิงสัมผัส และความร่วมมือกับโรงเรียนสำหรับผู้พิการทางสายตา ยังคงเป็นหัวใจของสิ่งที่เราทำ"
+       data-zh="多感官森林步道、触觉教室，以及与视障学校的合作，至今仍是我们工作的核心。">Multi-sensory trails, tactile classrooms, and partnerships with schools for the visually impaired remain at the heart of what we do.</p>
+    <a href="csr.html#eyes" class="btn-outline-cream"
+       data-en="Read the Full Story" data-th="อ่านเรื่องราวเต็ม" data-zh="阅读完整故事">Read the Full Story</a>
   </div>
 </section>
 

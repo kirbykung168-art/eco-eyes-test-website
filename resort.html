@@ -5,19 +5,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Resort Stay — Eco Eyes Village</title>
   <meta name="description" content="Book directly with Eco Eyes Village — luxury glamping and eco-resort accommodation in Nakhon Nayok, Thailand. Best rate guaranteed, no booking fees." />
+
+  <!-- Open Graph / Twitter Card / Canonical -->
+  <meta property="og:type"        content="website" />
+  <meta property="og:site_name"   content="Eco Eyes Village" />
+  <meta property="og:title"       content="Resort Stay — Eco Eyes Village" />
+  <meta property="og:description" content="One signature dome, 10 named units — each lakeside. Luxury glamping in 30+ rai of protected rainforest. From ฿2,700/night." />
+  <meta property="og:image"       content="https://eco-eyes-bucket.s3.ap-southeast-1.amazonaws.com/eco_eyes_photo/9.jpeg" />
+  <meta property="og:url"         content="https://ecoeyesvillage.com/resort.html" />
+  <meta name="twitter:card"        content="summary_large_image" />
+  <meta name="twitter:title"       content="Resort Stay — Eco Eyes Village" />
+  <meta name="twitter:description" content="One signature dome, 10 named units — each lakeside. From ฿2,700/night." />
+  <meta name="twitter:image"       content="https://eco-eyes-bucket.s3.ap-southeast-1.amazonaws.com/eco_eyes_photo/9.jpeg" />
+  <link rel="canonical"            href="https://ecoeyesvillage.com/resort.html" />
   <link rel="icon" type="image/png" href="https://eco-eyes-bucket.s3.ap-southeast-1.amazonaws.com/icon-circle.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500;1,600&family=Jost:wght@200;300;400;500;600&display=swap" rel="stylesheet">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: { extend: {
-        colors: { cream:'#FAF7EF','cream-mid':'#F0E9D8',gold:'#967138','gold-lt':'#C4A36A',dark:'#1C1915',forest:'#2B3A20' },
-        fontFamily: { display:['"Cormorant Garamond"','serif'], sans:['Jost','sans-serif'] }
-      }}
-    }
-  </script>
+  <!-- Tailwind (self-hosted, purged) — config lives in /tailwind.config.js; rebuild with `npm run build:css` -->
+  <link rel="stylesheet" href="/tailwind.css">
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     html{scroll-behavior:smooth}
@@ -311,8 +317,17 @@ function bwGo(){if(!window._bwCi||!window._bwCo){alert('Please select check-in a
 
 <!-- HERO -->
 <section class="relative h-screen overflow-hidden">
-  <img src="brand_assets/eco%20eyes%20website%20photos/Room%20Photos/630525041_1240272291531875_7916248610315048686_n.jpg"
-       alt="Eco Eyes Village Resort" class="absolute inset-0 w-full h-full object-cover">
+  <!-- LCP hero — responsive via wsrv.nl image proxy (WebP, multiple widths). Specifically targets the "room hero ~768KB on mobile" issue. -->
+  <img src="https://wsrv.nl/?url=ecoeyesvillage.com/brand_assets/eco%20eyes%20website%20photos/Room%20Photos/630525041_1240272291531875_7916248610315048686_n.jpg&w=1280&output=webp"
+       srcset="https://wsrv.nl/?url=ecoeyesvillage.com/brand_assets/eco%20eyes%20website%20photos/Room%20Photos/630525041_1240272291531875_7916248610315048686_n.jpg&w=640&output=webp 640w,
+               https://wsrv.nl/?url=ecoeyesvillage.com/brand_assets/eco%20eyes%20website%20photos/Room%20Photos/630525041_1240272291531875_7916248610315048686_n.jpg&w=960&output=webp 960w,
+               https://wsrv.nl/?url=ecoeyesvillage.com/brand_assets/eco%20eyes%20website%20photos/Room%20Photos/630525041_1240272291531875_7916248610315048686_n.jpg&w=1280&output=webp 1280w,
+               https://wsrv.nl/?url=ecoeyesvillage.com/brand_assets/eco%20eyes%20website%20photos/Room%20Photos/630525041_1240272291531875_7916248610315048686_n.jpg&w=1920&output=webp 1920w"
+       sizes="100vw"
+       alt="Eco Eyes Village Resort"
+       class="absolute inset-0 w-full h-full object-cover"
+       fetchpriority="high"
+       decoding="async">
   <div class="absolute inset-0 pointer-events-none" style="background:linear-gradient(180deg, rgba(28,25,21,0.42) 0%, rgba(28,25,21,0.08) 38%, rgba(28,25,21,0.18) 62%, rgba(28,25,21,0.62) 100%)"></div>
   <div class="absolute inset-0 pointer-events-none" style="background:linear-gradient(180deg, transparent 70%, rgba(28,25,21,0.35) 100%);mix-blend-mode:multiply"></div>
   <div class="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
@@ -327,6 +342,9 @@ function bwGo(){if(!window._bwCi||!window._bwCo){alert('Please select check-in a
     <div class="flex gap-4 mt-10 reveal pointer-events-auto" style="transition-delay:1.1s">
       <a href="booking.html" class="btn-solid-gold" data-en="Book Your Stay" data-th="จองที่พักของคุณ" data-zh="预订您的住宿">Book Your Stay</a>
     </div>
+    <p class="font-sans text-gold text-[0.6rem] tracking-[0.3em] uppercase mt-5 reveal"
+       style="transition-delay:1.3s"
+       data-en="from ฿2,700 / night" data-th="เริ่มต้น ฿2,700 / คืน" data-zh="低至 ฿2,700 / 晚">from ฿2,700 / night</p>
   </div>
 </section>
 
@@ -389,12 +407,12 @@ function bwGo(){if(!window._bwCi||!window._bwCo){alert('Please select check-in a
       </h2>
       <span class="sep sep-center"></span>
       <p class="font-sans text-dark/50 text-[0.875rem] leading-[1.85] mt-4 mx-auto" style="max-width:38rem"
-         data-en="A single, extraordinary room type. The Lakeside View Dome sits at the edge of the lake, with direct access to forest trails and the resort garden — where the line between inside and nature disappears entirely."
-         data-th="ที่พักประเภทเดียวที่พิเศษสุด โดมวิวทะเลสาบตั้งอยู่ริมทะเลสาบ พร้อมทางเข้าสู่เส้นทางป่าและสวนรีสอร์ทโดยตรง — ที่ซึ่งเส้นแบ่งระหว่างภายในและธรรมชาติหายไปโดยสิ้นเชิง"
-         data-zh="独一无二的住宿类型。湖景穹顶坐落于湖畔，可直达森林步道和度假村花园——室内与自然之间的界限在此完全消融。">A single, extraordinary room type. The Lakeside View Dome sits at the edge of the lake, with direct access to forest trails and the resort garden — where the line between inside and nature disappears entirely.</p>
+         data-en="One signature dome — 10 named units, each lakeside. The Lakeside View Dome sits at the edge of the lake, with direct access to forest trails and the resort garden — where the line between inside and nature disappears entirely."
+         data-th="โดมหนึ่งสไตล์ — 10 หลังตั้งชื่อเฉพาะ ทุกหลังริมทะเลสาบ โดมวิวทะเลสาบตั้งอยู่ริมน้ำ พร้อมทางเข้าสู่เส้นทางป่าและสวนรีสอร์ทโดยตรง — ที่ซึ่งเส้นแบ่งระหว่างภายในและธรรมชาติหายไปโดยสิ้นเชิง"
+         data-zh="同一款标志性穹顶 — 共10座命名客房，全部临湖。湖景穹顶坐落于湖畔，可直达森林步道和度假村花园——室内与自然之间的界限在此完全消融。">One signature dome — 10 named units, each lakeside. The Lakeside View Dome sits at the edge of the lake, with direct access to forest trails and the resort garden — where the line between inside and nature disappears entirely.</p>
     </div>
 
-    <!-- Single room type — Lakeside View Dome -->
+    <!-- Lakeside View Dome — one signature design, 10 named units -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
       <div class="room-card reveal" style="grid-row: span 2">
         <div class="overflow-hidden" style="height:520px">

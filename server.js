@@ -41,6 +41,11 @@ app.post('/api/stripe-webhook', express.raw({ type: 'application/json' }), handl
 
 // ── JSON + static middleware ──────────────────────────────────
 app.use(express.json());
+
+// Canonical home URL — 301 redirect /index.html → / to consolidate the home
+// page on a single URL (avoids duplicate-content / split analytics).
+app.get('/index.html', (req, res) => res.redirect(301, '/'));
+
 app.use(express.static(__dirname));   // serves index.html, booking.html etc.
 
 // ── Config ───────────────────────────────────────────────────
