@@ -46,6 +46,12 @@ app.use(express.json());
 // page on a single URL (avoids duplicate-content / split analytics).
 app.get('/index.html', (req, res) => res.redirect(301, '/'));
 
+// Browsers auto-request /favicon.ico regardless of <link rel="icon">.
+// The brand favicon lives at the S3 bucket, so redirect any auto-request
+// there to avoid a noisy 404 in the network panel.
+app.get('/favicon.ico', (req, res) =>
+  res.redirect(302, 'https://eco-eyes-bucket.s3.ap-southeast-1.amazonaws.com/icon-circle.png'));
+
 app.use(express.static(__dirname));   // serves index.html, booking.html etc.
 
 // ── Config ───────────────────────────────────────────────────
