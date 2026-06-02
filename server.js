@@ -233,7 +233,7 @@ async function isListingAvailable(listingId, checkIn, checkOut) {
   try {
     const wideStart = new Date(reqIn.getTime() - 90 * 86400000).toISOString().split('T')[0];
     const data = await hostexFetch(
-      `/reservations?property_id=${listingId}&start_date=${wideStart}&end_date=${checkOut}&limit=500`
+      `/reservations?property_id=${listingId}&start_date=${wideStart}&end_date=${checkOut}&limit=100`
     );
     const list = extractList(data);
     console.log(`  Reservations for listing ${listingId}: ${list.length} found`);
@@ -349,7 +349,7 @@ app.get('/api/availability', async (req, res) => {
     let blockedRanges = [];
     try {
       const data = await hostexFetch(
-        `/reservations?property_id=${propertyId}&start_date=${start}&end_date=${end}&limit=500`
+        `/reservations?property_id=${propertyId}&start_date=${start}&end_date=${end}&limit=100`
       );
       const list = extractList(data);
       const CANCELLED = ['cancelled','canceled','rejected','declined','expired','no_show','noshow'];
@@ -714,7 +714,7 @@ app.get('/api/blocked-dates', async (req, res) => {
     const CANCELLED = ['cancelled','canceled','rejected','declined','expired','no_show','noshow'];
     try {
       const data = await hostexFetch(
-        `/reservations?property_id=${room.hostexId}&start_date=${today}&end_date=${future}&limit=500`
+        `/reservations?property_id=${room.hostexId}&start_date=${today}&end_date=${future}&limit=100`
       );
       extractList(data)
         .filter(r => !CANCELLED.includes((r.status || '').toLowerCase().replace(/ /g, '_')))
