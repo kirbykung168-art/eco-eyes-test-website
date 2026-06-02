@@ -356,10 +356,22 @@
     #bw-cal-done:hover:not(:disabled) { background:#2A251E; }
     #bw-cal-done:disabled { background:rgba(28,25,21,0.14); color:rgba(28,25,21,0.35); cursor:not-allowed; }
     @media(max-width:767px){
-      #bw-inner { flex-wrap:wrap; gap:0.65rem; padding:0.75rem 1rem; }
-      .bw-field, .bw-select-wrap { min-width:calc(50% - 1rem); padding:0 0.35rem; flex:none; }
+      /* B2: Slim the homepage availability bar on mobile so the hero photograph
+         is the lead element. We collapse the four fields into a single tappable
+         row showing dates + a primary CTA; tapping anywhere on the bar opens
+         the calendar so individual fields don't need full padding. */
+      #bw-inner { flex-wrap:nowrap; gap:0.5rem; padding:0.55rem 0.85rem; align-items:center; }
       .bw-vsep { display:none; }
-      #bw-bar { max-height:130px; }
+      .bw-field, .bw-select-wrap { min-width:0; padding:0 0.35rem; flex:1; }
+      .bw-lbl { font-size:0.46rem; letter-spacing:0.16em; margin-bottom:0.15rem; }
+      .bw-date-val, .bw-select { font-size:0.72rem; padding:0.18rem 0; }
+      .bw-select { padding-right:0.9rem; background-position:right 0 center; background-size:8px 8px; }
+      /* Hide Guests and Rooms selectors — guests can refine these on /booking. */
+      #bw-guests-wrap, #bw-rooms-wrap { display:none; }
+      .bw-cta { padding:0.55rem 0.85rem; font-size:0.55rem; letter-spacing:0.18em; }
+      .bw-nights { font-size:0.5rem; padding:0.18rem 0.45rem; }
+      .bw-hide { display:none; }
+      #bw-bar { max-height:64px; }
       #bw-cal-popup { width:min(360px,96vw); }
     }
   </style>
@@ -425,7 +437,7 @@
       <div class="bw-vsep"></div>
 
       <!-- Guests -->
-      <div class="bw-select-wrap">
+      <div class="bw-select-wrap" id="bw-guests-wrap">
         <span class="bw-lbl" data-en="Guests" data-th="จำนวนผู้เข้าพัก" data-zh="客人">Guests</span>
         <select id="bw-guests" class="bw-select">
           <option value="1">1 guest</option>
@@ -437,7 +449,7 @@
       <div class="bw-vsep"></div>
 
       <!-- Rooms -->
-      <div class="bw-select-wrap">
+      <div class="bw-select-wrap" id="bw-rooms-wrap">
         <span class="bw-lbl" data-en="Rooms" data-th="ห้อง" data-zh="房间">Rooms</span>
         <select id="bw-rooms" class="bw-select">
           <option value="1" selected>1 room</option>
@@ -773,9 +785,6 @@ function bwGo(){
       <a href="booking.html" class="btn-solid-gold" id="hero-cta1">Book Your Stay</a>
       <a href="#about"       class="btn-outline-white" id="hero-cta2">Explore</a>
     </div>
-    <p class="font-sans text-gold-lt text-[0.78rem] tracking-[0.28em] uppercase mt-6 reveal font-medium" id="hero-price"
-       style="transition-delay:1.55s;text-shadow:0 2px 12px rgba(0,0,0,0.7),0 0 24px rgba(0,0,0,0.4);"
-       data-en="from ฿2,700 / night" data-th="เริ่มต้น ฿2,700 / คืน" data-zh="低至 ฿2,700 / 晚">from ฿2,700 / night</p>
   </div>
 
   <div class="scroll-cue">
@@ -796,6 +805,8 @@ function bwGo(){
       <h2 class="font-display text-white font-light" style="font-size:clamp(2rem,3.5vw,3rem)">
         <span id="book-pre">Book Your</span> <em id="book-em">Stay</em>
       </h2>
+      <p class="font-sans text-gold-lt text-[0.85rem] tracking-[0.2em] uppercase mt-4 font-medium" id="book-price"
+         data-en="from ฿2,700 / night" data-th="เริ่มต้น ฿2,700 / คืน" data-zh="低至 ฿2,700 / 晚">from ฿2,700 / night</p>
     </div>
 
     <!-- Direct booking — featured primary option -->

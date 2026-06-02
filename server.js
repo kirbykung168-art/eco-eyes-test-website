@@ -644,7 +644,165 @@ async function handleStripeWebhook(req, res) {
     }
   }
 
+  // ── B9: Abandoned-booking recovery ───────────────────────────────────
+  // Stripe fires `checkout.session.expired` once the session timeout passes
+  // (24h by default) without a successful payment. We send a one-shot recovery
+  // email with a deep-link back to /booking.html that pre-fills the same
+  // dates + guests so the user can resume in two taps.
+  // Stripe is the source of truth — no extra "pending bookings" store is
+  // needed; the metadata we set at session creation is still in the event.
+  if (event.type === 'checkout.session.expired') {
+    const session = event.data.object;
+    const meta    = session.metadata || {};
+    if (!meta.email) {
+      console.log('⏰ Session expired, no email in metadata — skipping recovery');
+    } else {
+      console.log(`⏰ Stripe session expired: ${meta.referenceId} — emailing ${meta.email}`);
+      try {
+        await sendRecoveryEmail({
+          name:     meta.name || '',
+          email:    meta.email,
+          checkIn:  meta.checkIn,
+          checkOut: meta.checkOut,
+          nights:   parseInt(meta.nights, 10),
+          guests:   meta.guests,
+          roomName: meta.roomName,
+          total:    parseInt(meta.total, 10),
+          lang:     meta.lang || 'en',
+        });
+      } catch (err) {
+        console.error('Recovery email failed:', err.message);
+      }
+    }
+  }
+
   res.json({ received: true });
+}
+
+
+// ================================================================
+// EMAIL: B9 — Abandoned-booking recovery
+// Sent when a Stripe Checkout session expires without payment.
+// One-shot email with a deep-link that pre-fills dates + guests so the
+// user can resume the booking without re-entering anything.
+// ================================================================
+async function sendRecoveryEmail({ name, email, checkIn, checkOut,
+    nights, guests, roomName, total, lang }) {
+  const key = process.env.RESEND_API_KEY;
+  if (!key || key === 'YOUR_RESEND_API_KEY_HERE') {
+    console.log('⚠️  Resend API key not set — skipping recovery email');
+    return;
+  }
+
+  const isThai = lang === 'th';
+  const isZh   = lang === 'zh';
+
+  const subject = isThai
+    ? 'การจองที่ Eco Eyes Village ยังรออยู่ — มาทำให้เสร็จกันต่อนะ'
+    : isZh
+    ? '您在 Eco Eyes Village 的预订仍在等您 — 来完成它吧'
+    : 'Your Eco Eyes stay is still waiting — finish your booking';
+
+  // Deep-link to /booking.html with the same dates/guests pre-filled. The page
+  // already reads these query params at init and runs Check Availability for
+  // the user automatically — so it's literally one click to resume.
+  const params = new URLSearchParams();
+  if (checkIn)  params.set('checkIn',  checkIn);
+  if (checkOut) params.set('checkOut', checkOut);
+  if (guests)   params.set('guests',   String(guests));
+  const resumeUrl = `${SITE_URL}/booking.html?${params.toString()}`;
+
+  const html = buildRecoveryEmailHtml({ name, checkIn, checkOut, nights,
+    guests, roomName, total, isThai, isZh, resumeUrl });
+
+  const response = await fetch('https://api.resend.com/emails', {
+    method:  'POST',
+    headers: {
+      'Authorization': `Bearer ${key}`,
+      'Content-Type':  'application/json',
+    },
+    body: JSON.stringify({
+      from:    `Eco Eyes Village <${process.env.FROM_EMAIL || 'bookings@ecoeyesvillage.com'}>`,
+      to:      [email],
+      subject,
+      html,
+    }),
+  });
+
+  if (!response.ok) {
+    const err = await response.text();
+    console.error('Recovery Resend error:', err);
+  } else {
+    console.log(`📧 Recovery email sent to ${email}`);
+  }
+}
+
+function buildRecoveryEmailHtml({ name, checkIn, checkOut, nights,
+    guests, roomName, total, isThai, isZh, resumeUrl }) {
+  const fmt = d => d ? new Date(d + 'T12:00:00').toLocaleDateString(
+    isThai ? 'th-TH' : isZh ? 'zh-CN' : 'en-GB',
+    { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }
+  ) : '';
+
+  const T = {
+    eyebrow:   isThai ? 'การจองยังไม่เสร็จ' : isZh ? '预订未完成' : 'Booking unfinished',
+    title:     isThai ? 'มาทำให้เสร็จกันต่อ' : isZh ? '继续完成预订' : 'Pick up where you left off',
+    dear:      isThai ? 'เรียนคุณ' : isZh ? '亲爱的' : 'Hi',
+    body:      isThai
+      ? 'คุณเริ่มจองที่ Eco Eyes Village ไว้แต่ยังไม่ได้ชำระเงิน เราเก็บโดมและวันที่ของคุณไว้ คลิกด้านล่างเพื่อกลับไปจองต่อ — ใช้เวลาเพียงไม่กี่วินาที'
+      : isZh
+      ? '您已经开始预订 Eco Eyes Village，但尚未完成付款。我们已为您保留所选球顶屋和日期，点击下方按钮即可继续。'
+      : 'You started a booking at Eco Eyes Village but didn\'t complete payment. We\'ve saved your dome and dates — finishing only takes a few seconds.',
+    details:   isThai ? 'การจองของคุณ' : isZh ? '您的预订' : 'Your booking',
+    room:      isThai ? 'ห้องพัก'      : isZh ? '球顶屋'  : 'Dome',
+    checkin:   isThai ? 'เช็คอิน'      : isZh ? '入住'   : 'Check-in',
+    checkout:  isThai ? 'เช็คเอาต์'    : isZh ? '退房'   : 'Check-out',
+    nightsLbl: isThai ? 'จำนวนคืน'     : isZh ? '晚数'   : 'Nights',
+    guestsLbl: isThai ? 'ผู้เข้าพัก'   : isZh ? '客人'   : 'Guests',
+    totalLbl:  isThai ? 'ยอดรวม'      : isZh ? '总计'   : 'Total',
+    cta:       isThai ? 'จองต่อให้เสร็จ' : isZh ? '继续预订' : 'Finish my booking',
+    help:      isThai ? 'คำถาม? ติดต่อเราได้ทุกวัน:' : isZh ? '有问题？我们每日恭候：' : 'Questions? Real humans, every day:',
+    bye:       isThai ? 'แล้วพบกันที่ Eco Eyes' : isZh ? '期待在 Eco Eyes 见到您' : 'See you under the trees,',
+    team:      isThai ? 'ทีม Eco Eyes Village' : isZh ? 'Eco Eyes Village 团队' : 'The Eco Eyes Village team',
+  };
+
+  return `<!DOCTYPE html>
+<html><head><meta charset="utf-8"></head>
+<body style="margin:0;padding:0;background:#EDE8DE;font-family:Georgia,serif">
+  <div style="max-width:600px;margin:40px auto;background:#FAF7EF;border:1px solid #D4CEC4">
+    <div style="background:#1C1915;padding:44px 40px;text-align:center">
+      <p style="color:#C4A36A;font-family:Arial,sans-serif;font-size:9px;letter-spacing:5px;text-transform:uppercase;margin:0 0 14px">${T.eyebrow}</p>
+      <h1 style="color:#FAF7EF;font-weight:300;font-size:28px;margin:0;letter-spacing:0.5px">${T.title}</h1>
+    </div>
+    <div style="padding:40px 40px 28px">
+      <p style="color:#555;font-family:Arial,sans-serif;font-size:14px;margin:0 0 8px">${T.dear} ${name || ''},</p>
+      <p style="color:#666;font-family:Arial,sans-serif;font-size:14px;line-height:1.75;margin:0 0 26px">${T.body}</p>
+      <div style="background:#F0EBE0;padding:24px 28px;border-left:3px solid #967138;margin-bottom:30px">
+        <p style="color:#967138;font-family:Arial,sans-serif;font-size:9px;letter-spacing:4px;text-transform:uppercase;margin:0 0 16px">${T.details}</p>
+        <table style="width:100%;border-collapse:collapse;font-family:Arial,sans-serif;font-size:13px">
+          ${roomName ? `<tr><td style="padding:5px 0;color:#888;width:140px">${T.room}</td><td style="color:#333">${roomName}</td></tr>` : ''}
+          ${checkIn  ? `<tr><td style="padding:5px 0;color:#888">${T.checkin}</td><td style="color:#333">${fmt(checkIn)}</td></tr>` : ''}
+          ${checkOut ? `<tr><td style="padding:5px 0;color:#888">${T.checkout}</td><td style="color:#333">${fmt(checkOut)}</td></tr>` : ''}
+          ${nights   ? `<tr><td style="padding:5px 0;color:#888">${T.nightsLbl}</td><td style="color:#333">${nights}</td></tr>` : ''}
+          ${guests   ? `<tr><td style="padding:5px 0;color:#888">${T.guestsLbl}</td><td style="color:#333">${guests}</td></tr>` : ''}
+          ${total    ? `<tr style="border-top:1px solid #D4CEC4"><td style="padding:10px 0 4px;color:#888">${T.totalLbl}</td><td style="padding:10px 0 4px;color:#967138;font-size:20px;font-weight:700">฿${parseInt(total).toLocaleString()}</td></tr>` : ''}
+        </table>
+      </div>
+      <div style="text-align:center;margin-bottom:30px">
+        <a href="${resumeUrl}" style="display:inline-block;background:#967138;color:#FAF7EF;font-family:Arial,sans-serif;font-size:13px;letter-spacing:2px;text-transform:uppercase;padding:16px 38px;text-decoration:none;font-weight:600">${T.cta}</a>
+      </div>
+      <p style="color:#666;font-family:Arial,sans-serif;font-size:13px;line-height:1.7;margin:0 0 4px">${T.help}</p>
+      <p style="color:#555;font-family:Arial,sans-serif;font-size:13px;line-height:1.9;margin:0 0 22px">
+        📞 +66 92 610 0560<br>✉️ ecoeyesvillagenaec@gmail.com
+      </p>
+      <p style="color:#888;font-family:Arial,sans-serif;font-size:13px;margin:18px 0 4px">${T.bye}</p>
+      <p style="color:#888;font-family:Arial,sans-serif;font-size:13px;margin:0">${T.team}</p>
+    </div>
+    <div style="background:#1C1915;padding:20px 40px;text-align:center">
+      <p style="color:#555;font-family:Arial,sans-serif;font-size:11px;margin:0">188 Moo 9, Sarika, Nakhon Nayok 26000, Thailand</p>
+    </div>
+  </div>
+</body></html>`;
 }
 
 

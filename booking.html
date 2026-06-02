@@ -97,20 +97,31 @@
       display: none; position: absolute; top: calc(100% + 2px); left: 50%;
       transform: translateX(-50%); z-index: 1000;
       background: #fff; border: 1px solid rgba(0,0,0,0.12);
-      box-shadow: 0 16px 48px rgba(0,0,0,0.2); width: 390px;
+      box-shadow: 0 16px 48px rgba(0,0,0,0.2);
+      width: min(390px, calc(100vw - 24px));
       font-family: 'Jost', sans-serif;
     }
     #cal-popup.open { display: block; }
     #cal-header {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 1.1rem 1.5rem 0.9rem; border-bottom: 1px solid rgba(0,0,0,0.07);
+      padding: 0.7rem 1.1rem 0.65rem; border-bottom: 1px solid rgba(0,0,0,0.07);
     }
+    /* B1: 44×44 minimum tap target so the month arrows are reliably tappable on
+       mobile. Whole button is the hit area (not just the glyph) and the parent
+       header padding shrinks to keep the popup compact. */
     .cal-nav-btn {
       background: none; border: none; cursor: pointer; font-size: 1.4rem;
-      color: #1C1915; padding: 0.1rem 0.45rem; line-height: 1; opacity: 0.45;
-      transition: opacity 0.2s; font-family: 'Jost', sans-serif;
+      color: #1C1915; line-height: 1; opacity: 0.55;
+      min-width: 44px; min-height: 44px;
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 0; margin: 0;
+      transition: opacity 0.2s, background 0.2s; font-family: 'Jost', sans-serif;
+      -webkit-tap-highlight-color: rgba(196,163,106,0.18);
+      touch-action: manipulation;
+      position: relative; z-index: 2;
     }
-    .cal-nav-btn:hover { opacity: 1; }
+    .cal-nav-btn:hover, .cal-nav-btn:active { opacity: 1; background: rgba(28,25,21,0.05); }
+    .cal-nav-btn:disabled { opacity: 0.18; cursor: not-allowed; }
     #cal-month-label {
       font-size: 0.78rem; letter-spacing: 0.15em; text-transform: uppercase;
       color: #1C1915; font-weight: 500;
@@ -148,6 +159,35 @@
     .dot-avail      { background: #5cb85c; }
     .dot-partial    { background: #e6a817; }
     .dot-full-booked{ background: rgba(28,25,21,0.18); }
+    /* B2: Non-color cue for fully-booked days — strikethrough so users with
+       red/green deficiency or low color sensitivity can still tell. */
+    .cal-day.cal-fully-blocked .cal-day-num {
+      text-decoration: line-through;
+      text-decoration-thickness: 1px;
+      text-decoration-color: rgba(28,25,21,0.4);
+    }
+    /* B2: Visible legend so the color dots are interpretable without guessing. */
+    #cal-legend {
+      display: flex; flex-wrap: wrap; gap: 0.6rem 1.1rem;
+      padding: 0.55rem 1.5rem 0.7rem; border-top: 1px solid rgba(0,0,0,0.05);
+      font-family: 'Jost', sans-serif; font-size: 0.6rem; letter-spacing: 0.05em;
+      color: rgba(28,25,21,0.6); justify-content: center;
+    }
+    #cal-legend > span { display: inline-flex; align-items: center; gap: 0.4rem; white-space: nowrap; }
+    .cal-leg-sw {
+      width: 11px; height: 11px; border-radius: 2px; flex-shrink: 0;
+      border: 1px solid rgba(28,25,21,0.12);
+    }
+    .cal-leg-sw.avail   { background: #5cb85c; border-color: rgba(0,0,0,0.08); }
+    .cal-leg-sw.partial { background: #e6a817; border-color: rgba(0,0,0,0.08); }
+    .cal-leg-sw.selected{ background: #1C1915; }
+    .cal-leg-sw.booked  {
+      background: rgba(28,25,21,0.18); position: relative;
+    }
+    .cal-leg-sw.booked::after {
+      content: ''; position: absolute; left: 1px; right: 1px; top: 50%;
+      height: 1px; background: rgba(28,25,21,0.55); transform: translateY(-0.5px);
+    }
     #cal-footer {
       display: flex; align-items: center; justify-content: space-between;
       padding: 0.85rem 1.5rem; border-top: 1px solid rgba(0,0,0,0.07); background: #f8f8f8;
@@ -211,6 +251,101 @@
     textarea.form-input { resize: vertical; min-height: 100px; }
     select.form-input { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23967138' stroke-width='1.5' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 1rem center; padding-right: 2.5rem; }
     .form-label { display: block; font-family: 'Jost', sans-serif; font-size: 0.55rem; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(28,25,21,0.45); margin-bottom: 0.55rem; }
+
+    /* ── B6: Room type intro (single shared gallery + headline + amenities) ── */
+    .room-intro { display: grid; grid-template-columns: 1.15fr 1fr; gap: 2.5rem; align-items: start; }
+    @media (max-width: 880px) { .room-intro { grid-template-columns: 1fr; gap: 1.5rem; } }
+    .gallery { border-radius: 6px; overflow: hidden; box-shadow: 0 1px 2px rgba(28,25,21,.04), 0 14px 38px -14px rgba(28,25,21,.18); background: #E3D8C2; }
+    .gmain { width: 100%; aspect-ratio: 16/10; object-fit: cover; display: block; background: #E3D8C2; transition: opacity .4s; }
+    .gthumbs { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-top: 6px; }
+    .gthumbs img { width: 100%; aspect-ratio: 1/1; object-fit: cover; cursor: pointer; opacity: 0.62; transition: opacity .2s, outline-color .2s; outline: 2px solid transparent; outline-offset: -2px; background: #E3D8C2; border-radius: 3px; }
+    .gthumbs img:hover, .gthumbs img.active { opacity: 1; outline-color: #C4A36A; }
+    .intro-head { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 0.6rem; margin-bottom: 0.6rem; }
+    .intro-name { font-family: 'Cormorant Garamond', serif; font-size: clamp(1.7rem, 2.6vw, 2.1rem); font-weight: 300; color: #1C1915; line-height: 1.1; letter-spacing: -0.01em; }
+    .intro-price-num { font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; font-weight: 500; color: #1C1915; }
+    .intro-price-unit { display: block; color: rgba(28,25,21,0.45); font-family: 'Jost', sans-serif; font-size: 0.6rem; letter-spacing: 0.12em; text-transform: uppercase; }
+    .intro-sub { color: rgba(28,25,21,0.55); font-size: 0.86rem; line-height: 1.65; }
+    .intro-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 1rem; }
+    .intro-chip { display: inline-flex; align-items: center; gap: 0.35rem; background: #F5F0E6; border: 1px solid rgba(150,113,56,0.18); padding: 0.32rem 0.7rem; border-radius: 999px; font-family: 'Jost', sans-serif; font-size: 0.62rem; color: rgba(28,25,21,0.6); letter-spacing: 0.04em; }
+
+    /* ── B6b: Dome map (interactive SVG) ── */
+    .step-card { background: #FFFDF9; border: 1px solid rgba(150,113,56,0.18); border-radius: 6px; padding: 1.6rem 1.8rem; }
+    .step-label { font-family: 'Jost', sans-serif; font-size: 0.55rem; letter-spacing: 0.22em; text-transform: uppercase; color: #967138; margin-bottom: 0.4rem; }
+    .step-h { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; font-weight: 400; color: #1C1915; line-height: 1.15; margin-bottom: 0.5rem; }
+    .step-hint { font-size: 0.84rem; color: rgba(28,25,21,0.55); line-height: 1.65; margin-bottom: 0.9rem; }
+    .scarcity-pill { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.3rem 0.8rem; border-radius: 999px; font-family: 'Jost', sans-serif; font-size: 0.62rem; letter-spacing: 0.12em; text-transform: uppercase; background: rgba(168,72,59,0.08); color: #9B3020; border: 1px solid rgba(168,72,59,0.18); margin-left: 0.4rem; }
+    .scarcity-pill.plenty { background: rgba(43,58,32,0.08); color: #2B3A20; border-color: rgba(43,58,32,0.18); }
+    .scarcity-pill.none { background: rgba(28,25,21,0.06); color: rgba(28,25,21,0.5); border-color: rgba(28,25,21,0.12); }
+    .map-legend { display: flex; flex-wrap: wrap; gap: 0.55rem 1rem; margin-bottom: 0.7rem; font-family: 'Jost', sans-serif; font-size: 0.6rem; color: rgba(28,25,21,0.6); }
+    .map-legend > span { display: inline-flex; align-items: center; gap: 0.4rem; }
+    .map-leg-sw { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; border: 1px solid rgba(28,25,21,0.1); }
+    .map-leg-sw.avail { background: linear-gradient(135deg, #f3e7cd, #cdb185); }
+    .map-leg-sw.selected { background: linear-gradient(135deg, #e8c878, #b6862f); border-color: #6B4F22; }
+    .map-leg-sw.booked { background: #b9ac97; position: relative; }
+    .map-leg-sw.booked::after { content: ''; position: absolute; inset: 2px; background: linear-gradient(45deg, transparent 46%, #A8473B 46%, #A8473B 54%, transparent 54%), linear-gradient(-45deg, transparent 46%, #A8473B 46%, #A8473B 54%, transparent 54%); border-radius: 50%; }
+    .mapwrap { position: relative; width: 100%; border-radius: 10px; overflow: hidden; background: #243a22; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.06); }
+    .mapwrap svg { display: block; width: 100%; height: auto; }
+    .dome { cursor: pointer; outline: none; }
+    .dome .hit { fill: transparent; }
+    .domeShell { transition: fill .2s, stroke .2s; fill: url(#gDome); stroke: #9d8a63; stroke-width: 1; }
+    .domeBase { transition: fill .2s; fill: #cdb38a; }
+    .panel { transition: stroke .2s, opacity .2s; fill: none; stroke: rgba(60,40,20,.28); stroke-width: .7; }
+    .badge { transition: fill .2s, stroke .2s; fill: #fff; stroke: #b9a06f; stroke-width: 1; }
+    .symT { font-family: 'Cormorant Garamond', serif; font-size: 15px; text-anchor: middle; dominant-baseline: central; fill: #6b5630; pointer-events: none; }
+    .numT { font: 700 9px 'Jost', sans-serif; text-anchor: middle; dominant-baseline: central; fill: #6b5630; pointer-events: none; }
+    .nameT { font: 600 9.5px 'Jost', sans-serif; text-anchor: middle; fill: #f3ead6; paint-order: stroke; stroke: rgba(20,28,18,.55); stroke-width: 2.5px; pointer-events: none; opacity: .92; }
+    .dome:hover .domeShell { fill: url(#gDomeHover); }
+    .dome:hover, .dome:focus-visible { filter: url(#liftShadow); }
+    .dome:focus-visible .badge { stroke: #C4A36A; stroke-width: 2; }
+    .dome.sel .domeShell { fill: url(#gSel); stroke: #6B4F22; stroke-width: 1.5; }
+    .dome.sel .domeBase { fill: #b6862f; }
+    .dome.sel .badge { fill: #fff; stroke: #6B4F22; }
+    .dome.sel .panel { stroke: rgba(120,80,10,.4); }
+    .dome.sel { filter: url(#liftShadow); }
+    .dome.booked { cursor: not-allowed; }
+    .dome.booked .domeShell { fill: #b9ac97; stroke: #8f7f63; }
+    .dome.booked .domeBase { fill: #9c8d72; }
+    .dome.booked .panel { stroke: rgba(80,70,55,.3); }
+    .dome.booked .badge { fill: #cfc4b0; stroke: #8f7f63; }
+    .dome.booked .symT, .dome.booked .numT { fill: #6f6450; }
+    .dome.booked .bookedX { display: block; }
+    .bookedX { display: none; stroke: #A8473B; stroke-width: 2.2; stroke-linecap: round; }
+    .pathMain { fill: none; stroke: #d8cdb4; stroke-width: 6; stroke-linecap: round; stroke-linejoin: round; opacity: .9; }
+    .pathEdge { fill: none; stroke: #b3a684; stroke-width: 7.6; stroke-linecap: round; stroke-linejoin: round; opacity: .55; }
+    .pathSpur { fill: none; stroke: #d8cdb4; stroke-width: 3.6; stroke-linecap: round; opacity: .85; }
+    .lakeLabel { font: italic 600 17px 'Cormorant Garamond', serif; fill: #cfe0e6; text-anchor: middle; letter-spacing: .04em; opacity: .85; }
+    .lakeSub { font: 600 9px 'Jost', sans-serif; fill: #cfe0e6; text-anchor: middle; letter-spacing: .22em; opacity: .7; }
+
+    /* B6b text fallback list — also acts as the no-JS / screen-reader path */
+    .dome-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.5rem; margin-top: 1rem; }
+    .dome-litem { display: flex; align-items: center; gap: 0.6rem; padding: 0.55rem 0.7rem; border: 1px solid rgba(150,113,56,0.2); background: #FAF7EF; border-radius: 6px; cursor: pointer; transition: background .15s, border-color .15s, box-shadow .15s; font-family: 'Jost', sans-serif; }
+    .dome-litem:hover { background: #fff; border-color: #C4A36A; }
+    .dome-litem.sel { background: #C4A36A; border-color: #6B4F22; color: #1C1915; }
+    .dome-litem.sel .dome-lname { color: #1C1915; }
+    .dome-litem.sel .dome-lstate { color: rgba(28,25,21,0.7); }
+    .dome-litem.booked { opacity: 0.5; cursor: not-allowed; }
+    .dome-litem.booked .dome-lstate { color: #9B3020; }
+    .dome-litem.booked .dome-lname { text-decoration: line-through; text-decoration-color: rgba(155,48,32,0.45); }
+    .dome-litem .dome-lsym { font-family: 'Cormorant Garamond', serif; font-size: 1.05rem; color: #6B4F22; width: 1.4rem; text-align: center; flex-shrink: 0; }
+    .dome-litem .dome-lname { font-size: 0.72rem; color: #1C1915; display: block; }
+    .dome-litem .dome-lstate { font-size: 0.55rem; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(28,25,21,0.45); display: block; margin-top: 1px; }
+
+    /* ── B5: Trust + perk + cancellation blocks (in summary sidebar) ── */
+    .rate-block { background: rgba(196,163,106,0.07); border: 1px solid rgba(196,163,106,0.18); border-radius: 5px; padding: 0.85rem 1rem; margin: 0.5rem 0 1rem; display: flex; align-items: flex-start; gap: 0.65rem; }
+    .rate-check { flex-shrink: 0; width: 14px; height: 14px; margin-top: 2px; }
+    .rate-check svg { width: 100%; height: 100%; }
+    .rate-block .rt-ttl { font-family: 'Jost', sans-serif; font-size: 0.7rem; color: #FAF7EF; letter-spacing: 0.04em; font-weight: 500; }
+    .rate-block .rt-desc { font-family: 'Jost', sans-serif; font-size: 0.62rem; color: rgba(245,240,232,0.6); line-height: 1.55; margin-top: 0.15rem; }
+    .perk-block { background: rgba(94,122,82,0.08); border: 1px solid rgba(94,122,82,0.18); border-radius: 5px; padding: 0.85rem 1rem; margin-bottom: 1rem; }
+    .perk-block .pk-ttl { font-family: 'Jost', sans-serif; font-size: 0.55rem; letter-spacing: 0.18em; text-transform: uppercase; color: #C4A36A; margin-bottom: 0.45rem; }
+    .perk-block ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.3rem; }
+    .perk-block li { font-family: 'Jost', sans-serif; font-size: 0.66rem; color: rgba(245,240,232,0.75); line-height: 1.55; display: flex; align-items: flex-start; gap: 0.45rem; }
+    .perk-block li::before { content: '✓'; color: #C4A36A; flex-shrink: 0; font-size: 0.7rem; line-height: 1.55; }
+    .trust-block { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.9rem; }
+    .trust-badge { font-family: 'Jost', sans-serif; font-size: 0.55rem; letter-spacing: 0.06em; color: rgba(245,240,232,0.7); background: rgba(255,255,255,0.04); border: 1px solid rgba(196,163,106,0.18); padding: 0.3rem 0.55rem; border-radius: 3px; display: inline-flex; align-items: center; gap: 0.35rem; }
+    .trust-badge b { color: #C4A36A; font-weight: 600; }
+    .cancel-note { font-family: 'Jost', sans-serif; font-size: 0.6rem; color: rgba(245,240,232,0.5); line-height: 1.7; margin-top: 0.8rem; text-align: center; }
+    .cancel-note a { color: #C4A36A; text-decoration: none; font-weight: 600; }
 
     /* ── Booking summary sidebar (dark card) ── */
     .summary-dark-card { background: #1C1915; padding: 2rem 2rem 1.75rem; position: relative; overflow: hidden; }
@@ -393,6 +528,14 @@
         </div>
         <div class="cal-days" id="cal-days"></div>
       </div>
+      <!-- B2: Legend so users can decode the colored dots without guessing.
+           "Booked" also has a strikethrough on the date number — non-color cue. -->
+      <div id="cal-legend" aria-label="Availability key">
+        <span><span class="cal-leg-sw avail"    aria-hidden="true"></span><span id="cal-leg-avail">Available</span></span>
+        <span><span class="cal-leg-sw partial"  aria-hidden="true"></span><span id="cal-leg-partial">Partly booked</span></span>
+        <span><span class="cal-leg-sw selected" aria-hidden="true"></span><span id="cal-leg-selected">Selected</span></span>
+        <span><span class="cal-leg-sw booked"   aria-hidden="true"></span><span id="cal-leg-booked">Fully booked</span></span>
+      </div>
       <div id="cal-footer">
         <div id="cal-range-display">Select check-in date</div>
         <button id="cal-done-btn" onclick="confirmCalendar(event)" disabled>DONE</button>
@@ -409,17 +552,70 @@
 
 
 <!-- ═══════════════════════════════════════════
-     ROOMS LIST
+     B6: ROOM TYPE INTRO  +  B6b: DOME MAP STEP
+     Replaces the previous 10-card list. Photos load ONCE (deduped) instead
+     of being repeated per dome. The dome map below is the real selection UI;
+     the existing rooms-notice + booking-form-section + Stripe handoff are
+     preserved exactly so the payment/Hostex pipeline doesn't change.
 ═══════════════════════════════════════════ -->
 <section class="py-14 px-6" style="background:#F5F0E6;">
   <div class="max-w-5xl mx-auto">
 
     <div id="rooms-notice" class="notice notice-info mb-6" style="display:none;"></div>
 
-    <!-- Rooms are injected here by JS -->
-    <div id="rooms-container" style="display:flex;flex-direction:column;gap:1.25rem;"></div>
+    <!-- ── B6: Room type intro (one shared gallery, name, price, amenities) ── -->
+    <div class="room-intro reveal" style="margin-bottom:2.25rem;">
+      <div>
+        <div class="gallery">
+          <img class="gmain" id="g-main" alt="Lakeside View Dome" loading="eager">
+        </div>
+        <div class="gthumbs" id="g-thumbs"></div>
+      </div>
+      <div>
+        <p class="step-label" id="intro-eyebrow">10 Lakeside Domes</p>
+        <div class="intro-head">
+          <h2 class="intro-name" id="intro-name">Lakeside View Dome</h2>
+          <div style="text-align:right;">
+            <span class="intro-price-num" id="intro-price-num">฿2,700</span>
+            <span class="intro-price-unit" id="intro-price-unit">/ night · Sun–Thu</span>
+          </div>
+        </div>
+        <p class="intro-sub" id="intro-sub">
+          Each dome is a private suite for two, set around the lake in 30+ rai of protected rainforest. Choose any available dome below — every dome is identical inside, so the choice is yours by view, position, and the planet you sleep under.
+        </p>
+        <div class="intro-chips">
+          <span class="intro-chip" id="chip-suite">Private suite for 2</span>
+          <span class="intro-chip" id="chip-wifi">Free Wi-Fi</span>
+          <span class="intro-chip" id="chip-deck">Private deck</span>
+          <span class="intro-chip" id="chip-shower">Rainfall shower</span>
+          <span class="intro-chip" id="chip-forest">Forest &amp; lake views</span>
+          <span class="intro-chip" id="chip-breakfast">Breakfast included</span>
+        </div>
+        <p style="font-family:'Jost',sans-serif;font-size:0.7rem;color:rgba(28,25,21,0.45);margin-top:0.9rem;line-height:1.6">
+          <span id="intro-weekend">Fri–Sat ฿3,500/night · 3+ guests add an extra bed (+฿1,000/night) · Pets welcome (฿500/pet/night)</span>
+        </p>
+      </div>
+    </div>
 
-    <!-- Booking form (shown after room selection) -->
+    <!-- ── B6b: Dome selection step (interactive SVG map + text fallback) ── -->
+    <div class="step-card reveal" style="margin-bottom:1.5rem;">
+      <p class="step-label"><span id="step-2-label">Step 2</span> · <span id="dome-pick-eyebrow">Choose your dome</span><span id="scarcity-pill" class="scarcity-pill none" style="display:none;"></span></p>
+      <h3 class="step-h" id="dome-pick-h">Pick a dome around the lake</h3>
+      <p class="step-hint" id="dome-pick-hint">
+        Each dome is named after a planet and identified by its key tag. Booked domes are locked from real availability — pick more than one for a group stay.
+      </p>
+      <div class="map-legend" aria-hidden="true">
+        <span><span class="map-leg-sw avail"></span><span id="map-leg-avail">Available</span></span>
+        <span><span class="map-leg-sw selected"></span><span id="map-leg-selected">Selected</span></span>
+        <span><span class="map-leg-sw booked"></span><span id="map-leg-booked">Booked (locked)</span></span>
+      </div>
+      <div class="mapwrap" id="dome-map-wrap">
+        <!-- Built by buildDomeMap() — single inline SVG, no external image. -->
+      </div>
+      <div class="dome-list" id="dome-list" role="listbox" aria-multiselectable="true" aria-label="Dome selection"></div>
+    </div>
+
+    <!-- Booking form (shown after dome selection) -->
     <div id="booking-form-section" class="mt-10">
 
       <!-- Selected room banner -->
@@ -443,13 +639,13 @@
             </div>
             <div>
               <label class="form-label" for="guest-email" id="label-email">Email Address</label>
-              <input type="email" id="guest-email" class="form-input" autocomplete="email">
+              <input type="email" id="guest-email" class="form-input" autocomplete="email" inputmode="email">
+              <!-- B3: Single email field with inline validation. The previous
+                   double-entry "Confirm Email" doubled typing effort but caught
+                   far fewer typos than a real-time format check — autofill makes
+                   the second field redundant. -->
+              <p id="email-format-hint" style="display:none;color:#b94545;font-family:'Jost',sans-serif;font-size:0.62rem;margin-top:0.4rem;letter-spacing:0.05em;">Please enter a valid email address</p>
             </div>
-          </div>
-          <div class="mb-4">
-            <label class="form-label" for="guest-email-confirm" id="label-email-confirm">Confirm Email Address</label>
-            <input type="email" id="guest-email-confirm" class="form-input" autocomplete="email">
-            <p id="email-mismatch-hint" style="display:none;color:#b94545;font-family:'Jost',sans-serif;font-size:0.62rem;margin-top:0.4rem;letter-spacing:0.05em;">Emails do not match</p>
           </div>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
@@ -574,12 +770,35 @@
             </div>
 
             <!-- Total -->
-            <div style="border-top:1px solid rgba(196,163,106,0.25);margin-top:0.5rem;padding-top:1.25rem;display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:1.75rem;">
+            <div style="border-top:1px solid rgba(196,163,106,0.25);margin-top:0.5rem;padding-top:1.25rem;display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:1.25rem;">
               <div>
                 <p class="sum-lbl mb-1" id="sum-total-label">Total</p>
                 <p style="font-family:'Jost',sans-serif;font-size:0.48rem;color:rgba(196,163,106,0.4);letter-spacing:0.05em;text-transform:uppercase;">incl. all fees</p>
               </div>
               <span class="sum-total-num" id="sum-total-val">—</span>
+            </div>
+
+            <!-- B5: Rate (Flexible — free cancellation). Single rate for now;
+                 the brief calls for cancellation policy + Flexible visibility,
+                 not multiple rate tiers. -->
+            <div class="rate-block">
+              <div class="rate-check">
+                <svg viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6.5" stroke="#C4A36A"/><path d="M4 7.2 6.2 9.4 10 5.6" stroke="#C4A36A" stroke-width="1.4" stroke-linecap="round"/></svg>
+              </div>
+              <div>
+                <div class="rt-ttl" id="rate-flex-ttl">Flexible rate</div>
+                <div class="rt-desc" id="rate-flex-desc">Free cancellation up to 7 days before arrival.</div>
+              </div>
+            </div>
+
+            <!-- B5: Book-direct perk (real value for going direct vs OTA) -->
+            <div class="perk-block">
+              <p class="pk-ttl" id="perk-title">Book direct &amp; get</p>
+              <ul>
+                <li id="perk-1">Free welcome Eco Coffee + a seedling on arrival</li>
+                <li id="perk-2">Complimentary guided forest walk</li>
+                <li id="perk-3">No booking fees · lowest rate, guaranteed</li>
+              </ul>
             </div>
 
             <!-- Error notice (shown here for visibility) -->
@@ -593,10 +812,21 @@
               <span id="btn-submit-text">Pay Now</span>
             </button>
 
-            <!-- Stripe trust line -->
-            <div style="display:flex;align-items:center;justify-content:center;gap:0.55rem;margin-top:0.9rem;">
-              <svg width="9" height="11" viewBox="0 0 9 11" fill="none"><rect x="0.5" y="4.5" width="8" height="6" rx="1" stroke="rgba(196,163,106,0.4)" stroke-width="0.9"/><path d="M2.5 4.5V3A2 2 0 0 1 6.5 3v1.5" stroke="rgba(196,163,106,0.4)" stroke-width="0.9"/></svg>
-              <span style="font-family:'Jost',sans-serif;font-size:0.5rem;letter-spacing:0.15em;text-transform:uppercase;color:rgba(196,163,106,0.4)">Secured by Stripe</span>
+            <!-- B5: Trust block (Stripe lock, ratings, OTA scores, real-humans line) -->
+            <div class="trust-block" style="margin-top:0.9rem;">
+              <span class="trust-badge">
+                <svg width="9" height="11" viewBox="0 0 9 11" fill="none"><rect x="0.5" y="4.5" width="8" height="6" rx="1" stroke="#C4A36A" stroke-width="0.9"/><path d="M2.5 4.5V3A2 2 0 0 1 6.5 3v1.5" stroke="#C4A36A" stroke-width="0.9"/></svg>
+                <span id="trust-stripe">Secured by Stripe</span>
+              </span>
+              <span class="trust-badge"><b id="trust-rating-num">4.9</b>/5 · <span id="trust-reviews">123 reviews</span></span>
+              <span class="trust-badge"><b>9.0</b> Agoda</span>
+              <span class="trust-badge"><b>8.7</b> Booking.com</span>
+            </div>
+
+            <!-- B5: Cancellation policy line + real-humans phone -->
+            <div class="cancel-note">
+              <span id="cancel-text">Free cancellation up to 7 days before arrival.</span><br>
+              <span id="real-humans-pre">Real humans, every day —</span> <a href="tel:+66926100560">+66 92 610 0560</a>
             </div>
           </div>
 
@@ -700,37 +930,32 @@
     return total;
   }
 
-  // All room photos shared across every room, same order, no people
+  // B6: ONE shared gallery — 6 photos total instead of 10 rooms × 15 = 150.
+  // Photos are deduped at the source, lazy-loaded except the hero. The first
+  // entry is the hero/main image; the next five become the thumbnails.
   const ROOM_PHOTOS = [
-    'Room%20picture%201.webp',
-    'Room%20picture%202.webp',
-    'Room%20picture%203.webp',
-    'Room%20picture%204.webp',
-    'Room%20picture%205.webp',
+    'Room%20picture%201.webp',         // hero
     'Scenic%20room%20picture%20.webp',
     'Outdoor%20patio%20picture.webp',
-    'room%20view.jpg',
-    'room%20scenic.jpg',
-    'outdoor%20room%20view.jpg',
-    'Bathroom%20picture%201.webp',
-    'bathroom%202.webp',
-    'inside%20room%20table.jpg',
-    'picture%20of%20lights.webp',
     'view%20from%20inside%20the%20room.jpg',
+    'Bathroom%20picture%201.webp',
+    'picture%20of%20lights.webp',
   ];
 
-  // 10 rooms — photos array is shared (ROOM_PHOTOS)
+  // 10 domes — kept in clockwise order from the bottom (matches resort aerial).
+  // x/y are SVG viewBox coordinates (0..660 × 0..560); sym is the planetary
+  // glyph that matches the physical key tag at the dome.
   const ROOMS_LOCAL = [
-    { id:'sun',     num:'01', en:'The Sun',     th:'เดอะ ซัน',          zh:'太阳房'  },
-    { id:'moon',    num:'02', en:'The Moon',    th:'เดอะ มูน',          zh:'月亮房'  },
-    { id:'mercury', num:'03', en:'The Mercury', th:'เดอะ เมอร์คิวรี่',  zh:'水星房'  },
-    { id:'earth',   num:'04', en:'The Earth',   th:'เดอะ เอิร์ธ',      zh:'地球房'  },
-    { id:'mars',    num:'05', en:'The Mars',    th:'เดอะ มาร์ส',        zh:'火星房'  },
-    { id:'jupiter', num:'06', en:'The Jupiter', th:'เดอะ จูปิเตอร์',    zh:'木星房'  },
-    { id:'saturn',  num:'07', en:'The Saturn',  th:'เดอะ แซทเทิร์น',   zh:'土星房'  },
-    { id:'uranus',  num:'08', en:'The Uranus',  th:'เดอะ ยูเรนัส',     zh:'天王星房' },
-    { id:'neptune', num:'09', en:'The Neptune', th:'เดอะ เนปจูน',      zh:'海王星房' },
-    { id:'pluto',   num:'10', en:'The Pluto',   th:'เดอะ พลูโต',       zh:'冥王星房' },
+    { id:'sun',     num:'01', en:'The Sun',     th:'เดอะ ซัน',          zh:'太阳房',   sym:'☉', x:336, y:494 },
+    { id:'moon',    num:'02', en:'The Moon',    th:'เดอะ มูน',          zh:'月亮房',   sym:'☽', x:430, y:466 },
+    { id:'mercury', num:'03', en:'The Mercury', th:'เดอะ เมอร์คิวรี่',  zh:'水星房',   sym:'☿', x:498, y:418 },
+    { id:'earth',   num:'04', en:'The Earth',   th:'เดอะ เอิร์ธ',      zh:'地球房',   sym:'⊕', x:544, y:356 },
+    { id:'mars',    num:'05', en:'The Mars',    th:'เดอะ มาร์ส',        zh:'火星房',   sym:'♂', x:560, y:286 },
+    { id:'jupiter', num:'06', en:'The Jupiter', th:'เดอะ จูปิเตอร์',    zh:'木星房',   sym:'♃', x:548, y:214 },
+    { id:'saturn',  num:'07', en:'The Saturn',  th:'เดอะ แซทเทิร์น',   zh:'土星房',   sym:'♄', x:452, y:124 },
+    { id:'uranus',  num:'08', en:'The Uranus',  th:'เดอะ ยูเรนัส',     zh:'天王星房', sym:'♅', x:330, y:108 },
+    { id:'neptune', num:'09', en:'The Neptune', th:'เดอะ เนปจูน',      zh:'海王星房', sym:'♆', x:222, y:128 },
+    { id:'pluto',   num:'10', en:'The Pluto',   th:'เดอะ พลูโต',       zh:'冥王星房', sym:'♇', x:154, y:236 },
   ];
 
   // Server availability data (loaded after Check Availability)
@@ -758,140 +983,342 @@
     return Math.round((checkoutDate - checkinDate) / 86400000);
   }
 
-  // ── Render room cards ─────────────────────────
-  function renderRooms(availMap) {
-    const container = document.getElementById('rooms-container');
-    container.innerHTML = '';
+  // ─────────────────────────────────────────────────────────────────────
+  // B6: ONE shared gallery (replaces the 10 per-card carousels). Builds the
+  // main image + 5 thumbs once. Lazy-loads everything except the active hero.
+  // ─────────────────────────────────────────────────────────────────────
+  function buildGallery() {
+    const main   = document.getElementById('g-main');
+    const thumbs = document.getElementById('g-thumbs');
+    if (!main || !thumbs) return;
+    main.src = PHOTO_BASE + ROOM_PHOTOS[0];
+    thumbs.innerHTML = '';
+    ROOM_PHOTOS.forEach((p, i) => {
+      const im = document.createElement('img');
+      im.src = PHOTO_BASE + p;
+      im.alt = 'Lakeside dome — photo ' + (i + 1);
+      im.loading = i === 0 ? 'eager' : 'lazy';
+      if (i === 0) im.classList.add('active');
+      im.addEventListener('click', () => {
+        // Cross-fade to the selected thumbnail
+        main.style.opacity = '0';
+        setTimeout(() => {
+          main.src = PHOTO_BASE + p;
+          main.style.opacity = '1';
+        }, 180);
+        thumbs.querySelectorAll('img').forEach(x => x.classList.remove('active'));
+        im.classList.add('active');
+      });
+      im.addEventListener('error', () => { im.style.display = 'none'; });
+      thumbs.appendChild(im);
+    });
+  }
+
+  // ─────────────────────────────────────────────────────────────────────
+  // B6b: Inline-SVG dome map. One-time build (paths + 10 dome groups);
+  // renderDomeStates() flips classes per dome per date range. The lake/trees
+  // are drawn from procedural geometry — no external image dependency.
+  // ─────────────────────────────────────────────────────────────────────
+  const SVG_NS = 'http://www.w3.org/2000/svg';
+  function svg(tag, attrs) {
+    const el = document.createElementNS(SVG_NS, tag);
+    for (const k in attrs) el.setAttribute(k, attrs[k]);
+    return el;
+  }
+
+  function buildDomeMap() {
+    const wrap = document.getElementById('dome-map-wrap');
+    if (!wrap || wrap.dataset.built === '1') return;
+    wrap.dataset.built = '1';
+
+    const root = svg('svg', { viewBox: '0 0 660 560', role: 'group',
+                               'aria-label': 'Resort dome map' });
+
+    // Gradients + filters
+    root.innerHTML = `
+      <defs>
+        <radialGradient id="gForest" cx="50%" cy="40%" r="75%">
+          <stop offset="0%" stop-color="#3a5436"/><stop offset="60%" stop-color="#2f4a2d"/><stop offset="100%" stop-color="#243a22"/></radialGradient>
+        <radialGradient id="gWater" cx="42%" cy="35%" r="80%">
+          <stop offset="0%" stop-color="#5f8593"/><stop offset="55%" stop-color="#456470"/><stop offset="100%" stop-color="#36505b"/></radialGradient>
+        <linearGradient id="gWaterSheen" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#bcd6dd" stop-opacity=".35"/><stop offset="35%" stop-color="#bcd6dd" stop-opacity="0"/></linearGradient>
+        <radialGradient id="gDome" cx="38%" cy="30%" r="75%">
+          <stop offset="0%" stop-color="#f3e7cd"/><stop offset="55%" stop-color="#e3cfa3"/><stop offset="100%" stop-color="#cdb185"/></radialGradient>
+        <radialGradient id="gDomeHover" cx="38%" cy="30%" r="75%">
+          <stop offset="0%" stop-color="#fbf1da"/><stop offset="100%" stop-color="#dcc196"/></radialGradient>
+        <radialGradient id="gSel" cx="38%" cy="30%" r="75%">
+          <stop offset="0%" stop-color="#e8c878"/><stop offset="55%" stop-color="#d2a948"/><stop offset="100%" stop-color="#b6862f"/></radialGradient>
+        <radialGradient id="gTree" cx="38%" cy="32%" r="70%">
+          <stop offset="0%" stop-color="#5d7e4e"/><stop offset="100%" stop-color="#3c5a33"/></radialGradient>
+        <radialGradient id="gTree2" cx="38%" cy="32%" r="70%">
+          <stop offset="0%" stop-color="#6b8c57"/><stop offset="100%" stop-color="#476739"/></radialGradient>
+        <filter id="softShadow" x="-50%" y="-50%" width="200%" height="200%">
+          <feDropShadow dx="0" dy="2.5" stdDeviation="2.5" flood-color="#16240f" flood-opacity="0.4"/></filter>
+        <filter id="liftShadow" x="-60%" y="-60%" width="220%" height="220%">
+          <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#1a1207" flood-opacity="0.45"/></filter>
+        <filter id="lakeShadow" x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="0" dy="3" stdDeviation="6" flood-color="#16240f" flood-opacity="0.5"/></filter>
+      </defs>
+      <rect x="0" y="0" width="660" height="560" fill="url(#gForest)"/>
+      <ellipse cx="330" cy="280" rx="300" ry="250" fill="#33502f" opacity=".35"/>
+      <g id="dm-treesBack"></g>
+      <g filter="url(#softShadow)"><rect x="92" y="286" width="86" height="74" rx="6" fill="#4a4640" stroke="#332f2a" stroke-width="1.5"/><rect x="100" y="294" width="70" height="58" rx="3" fill="#56514a" opacity=".7"/></g>
+      <path filter="url(#lakeShadow)" fill="url(#gWater)" stroke="#2f4853" stroke-width="2" d="M250 150 C 320 140 392 142 446 162 C 498 181 516 230 512 286 C 509 332 486 372 452 404 C 416 438 372 458 338 458 C 312 458 286 438 268 408 C 244 368 214 336 198 300 C 182 262 184 212 206 182 C 218 165 232 154 250 150 Z"/>
+      <path fill="url(#gWaterSheen)" d="M250 150 C 320 140 392 142 446 162 C 498 181 516 230 512 286 C 470 250 380 232 300 236 C 240 239 206 250 198 300 C 182 262 184 212 206 182 C 218 165 232 154 250 150 Z"/>
+      <text class="lakeLabel" x="318" y="262">Eco Eyes</text>
+      <text class="lakeSub" x="318" y="280">LAKE</text>
+      <g id="dm-treesFront"></g>
+      <g id="dm-paths"></g>
+      <g id="dm-domes"></g>
+    `;
+    wrap.appendChild(root);
+
+    // ── Deterministic tree placement (no Math.random so SSR/cache-safe). ──
+    let seed = 20260602;
+    const rnd = () => { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; };
+    function tree(x, y, s, grad) {
+      const g = svg('g', { transform: `translate(${x} ${y}) scale(${s})`, filter: 'url(#softShadow)' });
+      [[0,0,13],[-8,-4,9],[8,-3,9],[-3,-9,8],[5,6,8]].forEach(([dx,dy,r]) => {
+        g.appendChild(svg('circle', { cx: dx, cy: dy, r, fill: grad }));
+      });
+      g.appendChild(svg('circle', { cx: -4, cy: -6, r: 4, fill: '#86a76f', opacity: '.5' }));
+      return g;
+    }
+    function inLake(x, y) { const dx=(x-348)/178, dy=(y-300)/168; return dx*dx + dy*dy < 1.08; }
+    function nearDome(x, y) { return ROOMS_LOCAL.some(r => Math.hypot(x - r.x, y - r.y) < 34); }
+    function inBuilding(x, y) { return x > 84 && x < 186 && y > 278 && y < 368; }
+    const treesBack  = root.querySelector('#dm-treesBack');
+    const treesFront = root.querySelector('#dm-treesFront');
+    let placed = 0, tries = 0;
+    while (placed < 72 && tries < 1500) {
+      tries++;
+      const x = rnd() * 660, y = rnd() * 560;
+      if (inLake(x, y) || nearDome(x, y) || inBuilding(x, y)) continue;
+      const edge = Math.min(x, 660 - x, y, 560 - y);
+      if (edge > 120 && rnd() > 0.25) continue;
+      const s = 0.55 + rnd() * 0.7;
+      const grad = rnd() > 0.5 ? 'url(#gTree)' : 'url(#gTree2)';
+      (rnd() > 0.5 ? treesBack : treesFront).appendChild(tree(x, y, s, grad));
+      placed++;
+    }
+
+    // ── Gravel loop + spurs linking each dome (Catmull-Rom through 10 anchors). ──
+    const cx = 348, cy = 300;
+    const lp = ROOMS_LOCAL.map(r => {
+      const dx = cx - r.x, dy = cy - r.y, d = Math.hypot(dx, dy);
+      const k = 30 / d;
+      return { x: r.x + dx * k, y: r.y + dy * k, r };
+    });
+    function loopPath(pts) {
+      const n = pts.length;
+      let d = `M${pts[0][0].toFixed(1)} ${pts[0][1].toFixed(1)}`;
+      for (let i = 0; i < n; i++) {
+        const p0 = pts[(i-1+n)%n], p1 = pts[i], p2 = pts[(i+1)%n], p3 = pts[(i+2)%n];
+        const c1x = p1[0]+(p2[0]-p0[0])/6, c1y = p1[1]+(p2[1]-p0[1])/6;
+        const c2x = p2[0]-(p3[0]-p1[0])/6, c2y = p2[1]-(p3[1]-p1[1])/6;
+        d += ` C${c1x.toFixed(1)} ${c1y.toFixed(1)} ${c2x.toFixed(1)} ${c2y.toFixed(1)} ${p2[0].toFixed(1)} ${p2[1].toFixed(1)}`;
+      }
+      return d + 'Z';
+    }
+    const dLoop = loopPath(lp.map(p => [p.x, p.y]));
+    const pathsG = root.querySelector('#dm-paths');
+    pathsG.appendChild(svg('path', { class: 'pathEdge', d: dLoop }));
+    pathsG.appendChild(svg('path', { class: 'pathMain', d: dLoop }));
+    lp.forEach(p => pathsG.appendChild(svg('path', { class: 'pathSpur',
+      d: `M${p.x.toFixed(1)} ${p.y.toFixed(1)} L${p.r.x} ${p.r.y}` })));
+    const left = lp.reduce((a, b) => b.x < a.x ? b : a);
+    pathsG.appendChild(svg('path', { class: 'pathEdge', d: `M${left.x.toFixed(1)} ${left.y.toFixed(1)} C 150 250 140 300 150 322` }));
+    pathsG.appendChild(svg('path', { class: 'pathMain', d: `M${left.x.toFixed(1)} ${left.y.toFixed(1)} C 150 250 140 300 150 322` }));
+
+    // ── Domes (one <g> per dome; toggles via classes). ──
+    const domesG = root.querySelector('#dm-domes');
+    ROOMS_LOCAL.forEach(r => domesG.appendChild(buildDomeGroup(r)));
+  }
+
+  // Builds a single dome group (geodesic-style: deck, shell, panel lines,
+  // badge with symbol + number, name caption, hidden ✕ for booked state).
+  function buildDomeGroup(r) {
+    const g = svg('g', {
+      class: 'dome', tabindex: '0', role: 'button',
+      'aria-pressed': 'false', 'data-id': r.id,
+      'aria-label': r.en + ' — available',
+    });
+    const R = 22;
+    g.appendChild(svg('ellipse', { cx: r.x, cy: r.y + R*0.82, rx: R*0.95, ry: R*0.34, fill: '#16240f', opacity: '.28' }));
+    g.appendChild(svg('ellipse', { class: 'domeBase', cx: r.x, cy: r.y + R*0.62, rx: R*0.92, ry: R*0.36 }));
+    g.appendChild(svg('circle',  { class: 'domeShell', cx: r.x, cy: r.y, r: R }));
+    g.appendChild(svg('path', { class: 'panel',
+      d: `M${r.x-R} ${r.y} A${R} ${R} 0 0 1 ${r.x+R} ${r.y} M${r.x} ${r.y-R} L${r.x} ${r.y+R} M${r.x-R*0.71} ${r.y-R*0.71} L${r.x+R*0.71} ${r.y+R*0.71} M${r.x+R*0.71} ${r.y-R*0.71} L${r.x-R*0.71} ${r.y+R*0.71} M${r.x-R} ${r.y-R*0.18} Q${r.x} ${r.y-R*1.1} ${r.x+R} ${r.y-R*0.18}`}));
+    g.appendChild(svg('circle', { class: 'badge', cx: r.x, cy: r.y - 2, r: 9.5 }));
+    const sy = svg('text', { class: 'symT', x: r.x, y: r.y - 2.5 }); sy.textContent = r.sym; g.appendChild(sy);
+    const nu = svg('text', { class: 'numT', x: r.x, y: r.y + 13 });  nu.textContent = parseInt(r.num,10); g.appendChild(nu);
+    const nt = svg('text', { class: 'nameT', x: r.x, y: r.y + R + 13 });
+    nt.textContent = r.en.replace(/^The /, '');
+    nt.setAttribute('data-name-en', r.en.replace(/^The /, ''));
+    nt.setAttribute('data-name-th', r.th.replace(/^เดอะ\s*/, ''));
+    nt.setAttribute('data-name-zh', r.zh);
+    g.appendChild(nt);
+    g.appendChild(svg('line', { class: 'bookedX', x1: r.x-12, y1: r.y-12, x2: r.x+12, y2: r.y+10 }));
+    g.appendChild(svg('line', { class: 'bookedX', x1: r.x+12, y1: r.y-12, x2: r.x-12, y2: r.y+10 }));
+    g.appendChild(svg('circle', { class: 'hit', cx: r.x, cy: r.y, r: R + 6 }));
+    // Selection toggles — keyboard (Enter/Space) and pointer
+    const toggle = (e) => {
+      if (g.classList.contains('booked')) return;
+      if (e) e.preventDefault();
+      selectRoom(r.id);
+    };
+    g.addEventListener('click', toggle);
+    g.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') toggle(e);
+    });
+    return g;
+  }
+
+  // Renders the text-fallback list of all 10 domes (also the no-JS / screen-reader
+  // path). Always rendered so users without an SVG-capable browser can still pick.
+  function renderDomeList() {
+    const list = document.getElementById('dome-list');
+    if (!list) return;
     const lang = currentLang;
+    // Use textContent for every value — sym/names come from a hard-coded array,
+    // but DOM APIs make a future edit (e.g. server-loaded names) XSS-safe by default.
+    while (list.firstChild) list.removeChild(list.firstChild);
+    ROOMS_LOCAL.forEach(r => {
+      const li = document.createElement('div');
+      li.className = 'dome-litem';
+      li.setAttribute('role', 'option');
+      li.setAttribute('tabindex', '0');
+      li.dataset.id = r.id;
 
-    ROOMS_LOCAL.forEach(room => {
-      const avail = availMap ? availMap[room.id] : null;  // null = unknown, true/false = known
-      const photos = ROOM_PHOTOS;
+      const sym = document.createElement('span');
+      sym.className = 'dome-lsym';
+      sym.setAttribute('aria-hidden', 'true');
+      sym.textContent = r.sym;
 
-      const card = document.createElement('div');
-      card.className = 'room-card reveal';
-      card.id = 'room-card-' + room.id;
-      if (avail === false) card.classList.add('unavailable');
+      const right = document.createElement('span');
+      const nameEl = document.createElement('span');
+      nameEl.className = 'dome-lname';
+      nameEl.textContent = lang === 'th' ? r.th : lang === 'zh' ? r.zh : r.en;
+      const stateEl = document.createElement('span');
+      stateEl.className = 'dome-lstate';
+      stateEl.dataset.state = 'unknown';
+      stateEl.textContent = '—';
+      right.appendChild(nameEl);
+      right.appendChild(stateEl);
 
-      const roomLabel = lang === 'th' ? room.th : lang === 'zh' ? room.zh : room.en;
-      const badgeClass = avail === true ? 'avail-ok' : avail === false ? 'avail-no' : 'avail-tbd';
-      const badgeText  = avail === true
-        ? (lang==='th'?'ว่าง':lang==='zh'?'可预订':'Available')
-        : avail === false
-        ? (lang==='th'?'ไม่ว่าง':lang==='zh'?'已订满':'Unavailable')
-        : (lang==='th'?'เลือกวันที่ก่อน':lang==='zh'?'请选择日期':'Select dates first');
-      const isSelected = selectedRoomIds.includes(room.id);
-      const selectLabel = isSelected
-        ? (lang==='th'?'✓ เลือกแล้ว':lang==='zh'?'✓ 已选择':'✓ Selected')
-        : (lang==='th'?'เพิ่มห้องนี้':lang==='zh'?'添加此房间':'Add Room');
+      li.appendChild(sym);
+      li.appendChild(right);
 
-      const photoImgs = photos.map((p, i) =>
-        `<img src="${PHOTO_BASE}${p}" alt="${room.en} - photo ${i+1}" class="${i===0?'active':''}" loading="${i===0?'eager':'lazy'}" onerror="this.style.display='none'">`
-      ).join('');
-      const photoNavHtml = photos.length > 1 ? `
-        <div class="photo-nav">
-          <button class="photo-btn" onclick="prevPhoto('${room.id}',event)" aria-label="Previous">
-            <svg width="12" height="12" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
-          </button>
-          <button class="photo-btn" onclick="nextPhoto('${room.id}',event)" aria-label="Next">
-            <svg width="12" height="12" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
-          </button>
-        </div>
-        <span class="photo-counter" id="photo-counter-${room.id}">1 / ${photos.length}</span>
-      ` : '';
+      li.addEventListener('click', () => {
+        if (li.classList.contains('booked')) return;
+        selectRoom(r.id);
+      });
+      li.addEventListener('keydown', (e) => {
+        if ((e.key === 'Enter' || e.key === ' ') && !li.classList.contains('booked')) {
+          e.preventDefault(); selectRoom(r.id);
+        }
+      });
+      list.appendChild(li);
+    });
+  }
 
-      // Amenities — same for all rooms
-      const amenityLabel = (icon, t) => `<span class="amenity">${icon}<span>${t}</span></span>`;
-      const amenities = [
-        amenityLabel(`<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M1.5 8.5l10.5-7 10.5 7M5 22V12h14v10"/></svg>`,
-          lang==='th'?'ที่พักส่วนตัว':lang==='zh'?'独立套间':'Private Suite'),
-        amenityLabel(`<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`,
-          lang==='th'?'ฟรีไวไฟ':lang==='zh'?'免费WiFi':'Free Wi-Fi'),
-        amenityLabel(`<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M3 12h18M3 6h18M3 18h18"/></svg>`,
-          lang==='th'?'ระเบียงส่วนตัว':lang==='zh'?'私人阳台':'Private Deck'),
-        amenityLabel(`<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>`,
-          lang==='th'?'ฝักบัวเรนดรอป':lang==='zh'?'雨淋浴':'Rainfall Shower'),
-        amenityLabel(`<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>`,
-          lang==='th'?'วิวธรรมชาติ':lang==='zh'?'自然景观':'Forest Views'),
-        amenityLabel(`<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M12 22c0 0-8-5.6-8-12a8 8 0 0 1 16 0c0 6.4-8 12-8 12z"/><circle cx="12" cy="10" r="2.5"/></svg>`,
-          lang==='th'?'วิวทะเลสาบ':lang==='zh'?'湖景':'Lakeside View'),
-        amenityLabel(`<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>`,
-          lang==='th'?'รวมอาหารเช้า':lang==='zh'?'含早餐':'Breakfast Included'),
-      ].join('');
+  // B6b + B8: Renders state for every dome + scarcity counter. Called whenever
+  // serverRooms or selectedRoomIds changes. Booked status comes from Hostex via
+  // /api/rooms; if no date range chosen yet, every dome shows "Select dates".
+  function renderDomeStates(availMap) {
+    const lang = currentLang;
+    const wrap = document.getElementById('dome-map-wrap');
+    const list = document.getElementById('dome-list');
+    if (!wrap || !list) return;
 
-      const btnClass = isSelected
-        ? 'btn-select btn-selected'
-        : avail === false ? 'btn-select btn-unavail' : 'btn-select';
-      const btnDisabled = avail === false ? 'disabled' : '';
+    let availableCount = 0, bookedCount = 0, knownAny = false;
 
-      const nights = getNights();
-      const tripTotal = (checkinDate && checkoutDate) ? calcTotal(checkinDate, checkoutDate) : 0;
-      const rateStr = `฿${BASE_RATE.toLocaleString()}`;
-      const nightLabel = lang==='th'? '/คืน' : lang==='zh'? '/晚' : '/night';
-      const weekendNote = lang==='th' ? 'ศุกร์-เสาร์ ฿3,500/คืน' : lang==='zh' ? '周五六 ฿3,500/晚' : 'Fri–Sat ฿3,500/night';
+    ROOMS_LOCAL.forEach(r => {
+      const avail = availMap ? availMap[r.id] : null; // null = unknown
+      if (avail !== null && avail !== undefined) knownAny = true;
+      const isBooked = avail === false;
+      const isAvail  = avail === true;
+      if (isAvail) availableCount++;
+      if (isBooked) bookedCount++;
+      const isSel = selectedRoomIds.includes(r.id);
 
-      card.innerHTML = `
-        <div class="room-photo-wrap">
-          ${photoImgs}
-          ${photoNavHtml}
-        </div>
-        <div class="room-info">
-          <div>
-            <div class="room-header">
-              <span class="room-number">${room.num}</span>
-              <h3 class="room-name-text">${roomLabel}</h3>
-              <span class="avail-badge ${badgeClass}">${badgeText}</span>
-            </div>
-            <div class="amenities">${amenities}</div>
-          </div>
-          <div class="room-price-row">
-            <div>
-              <span class="rate-amount">${rateStr}</span>
-              <span class="rate-unit">${nightLabel}</span>
-              <div style="font-family:'Jost',sans-serif;font-size:0.63rem;color:rgba(28,25,21,0.38);margin-top:0.2rem">${weekendNote}</div>
-              ${nights > 0 ? `<div style="font-family:'Jost',sans-serif;font-size:0.68rem;color:rgba(28,25,21,0.55);margin-top:0.15rem;font-weight:500">฿${tripTotal.toLocaleString()} ${lang==='th'?'รวม':lang==='zh'?'合计':'total'} (${nights} ${lang==='th'?'คืน':lang==='zh'?'晚':'nights'})</div>` : ''}
-            </div>
-            <button class="${btnClass}" ${btnDisabled} onclick="selectRoom('${room.id}')">${selectLabel}</button>
-          </div>
-        </div>
-      `;
+      // ── SVG dome group ──
+      const g = wrap.querySelector(`[data-id="${r.id}"]`);
+      if (g) {
+        g.classList.toggle('booked', isBooked);
+        g.classList.toggle('sel', isSel && !isBooked);
+        g.setAttribute('aria-pressed', isSel ? 'true' : 'false');
+        const nm = lang === 'th' ? r.th : lang === 'zh' ? r.zh : r.en;
+        const stateTxt = isBooked
+          ? (lang==='th'?'จองแล้ว':lang==='zh'?'已订':'booked')
+          : isSel
+          ? (lang==='th'?'เลือกแล้ว':lang==='zh'?'已选':'selected')
+          : (lang==='th'?'ว่าง':lang==='zh'?'可订':'available');
+        g.setAttribute('aria-label', `${nm} — ${stateTxt}`);
+        g.setAttribute('tabindex', isBooked ? '-1' : '0');
+        // Update name caption text per language
+        const nt = g.querySelector('.nameT');
+        if (nt) {
+          const key = 'data-name-' + lang;
+          nt.textContent = nt.getAttribute(key) || nt.getAttribute('data-name-en');
+        }
+      }
 
-      container.appendChild(card);
+      // ── Text fallback list item ──
+      const li = list.querySelector(`[data-id="${r.id}"]`);
+      if (li) {
+        li.classList.toggle('booked', isBooked);
+        li.classList.toggle('sel', isSel && !isBooked);
+        li.setAttribute('aria-selected', isSel ? 'true' : 'false');
+        li.setAttribute('aria-disabled', isBooked ? 'true' : 'false');
+        const nameEl = li.querySelector('.dome-lname');
+        if (nameEl) nameEl.textContent = lang === 'th' ? r.th : lang === 'zh' ? r.zh : r.en;
+        const stateEl = li.querySelector('.dome-lstate');
+        if (stateEl) {
+          const txt = isBooked
+            ? (lang==='th'?'จองแล้ว':lang==='zh'?'已订':'Booked')
+            : isSel
+            ? (lang==='th'?'เลือกแล้ว':lang==='zh'?'✓ Selected':'✓ Selected')
+            : (avail === true ? (lang==='th'?'ว่าง':lang==='zh'?'可订':'Available')
+                              : (lang==='th'?'เลือกวันที่':lang==='zh'?'请选日期':'Select dates'));
+          stateEl.textContent = txt;
+        }
+      }
     });
 
-    // Re-run reveal animation
-    const io = new IntersectionObserver((entries) => {
-      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); } });
-    }, { threshold: 0.05 });
-    container.querySelectorAll('.reveal').forEach(el => io.observe(el));
-    setTimeout(() => container.querySelectorAll('.reveal').forEach(el => el.classList.add('visible')), 100);
+    // ── B8: Scarcity counter (real Hostex availability — no fake countdowns). ──
+    updateScarcity(availableCount, bookedCount, knownAny);
   }
 
-  // ── Photo carousel ────────────────────────────
-  function getPhotos(roomId) {
-    const card = document.getElementById('room-card-' + roomId);
-    return card ? Array.from(card.querySelectorAll('.room-photo-wrap img')) : [];
+  // B8: Real "X domes left" — driven by /api/rooms, not a timer.
+  function updateScarcity(availableCount, bookedCount, knownAny) {
+    const pill = document.getElementById('scarcity-pill');
+    if (!pill) return;
+    if (!knownAny) { pill.style.display = 'none'; return; }
+    const lang = currentLang;
+    const total = ROOMS_LOCAL.length;
+    let text, klass;
+    if (availableCount === 0) {
+      text  = lang==='th' ? 'ไม่ว่างในวันที่เลือก' : lang==='zh' ? '所选日期已订满' : 'Fully booked for these dates';
+      klass = 'scarcity-pill none';
+    } else if (availableCount <= 3) {
+      text  = lang==='th' ? `เหลือเพียง ${availableCount} จาก ${total}` : lang==='zh' ? `仅剩 ${availableCount} / ${total}` : `Only ${availableCount} of ${total} domes left`;
+      klass = 'scarcity-pill';
+    } else {
+      text  = lang==='th' ? `ว่าง ${availableCount} จาก ${total}` : lang==='zh' ? `${availableCount} / ${total} 可订` : `${availableCount} of ${total} domes available`;
+      klass = 'scarcity-pill plenty';
+    }
+    pill.textContent = text;
+    pill.className = klass;
+    pill.style.display = 'inline-flex';
   }
-  function currentPhotoIdx(roomId) {
-    return getPhotos(roomId).findIndex(img => img.classList.contains('active'));
-  }
-  function setPhoto(roomId, idx, evt) {
-    if (evt) evt.stopPropagation();
-    const imgs = getPhotos(roomId);
-    imgs.forEach((img, i) => img.classList.toggle('active', i === idx));
-    const counter = document.getElementById('photo-counter-' + roomId);
-    if (counter) counter.textContent = (idx + 1) + ' / ' + imgs.length;
-  }
-  function prevPhoto(roomId, evt) {
-    if (evt) evt.stopPropagation();
-    const imgs = getPhotos(roomId);
-    const cur  = currentPhotoIdx(roomId);
-    setPhoto(roomId, (cur - 1 + imgs.length) % imgs.length, null);
-  }
-  function nextPhoto(roomId, evt) {
-    if (evt) evt.stopPropagation();
-    const imgs = getPhotos(roomId);
-    setPhoto(roomId, (currentPhotoIdx(roomId) + 1) % imgs.length, null);
+
+  // Backwards-compat shim — older internal callers (`updateDateBar`, `selectRoom`,
+  // `setLang`) still call `renderRooms()` after the rebuild. Forward to the new
+  // state renderer so no call-site has to change.
+  function renderRooms(availMap) {
+    renderDomeStates(availMap);
   }
 
   // ── Custom calendar picker ────────────────────
@@ -977,7 +1404,11 @@
       if (isPast) cell.classList.add('cal-past');
 
       const isFullyBlocked = !isPast && fullyBlocked.includes(dateStr);
-      if (isFullyBlocked) cell.classList.add('cal-fully-blocked');
+      if (isFullyBlocked) {
+        cell.classList.add('cal-fully-blocked');
+        // B2: non-color cue for assistive tech — strikethrough + aria-label
+        cell.setAttribute('aria-label', `${d} ${CAL_MONTHS[calMonth]} — fully booked`);
+      }
 
       // Range highlight
       const s = calTempStart;
@@ -1280,21 +1711,18 @@
     room:       { en:'room',                   th:'ห้องพัก',                 zh:'房间'      },
     name:       { en:'name',                   th:'ชื่อ',                    zh:'姓名'      },
     email:      { en:'valid email',            th:'อีเมลที่ถูกต้อง',          zh:'有效邮箱'   },
-    emailMatch: { en:'matching email confirmation', th:'อีเมลยืนยันให้ตรงกัน', zh:'确认邮箱匹配' },
     phone:      { en:'phone number',           th:'เบอร์โทร',                zh:'电话'      },
     guests:     { en:'number of guests',       th:'จำนวนผู้เข้าพัก',          zh:'人数'      },
-    mismatch:   { en:'Emails do not match',    th:'อีเมลไม่ตรงกัน',           zh:'邮箱不匹配' },
+    emailFmt:   { en:'Please enter a valid email address', th:'กรุณากรอกอีเมลที่ถูกต้อง', zh:'请输入有效的电子邮箱' },
   };
   const hintT = (k) => HINT_T[k]?.[currentLang] || HINT_T[k]?.en || k;
 
   function validateForm() {
-    const name         = document.getElementById('guest-name').value.trim();
-    const email        = document.getElementById('guest-email').value.trim();
-    const emailConfirm = (document.getElementById('guest-email-confirm')?.value || '').trim();
-    const phone        = document.getElementById('guest-phone').value.trim();
-    const guests       = document.getElementById('guest-count').value;
-    const validEmail   = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-    const emailsMatch  = validEmail && email === emailConfirm;
+    const name       = document.getElementById('guest-name').value.trim();
+    const email      = document.getElementById('guest-email').value.trim();
+    const phone      = document.getElementById('guest-phone').value.trim();
+    const guests     = document.getElementById('guest-count').value;
+    const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
     // Build a list of human-readable missing items in form-order
     const missing = [];
@@ -1302,20 +1730,22 @@
     if (selectedRoomIds.length === 0)  missing.push(hintT('room'));
     if (!name)                         missing.push(hintT('name'));
     if (!validEmail)                   missing.push(hintT('email'));
-    else if (!emailsMatch)             missing.push(hintT('emailMatch'));
     if (!phone)                        missing.push(hintT('phone'));
     if (!guests)                       missing.push(hintT('guests'));
 
     const ok = missing.length === 0;
     document.getElementById('submit-btn').disabled = !ok;
 
-    // Inline mismatch hint next to the Confirm Email field — only appears once
-    // the user has started typing the confirmation (avoids nagging on empty)
-    const mismatchEl = document.getElementById('email-mismatch-hint');
-    if (mismatchEl) {
-      const show = emailConfirm.length > 0 && email !== emailConfirm;
-      mismatchEl.style.display = show ? 'block' : 'none';
-      if (show) mismatchEl.textContent = hintT('mismatch');
+    // B3: Inline format hint next to the single Email field — appears only
+    // once the user has typed something AND the format is invalid (avoids
+    // nagging an empty field). Errors on blur, not on every keystroke.
+    const fmtEl = document.getElementById('email-format-hint');
+    if (fmtEl) {
+      const emailEl = document.getElementById('guest-email');
+      const wasBlurred = emailEl?.dataset.touched === '1';
+      const show = wasBlurred && email.length > 0 && !validEmail;
+      fmtEl.style.display = show ? 'block' : 'none';
+      if (show) fmtEl.textContent = hintT('emailFmt');
     }
 
     // Overall disabled-button reason banner
@@ -1330,12 +1760,18 @@
     }
     return ok;
   }
-  ['guest-name','guest-email','guest-email-confirm','guest-phone','guest-count','pet-count'].forEach(id => {
+  ['guest-name','guest-email','guest-phone','guest-count','pet-count'].forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
     el.addEventListener('input',  validateForm);
     el.addEventListener('change', validateForm);
   });
+  // B3: Mark email as "touched" on blur so the format hint only appears after
+  // the user has finished typing, not while they're mid-word.
+  const _emailEl = document.getElementById('guest-email');
+  if (_emailEl) {
+    _emailEl.addEventListener('blur', () => { _emailEl.dataset.touched = '1'; validateForm(); });
+  }
 
   // ── Submit ────────────────────────────────────
   async function submitBooking() {
@@ -1422,10 +1858,13 @@
     'label-checkout':    { en:'Check-out',           th:'เช็คเอาท์',               zh:'退房日期' },
     'check-btn-text':    { en:'Check Availability',  th:'ตรวจสอบห้องว่าง',         zh:'查询空房' },
     'cal-done-btn':      { en:'DONE',               th:'ยืนยัน',                  zh:'确认' },
+    'cal-leg-avail':     { en:'Available',          th:'ว่าง',                   zh:'有空房' },
+    'cal-leg-partial':   { en:'Partly booked',      th:'จองบางส่วน',              zh:'部分预订' },
+    'cal-leg-selected':  { en:'Selected',           th:'ที่เลือก',               zh:'已选' },
+    'cal-leg-booked':    { en:'Fully booked',       th:'จองเต็ม',                zh:'已订满' },
     'section-guests':    { en:'Guest Details',       th:'ข้อมูลผู้เข้าพัก',        zh:'住客信息' },
     'label-name':        { en:'Full Name',           th:'ชื่อ-นามสกุล',            zh:'姓名' },
     'label-email':       { en:'Email Address',       th:'อีเมล',                  zh:'电子邮箱' },
-    'label-email-confirm':{ en:'Confirm Email Address', th:'ยืนยันอีเมล',          zh:'确认电子邮箱' },
     'label-phone':       { en:'Phone Number',        th:'เบอร์โทรศัพท์',           zh:'电话号码' },
     'label-guests':      { en:'Number of Guests',    th:'จำนวนผู้เข้าพัก',         zh:'入住人数' },
     'label-requests':    { en:'Special Requests',    th:'คำขอพิเศษ',               zh:'特殊要求' },
@@ -1446,6 +1885,40 @@
     'banner-label':      { en:'Selected Room',       th:'ห้องที่เลือก',             zh:'已选房间' },
     'btn-change-room':   { en:'Change Room',         th:'เปลี่ยนห้อง',              zh:'更换房间' },
     'contact-pre':       { en:'Questions?',          th:'สอบถามข้อมูล?',            zh:'有问题？' },
+
+    // ── B6: Room type intro ──
+    'intro-eyebrow':     { en:'10 Lakeside Domes',                        th:'10 โดมริมทะเลสาบ',                                   zh:'10座湖畔球顶屋' },
+    'intro-name':        { en:'Lakeside View Dome',                       th:'โดมวิวทะเลสาบ',                                       zh:'湖景球顶屋' },
+    'intro-price-unit':  { en:'/ night · Sun–Thu',                        th:'/ คืน · อาทิตย์–พฤหัส',                                zh:'/ 晚 · 周日–周四' },
+    'intro-sub':         { en:'Each dome is a private suite for two, set around the lake in 30+ rai of protected rainforest. Choose any available dome below — every dome is identical inside, so the choice is yours by view, position, and the planet you sleep under.', th:'ทุกโดมเป็นห้องส่วนตัวสำหรับ 2 ท่าน ตั้งอยู่รอบทะเลสาบในผืนป่ากว่า 30 ไร่ เลือกโดมที่ว่างได้ตามใจ — ภายในเหมือนกันทุกหลัง ต่างกันที่วิวและดาวเคราะห์ที่คุณนอนใต้ฟ้า', zh:'每座球顶屋都是双人专属套间，环湖而建于30+莱受保护雨林中。所有球顶屋室内规格相同，请凭视角、位置和您愿意"睡在哪颗行星下"来选择。' },
+    'chip-suite':        { en:'Private suite for 2',  th:'ห้องส่วนตัว 2 ท่าน', zh:'双人专属套间' },
+    'chip-wifi':         { en:'Free Wi-Fi',           th:'ฟรีไวไฟ',           zh:'免费 Wi-Fi' },
+    'chip-deck':         { en:'Private deck',         th:'ระเบียงส่วนตัว',     zh:'私人露台' },
+    'chip-shower':       { en:'Rainfall shower',      th:'ฝักบัวเรนชาวเวอร์',  zh:'雨淋花洒' },
+    'chip-forest':       { en:'Forest & lake views',  th:'วิวป่าและทะเลสาบ',    zh:'森林与湖景' },
+    'chip-breakfast':    { en:'Breakfast included',   th:'รวมอาหารเช้า',       zh:'含早餐' },
+    'intro-weekend':     { en:'Fri–Sat ฿3,500/night · 3+ guests add an extra bed (+฿1,000/night) · Pets welcome (฿500/pet/night)', th:'ศุกร์–เสาร์ ฿3,500/คืน · 3 ท่านขึ้นไปเพิ่มเตียงเสริม (+฿1,000/คืน) · ยินดีต้อนรับสัตว์เลี้ยง (฿500/ตัว/คืน)', zh:'周五–周六 ฿3,500/晚 · 3人及以上加床（+฿1,000/晚） · 欢迎宠物（฿500/只/晚）' },
+
+    // ── B6b: Dome pick step ──
+    'step-2-label':      { en:'Step 2',                  th:'ขั้นตอนที่ 2',     zh:'第 2 步' },
+    'dome-pick-eyebrow': { en:'Choose your dome',         th:'เลือกโดมของคุณ',   zh:'选择球顶屋' },
+    'dome-pick-h':       { en:'Pick a dome around the lake', th:'เลือกโดมรอบทะเลสาบ', zh:'选一座环湖球顶屋' },
+    'dome-pick-hint':    { en:'Each dome is named after a planet and identified by its key tag. Booked domes are locked from real availability — pick more than one for a group stay.', th:'แต่ละโดมตั้งชื่อตามดาวเคราะห์และมีป้ายกุญแจประจำตัว โดมที่ถูกจองจะล็อกตามข้อมูลจริง — เลือกได้มากกว่า 1 สำหรับเข้าพักเป็นหมู่คณะ', zh:'每座球顶屋都以一颗行星命名，并以钥匙牌标识。已预订球顶屋会基于真实可用性锁定——团体入住可多选。' },
+    'map-leg-avail':     { en:'Available',                th:'ว่าง',           zh:'有空' },
+    'map-leg-selected':  { en:'Selected',                 th:'ที่เลือก',        zh:'已选' },
+    'map-leg-booked':    { en:'Booked (locked)',          th:'จองแล้ว (ล็อก)',  zh:'已订（锁定）' },
+
+    // ── B5: Trust / perk / policy in summary sidebar ──
+    'rate-flex-ttl':     { en:'Flexible rate',                            th:'อัตราแบบยืดหยุ่น',                          zh:'灵活价' },
+    'rate-flex-desc':    { en:'Free cancellation up to 7 days before arrival.', th:'ยกเลิกฟรีก่อนวันเข้าพัก 7 วัน',          zh:'抵店前 7 天可免费取消。' },
+    'perk-title':        { en:'Book direct & get',                        th:'จองตรงและรับ',                              zh:'直订即享' },
+    'perk-1':            { en:'Free welcome Eco Coffee + a seedling on arrival', th:'เครื่องดื่ม Eco Coffee + ต้นกล้าฟรีเมื่อมาถึง', zh:'到店免费 Eco Coffee + 一棵树苗' },
+    'perk-2':            { en:'Complimentary guided forest walk',         th:'เดินป่าพร้อมไกด์ฟรี',                       zh:'免费导游森林漫步' },
+    'perk-3':            { en:'No booking fees · lowest rate, guaranteed', th:'ไม่มีค่าจอง · ราคาดีที่สุด รับประกัน',        zh:'无预订费 · 保证最低价' },
+    'trust-stripe':      { en:'Secured by Stripe',                        th:'ปลอดภัยด้วย Stripe',                        zh:'由 Stripe 保护' },
+    'trust-reviews':     { en:'123 reviews',                              th:'รีวิว 123 รายการ',                          zh:'123 条评价' },
+    'cancel-text':       { en:'Free cancellation up to 7 days before arrival.', th:'ยกเลิกฟรีก่อนวันเข้าพัก 7 วัน',         zh:'抵店前 7 天可免费取消。' },
+    'real-humans-pre':   { en:'Real humans, every day —',                 th:'มีพนักงานจริง ทุกวัน —',                     zh:'真人服务，每日在线 —' },
   };
 
   function setLang(lang) {
@@ -1473,8 +1946,38 @@
   currentLang = savedLang;
   document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.toggle('active', btn.getAttribute('data-lang') === savedLang));
 
-  // Render rooms immediately (no availability yet)
-  renderRooms(null);
+  // B6: build the shared gallery, dome map SVG, and text-fallback list once.
+  // renderDomeStates(null) paints them in the "select dates" pre-availability
+  // state. After Check Availability runs, /api/rooms drives the booked/avail flags.
+  buildGallery();
+  buildDomeMap();
+  renderDomeList();
+  renderDomeStates(null);
+
+  // Global reveal observer — `.reveal` elements stay at opacity:0 until they
+  // intersect the viewport. Previously this lived inside the per-card render
+  // function; lifted up so the rebuilt page's room-intro + dome map fade in too.
+  (function wireRevealObserver() {
+    const els = document.querySelectorAll('.reveal');
+    if (!els.length) return;
+    if (!('IntersectionObserver' in window)) {
+      // No-IO browser (very old) — just show everything immediately.
+      els.forEach(el => el.classList.add('visible'));
+      return;
+    }
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+          io.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.05, rootMargin: '0px 0px -8% 0px' });
+    els.forEach(el => io.observe(el));
+    // Safety net — anything still not visible after 800ms (e.g. above-the-fold
+    // and already-in-view) gets nudged so a layout glitch can't leave the page blank.
+    setTimeout(() => els.forEach(el => el.classList.add('visible')), 800);
+  })();
 
   // Wire up custom calendar
   initCalendar();
