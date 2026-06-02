@@ -1521,6 +1521,10 @@
     document.getElementById('cal-popup').classList.remove('open');
     updateDateBar();
     updateCheckBtn();
+    // Auto-fire availability check — no user click required. The Check
+    // Availability button stays visible as a manual re-run option (e.g. to
+    // force a fresh fetch after a cache window) but isn't on the happy path.
+    checkAvailability();
   }
 
   function updateDateBar() {
