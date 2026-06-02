@@ -228,12 +228,13 @@ async function isListingAvailable(listingId, checkIn, checkOut) {
   }
 
   // ── Source 2: Reservations — fallback when calendar returned no data.
-  // Wide window (90 days before check-in) catches reservations that started
-  // earlier but overlap our requested dates.
+  // Use the exact requested window (matching /api/availability's working query)
+  // — Hostex's date filter is liberal and returns reservations near the window
+  // anyway, while a wider window combined with limit=100 risked truncating
+  // the actual overlapping reservation past the cap.
   try {
-    const wideStart = new Date(reqIn.getTime() - 90 * 86400000).toISOString().split('T')[0];
     const data = await hostexFetch(
-      `/reservations?property_id=${listingId}&start_date=${wideStart}&end_date=${checkOut}&limit=100`
+      `/reservations?property_id=${listingId}&start_date=${checkIn}&end_date=${checkOut}&limit=100`
     );
     const list = extractList(data);
     console.log(`  Reservations for listing ${listingId}: ${list.length} found`);
