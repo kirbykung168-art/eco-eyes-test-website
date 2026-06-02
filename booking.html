@@ -795,8 +795,6 @@
             <div class="perk-block">
               <p class="pk-ttl" id="perk-title">Book direct &amp; get</p>
               <ul>
-                <li id="perk-1">Free welcome Eco Coffee + a seedling on arrival</li>
-                <li id="perk-2">Complimentary guided forest walk</li>
                 <li id="perk-3">No booking fees · lowest rate, guaranteed</li>
               </ul>
             </div>
@@ -1453,13 +1451,22 @@
       calTempStart = date; calTempEnd = null; calPickStep = 1;
     } else {
       if (date <= calTempStart) {
-        calTempStart = date; calTempEnd = null;
+        // Picking an earlier-or-equal date resets check-in and starts over;
+        // user is correcting their first tap. Stay in pickStep=1 so the very
+        // next tap completes the range without an extra round-trip.
+        calTempStart = date; calTempEnd = null; calPickStep = 1;
       } else {
         calTempEnd = date; calPickStep = 0;
       }
     }
     calHoverDate = null;
     renderCalGrid();
+    // Auto-confirm once a valid range is picked — no DONE press needed.
+    // Short delay so the user sees both dates highlighted before the popup
+    // closes (visual receipt that their second tap landed).
+    if (calTempStart && calTempEnd) {
+      setTimeout(() => confirmCalendar(), 220);
+    }
   }
 
   function onCalDayHover(date) {
@@ -1912,8 +1919,6 @@
     'rate-flex-ttl':     { en:'Flexible rate',                            th:'อัตราแบบยืดหยุ่น',                          zh:'灵活价' },
     'rate-flex-desc':    { en:'Free cancellation up to 7 days before arrival.', th:'ยกเลิกฟรีก่อนวันเข้าพัก 7 วัน',          zh:'抵店前 7 天可免费取消。' },
     'perk-title':        { en:'Book direct & get',                        th:'จองตรงและรับ',                              zh:'直订即享' },
-    'perk-1':            { en:'Free welcome Eco Coffee + a seedling on arrival', th:'เครื่องดื่ม Eco Coffee + ต้นกล้าฟรีเมื่อมาถึง', zh:'到店免费 Eco Coffee + 一棵树苗' },
-    'perk-2':            { en:'Complimentary guided forest walk',         th:'เดินป่าพร้อมไกด์ฟรี',                       zh:'免费导游森林漫步' },
     'perk-3':            { en:'No booking fees · lowest rate, guaranteed', th:'ไม่มีค่าจอง · ราคาดีที่สุด รับประกัน',        zh:'无预订费 · 保证最低价' },
     'trust-stripe':      { en:'Secured by Stripe',                        th:'ปลอดภัยด้วย Stripe',                        zh:'由 Stripe 保护' },
     'trust-reviews':     { en:'123 reviews',                              th:'รีวิว 123 รายการ',                          zh:'123 条评价' },
