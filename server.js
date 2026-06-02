@@ -817,79 +817,35 @@ app.get('/api/debug/hostex', async (req, res) => {
       }
     } catch (e) { out.reservations_error = e.message; }
 
-    // EXPLORATORY: try several Hostex endpoint variations to find the one
-    // that returns calendar/availability data. Each is wrapped so a 404 on
-    // one path doesn't abort the others.
-    out.endpoint_probes = {};
+    // Sample availabilities + reservations for the chosen listing.
+    // ?listingId=… overrides which listing to sample (default: first matched).
     const sampleId = req.query.listingId || out.room_matching?.find(r => r.hostexId)?.hostexId;
-    const probes = [
-      // Calendar/availability endpoint name variants
-      `/calendar?listing_id=${sampleId}&start_date=${req.query.checkIn}&end_date=${req.query.checkOut}`,
-      `/calendar?property_id=${sampleId}&start_date=${req.query.checkIn}&end_date=${req.query.checkOut}`,
-      `/listings/${sampleId}/calendar?start_date=${req.query.checkIn}&end_date=${req.query.checkOut}`,
-      `/properties/${sampleId}/calendar?start_date=${req.query.checkIn}&end_date=${req.query.checkOut}`,
-      `/calendars?property_id=${sampleId}&start_date=${req.query.checkIn}&end_date=${req.query.checkOut}`,
-      `/availability?property_id=${sampleId}&start_date=${req.query.checkIn}&end_date=${req.query.checkOut}`,
-      `/availabilities?property_id=${sampleId}&start_date=${req.query.checkIn}&end_date=${req.query.checkOut}`,
-      // CORRECT param (plural) — what production code uses
-      `/availabilities?property_ids=${sampleId}&start_date=${req.query.checkIn}&end_date=${req.query.checkOut}`,
-      `/inventory?property_id=${sampleId}&start_date=${req.query.checkIn}&end_date=${req.query.checkOut}`,
-      // Pagination probes on reservations
-      `/reservations?property_id=${sampleId}&start_date=${req.query.checkIn}&end_date=${req.query.checkOut}&page=1&per_page=100`,
-      `/reservations?property_id=${sampleId}&start_date=${req.query.checkIn}&end_date=${req.query.checkOut}&limit=100`,
-      `/reservations?property_id=${sampleId}&start_date=${req.query.checkIn}&end_date=${req.query.checkOut}&page_size=100`,
-      // Try date-narrowed reservation query (does the filter actually work?)
-      `/reservations?property_id=${sampleId}&check_in_date_from=${req.query.checkIn}&check_in_date_to=${req.query.checkOut}`,
-      // Listings endpoint (in case rooms are "listings" not "properties")
-      `/listings`,
-    ];
-    for (const path of probes) {
+    if (sampleId) {
+      out.sample_listing_id = sampleId;
+      // /availabilities (primary availability source — calendar blocks + reservations)
       try {
-        const r = await hostexFetch(path);
-        const top = r && typeof r === 'object' ? Object.keys(r) : null;
-        // For /availabilities probes, capture the FULL response so we can
-        // inspect the actual shape Hostex returns (essential for parser fix).
-        const includeRaw = path.includes('/availabilities');
-        out.endpoint_probes[path] = {
-          ok: true,
-          top_keys: top,
-          error_code: r?.error_code,
-          error_msg: r?.error_msg,
-          data_keys: r?.data && typeof r.data === 'object' ? Object.keys(r.data) : null,
-          data_array_lengths: r?.data && typeof r.data === 'object'
-            ? Object.fromEntries(Object.entries(r.data).filter(([,v]) => Array.isArray(v)).map(([k,v]) => [k, v.length]))
-            : null,
-          raw_sample: includeRaw ? r : undefined,
-        };
-      } catch (e) {
-        out.endpoint_probes[path] = { ok: false, error: e.message };
-      }
-    }
+        out.sample_availabilities_raw = await hostexFetch(
+          `/availabilities?property_ids=${sampleId}&start_date=${req.query.checkIn}&end_date=${req.query.checkOut}`
+        );
+        out.sample_availabilities_days = extractAvailabilityDays(out.sample_availabilities_raw);
+      } catch (e) { out.availabilities_error = e.message; }
 
-    // Sample parsed reservations for the sample listing with limit=100 —
-    // lets us verify whether overlapping reservations are actually returned.
-    try {
-      if (sampleId) {
-        const r = await hostexFetch(`/reservations?property_id=${sampleId}&start_date=${req.query.checkIn}&end_date=${req.query.checkOut}&limit=100`);
+      // /reservations (fallback source — gets all bookings with limit=100)
+      try {
+        const r = await hostexFetch(
+          `/reservations?property_id=${sampleId}&start_date=${req.query.checkIn}&end_date=${req.query.checkOut}&limit=100`
+        );
         const list = extractList(r);
-        out.sample_reservations_full = {
-          count: list.length,
-          dates: list.map(x => ({
-            from: x.check_in_date,
-            to: x.check_out_date,
-            status: x.status,
-            property_id: x.property_id,
-          })),
-        };
-        // Filter to overlaps with the request window
+        out.sample_reservations_count = list.length;
+        // Show only reservations that overlap the requested window
         const reqIn = new Date(req.query.checkIn);
         const reqOut = new Date(req.query.checkOut);
-        out.sample_reservations_overlap = list
+        out.sample_reservations_overlapping = list
           .filter(x => x.check_in_date && x.check_out_date)
           .filter(x => new Date(x.check_in_date) < reqOut && new Date(x.check_out_date) > reqIn)
           .map(x => ({ from: x.check_in_date, to: x.check_out_date, status: x.status }));
-      }
-    } catch (e) { out.sample_reservations_error = e.message; }
+      } catch (e) { out.reservations_error = e.message; }
+    }
   }
 
   res.json(out);
