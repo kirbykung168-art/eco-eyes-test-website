@@ -195,14 +195,16 @@ async function isListingAvailable(listingId, checkIn, checkOut) {
   const reqIn  = new Date(checkIn);
   const reqOut = new Date(checkOut);
 
-  // ── Source 1: Calendar — catches calendar blocks (Airbnb/Booking.com sync,
-  // manual blocks, owner stays) that have no Hostex reservation record.
+  // ── Source 1: Availabilities — Hostex's calendar/availability endpoint.
+  // Catches calendar blocks (Airbnb/Booking.com sync, manual blocks, owner
+  // stays) that have no Hostex reservation record. Endpoint requires the
+  // plural param `property_ids` (NOT property_id).
   // This is the AUTHORITATIVE source when it returns data.
   let calendarSawBlock = false;
   let calendarHadData  = false;
   try {
     const calData = await hostexFetch(
-      `/calendar?listing_id=${listingId}&start_date=${checkIn}&end_date=${checkOut}`
+      `/availabilities?property_ids=${listingId}&start_date=${checkIn}&end_date=${checkOut}`
     );
     const days = extractList(calData);
     if (days.length > 0) {
@@ -231,7 +233,7 @@ async function isListingAvailable(listingId, checkIn, checkOut) {
   try {
     const wideStart = new Date(reqIn.getTime() - 90 * 86400000).toISOString().split('T')[0];
     const data = await hostexFetch(
-      `/reservations?property_id=${listingId}&start_date=${wideStart}&end_date=${checkOut}`
+      `/reservations?property_id=${listingId}&start_date=${wideStart}&end_date=${checkOut}&limit=500`
     );
     const list = extractList(data);
     console.log(`  Reservations for listing ${listingId}: ${list.length} found`);
@@ -347,7 +349,7 @@ app.get('/api/availability', async (req, res) => {
     let blockedRanges = [];
     try {
       const data = await hostexFetch(
-        `/reservations?property_id=${propertyId}&start_date=${start}&end_date=${end}`
+        `/reservations?property_id=${propertyId}&start_date=${start}&end_date=${end}&limit=500`
       );
       const list = extractList(data);
       const CANCELLED = ['cancelled','canceled','rejected','declined','expired','no_show','noshow'];
@@ -365,7 +367,7 @@ app.get('/api/availability', async (req, res) => {
     let blockedDates = [];
     try {
       const calData = await hostexFetch(
-        `/calendar?property_id=${propertyId}&start_date=${start}&end_date=${end}`
+        `/availabilities?property_ids=${propertyId}&start_date=${start}&end_date=${end}`
       );
       const days = extractList(calData);
       blockedDates = days
@@ -688,7 +690,7 @@ app.get('/api/blocked-dates', async (req, res) => {
     let calendarHadData = false;
     try {
       const calData = await hostexFetch(
-        `/calendar?listing_id=${room.hostexId}&start_date=${today}&end_date=${future}`
+        `/availabilities?property_ids=${room.hostexId}&start_date=${today}&end_date=${future}`
       );
       const days = extractList(calData);
       if (days.length > 0) {
@@ -712,7 +714,7 @@ app.get('/api/blocked-dates', async (req, res) => {
     const CANCELLED = ['cancelled','canceled','rejected','declined','expired','no_show','noshow'];
     try {
       const data = await hostexFetch(
-        `/reservations?property_id=${room.hostexId}&start_date=${today}&end_date=${future}`
+        `/reservations?property_id=${room.hostexId}&start_date=${today}&end_date=${future}&limit=500`
       );
       extractList(data)
         .filter(r => !CANCELLED.includes((r.status || '').toLowerCase().replace(/ /g, '_')))
