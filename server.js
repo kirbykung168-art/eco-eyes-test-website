@@ -146,6 +146,81 @@ function extractList(data) {
   return [];
 }
 
+// ================================================================
+// SHARED GUEST-CONTACT VALIDATION
+// Single source of truth for "is this a real guest payload?". Used by every
+// endpoint that creates a Hostex reservation so they can never drift apart.
+//
+// History: reservation 5-6B95CG5UI (Parnupong thongsuk, 2026-06-12) was
+// created with guest_phone:"" and guest_email:"" because the old
+// `if (!phone)` check accepted any truthy string — including "+66" (country
+// code with no number behind it) or " " (whitespace only). Hostex then
+// displayed "No phone number" at check-in. This helper closes that hole.
+//
+// The function:
+//   1. Defensively coerces every field to a string (handles null, numbers,
+//      arrays passed in via JSON).
+//   2. Strips invisible characters (NBSP  , zero-width ​–‏)
+//      so a copy-pasted phone with a non-breaking space behaves the same
+//      as a normal one.
+//   3. Normalises non-ASCII digits (Thai ๐-๙, Arabic-Indic ٠-٩) so phone
+//      validation works regardless of keyboard layout.
+//   4. Caps every field length (defence against crafted payloads).
+//   5. Requires email to look like an email (TLD, no whitespace).
+//   6. Requires phone to contain >= 6 actual digits.
+// ================================================================
+function normalizeGuestContact({ name, email, phone }) {
+  // Step 1 — defensive coercion. Wrap with String(), then trim. Anything
+  // that wasn't a usable string (null/undefined/array/object) becomes ''.
+  const safe = (v) => {
+    if (v == null) return '';
+    if (typeof v === 'object') return '';
+    return String(v);
+  };
+  let cleanName  = safe(name);
+  let cleanEmail = safe(email);
+  let cleanPhone = safe(phone);
+
+  // Step 2 — strip invisible characters that defeat eyeball QA.
+  //   NBSP (U+00A0), zero-width chars (U+200B-200F), line/paragraph
+  //   separators (U+2028, U+2029), word joiner (U+2060), BOM (U+FEFF),
+  //   soft hyphen (U+00AD), and the C0 control range (U+0000-001F) + DEL.
+  const stripInvisible = (s) => s
+    .replace(/[\u00A0\u200B-\u200F\u2028\u2029\u2060\uFEFF\u00AD]/g, ' ')
+    .replace(/[\u0000-\u001F\u007F]/g, '');
+
+  cleanName  = stripInvisible(cleanName).trim();
+  cleanEmail = stripInvisible(cleanEmail).trim();
+  cleanPhone = stripInvisible(cleanPhone).trim();
+
+  // Step 3 — normalise non-ASCII digits to ASCII so the digit count below
+  // works for users typing on a Thai or Arabic keyboard.
+  // Thai digits U+0E50..U+0E59, Arabic-Indic digits U+0660..U+0669.
+  cleanPhone = cleanPhone
+    .replace(/[\u0E50-\u0E59]/g, ch => String(ch.charCodeAt(0) - 0x0E50))
+    .replace(/[\u0660-\u0669]/g, ch => String(ch.charCodeAt(0) - 0x0660));
+
+  // Step 4 — length caps. Reject anything obviously crafted to overflow.
+  if (cleanName.length  > 200) cleanName  = cleanName.slice(0, 200);
+  if (cleanEmail.length > 320) cleanEmail = cleanEmail.slice(0, 320);  // RFC 5321 max
+  if (cleanPhone.length > 40)  cleanPhone = cleanPhone.slice(0, 40);
+
+  // Step 5 — content checks
+  if (cleanName.length < 2) {
+    return { ok: false, error: 'Name is required' };
+  }
+  if (!/^\S+@\S+\.\S+$/.test(cleanEmail) || cleanEmail.length < 6) {
+    return { ok: false, error: 'A valid email address is required' };
+  }
+  const digitCount = (cleanPhone.match(/\d/g) || []).length;
+  if (digitCount < 6) {
+    return { ok: false, error: 'Phone number must contain at least 6 digits', detail: { phoneReceived: phone, digitCount } };
+  }
+
+  return { ok: true, normalized: { name: cleanName, email: cleanEmail, phone: cleanPhone } };
+}
+
+
 // ── Room definitions ──────────────────────────────────────────
 // These are the 10 rooms at Eco Eyes Village.
 // hostexName should match the listing name in your Hostex dashboard.
@@ -443,18 +518,28 @@ app.get('/api/availability', async (req, res) => {
 //   6. Return { success, referenceId, ... }
 // ================================================================
 app.post('/api/booking', async (req, res) => {
-  const { name, email, phone, guests, checkIn, checkOut,
-          nights, total, specialRequests, lang,
-          roomId, roomIds, roomName,
-          extraBeds, petCount } = req.body;
+  // `let` (not const) — name/email/phone get reassigned to the normalised,
+  // validated versions returned by normalizeGuestContact() below.
+  let { name, email, phone, guests, checkIn, checkOut,
+        nights, total, specialRequests, lang,
+        roomId, roomIds, roomName,
+        extraBeds, petCount } = req.body;
 
   // ── Validation ───────────────────────────────────────────
-  if (!name || !email || !phone || !checkIn || !checkOut || !guests) {
+  if (!checkIn || !checkOut || !guests) {
     return res.status(400).json({ success: false, error: 'Missing required fields' });
   }
-  if (!/\S+@\S+\.\S+/.test(email)) {
-    return res.status(400).json({ success: false, error: 'Invalid email address' });
+  // Single source of truth — see normalizeGuestContact() near the top of
+  // this file. Rejects empty/short phones, mistyped emails, oversized
+  // payloads, Unicode-digit attempts at bypass.
+  const v = normalizeGuestContact({ name, email, phone });
+  if (!v.ok) {
+    console.warn(`❌ Booking rejected: ${v.error}`, v.detail || '');
+    return res.status(400).json({ success: false, error: v.error });
   }
+  // Use the cleaned values downstream so Stripe metadata + Hostex always
+  // get the canonical form, not the raw user input.
+  ({ name, email, phone } = v.normalized);
 
   // Support both single roomId and multi-room roomIds array
   const allRoomIds    = Array.isArray(roomIds) && roomIds.length > 0 ? roomIds : roomId ? [roomId] : [];
@@ -541,6 +626,21 @@ async function createHostexReservations({ allRoomIds, checkIn, checkOut, name, e
   const nightsNum = parseInt(nights, 10) || 1;
   // Rate per night (average across stay); Hostex requires this separate from total
   const rateAmount = Math.round(perRoomPrice / nightsNum);
+
+  // Telemetry — last-line-of-defence check before writing to Hostex. If a
+  // paid booking ever reaches this point with weak guest contact, log
+  // loudly so the team catches it in the server log immediately instead
+  // of finding out at check-in. (Originally triggered by Hostex reservation
+  // 5-6B95CG5UI where guest_phone and guest_email were both stored as "".)
+  //
+  // NOTE: we do NOT reject here — the customer has already paid, so we
+  // create the reservation with whatever we have and rely on the warning
+  // for human follow-up. /api/booking is where bad data should be blocked
+  // before payment.
+  const v = normalizeGuestContact({ name, email, phone });
+  if (!v.ok) {
+    console.warn(`⚠️  Hostex reservation ${referenceId || ''} has weak guest contact (${v.error}). phone=${JSON.stringify(phone)} email=${JSON.stringify(email)} — manual follow-up needed.`);
+  }
 
   for (const rid of targetIds) {
     const matched    = allRooms.find(r => r.id === rid);
@@ -827,12 +927,19 @@ app.post('/api/test-payment', async (req, res) => {
     return res.status(403).json({ success: false, error: 'Test endpoint disabled in live mode' });
   }
 
-  const { name, email, phone, guests, checkIn, checkOut, nights,
-          specialRequests, lang, roomId, roomIds, roomName } = req.body;
+  let { name, email, phone, guests, checkIn, checkOut, nights,
+        specialRequests, lang, roomId, roomIds, roomName } = req.body;
 
-  if (!name || !email || !checkIn || !checkOut) {
+  if (!checkIn || !checkOut) {
     return res.status(400).json({ success: false, error: 'Missing required fields' });
   }
+  // Route through the same validator as /api/booking — no chance for
+  // test-payment to fall behind on phone/email rules.
+  const v = normalizeGuestContact({ name, email, phone });
+  if (!v.ok) {
+    return res.status(400).json({ success: false, error: v.error });
+  }
+  ({ name, email, phone } = v.normalized);
 
   const allRoomIds    = Array.isArray(roomIds) && roomIds.length > 0 ? roomIds : roomId ? [roomId] : [];
   const referenceId   = 'TEST-' + generateRef();

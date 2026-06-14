@@ -649,7 +649,7 @@
           </div>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
-              <label class="form-label" for="guest-phone" id="label-phone">Phone Number</label>
+              <label class="form-label" for="guest-phone" id="label-phone">Phone Number<span aria-hidden="true" style="color:#A8473B;margin-left:0.25em">*</span></label>
               <div class="phone-wrap">
                 <select id="phone-code" class="phone-code-select">
                   <option value="+66">🇹🇭 +66</option>
@@ -681,7 +681,7 @@
                   <option value="+55">🇧🇷 +55</option>
                   <option value="+52">🇲🇽 +52</option>
                 </select>
-                <input type="tel" id="guest-phone" class="phone-number-input" autocomplete="tel" placeholder="Phone number">
+                <input type="tel" id="guest-phone" class="phone-number-input" autocomplete="tel" placeholder="Phone number" required aria-required="true" minlength="6">
               </div>
             </div>
             <div>
@@ -1725,6 +1725,7 @@
     phone:      { en:'phone number',           th:'เบอร์โทร',                zh:'电话'      },
     guests:     { en:'number of guests',       th:'จำนวนผู้เข้าพัก',          zh:'人数'      },
     emailFmt:   { en:'Please enter a valid email address', th:'กรุณากรอกอีเมลที่ถูกต้อง', zh:'请输入有效的电子邮箱' },
+    phoneShort: { en:'Please enter a valid phone number (at least 6 digits)', th:'กรุณากรอกเบอร์โทรที่ถูกต้อง (อย่างน้อย 6 หลัก)', zh:'请输入有效的电话号码（至少 6 位）' },
   };
   const hintT = (k) => HINT_T[k]?.[currentLang] || HINT_T[k]?.en || k;
 
@@ -1734,6 +1735,14 @@
     const phone      = document.getElementById('guest-phone').value.trim();
     const guests     = document.getElementById('guest-count').value;
     const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    // BUG FIX (Parnupong reservation 5-6B95CG5UI showed "No phone number" in
+    // Hostex): the old check `!phone` treated any non-empty string as valid,
+    // so a user could leave the input blank and the form would still send
+    // just "+66" (country code alone) downstream. Now we require at least
+    // 6 actual digits — country code prefix / spaces / dashes / parens are
+    // allowed but don't count toward the minimum.
+    const phoneDigits = phone.replace(/\D+/g, '');
+    const validPhone  = phoneDigits.length >= 6;
 
     // Build a list of human-readable missing items in form-order
     const missing = [];
@@ -1741,7 +1750,7 @@
     if (selectedRoomIds.length === 0)  missing.push(hintT('room'));
     if (!name)                         missing.push(hintT('name'));
     if (!validEmail)                   missing.push(hintT('email'));
-    if (!phone)                        missing.push(hintT('phone'));
+    if (!validPhone)                   missing.push(hintT('phone'));
     if (!guests)                       missing.push(hintT('guests'));
 
     const ok = missing.length === 0;
@@ -1798,12 +1807,27 @@
     const petCount    = getPetCount();
     const extraBedFee = extraBeds * 1000 * selectedRoomIds.length;
     const petFee      = petCount * nights * 500;
+
+    // Final phone assembly — only attach the country code if the user has
+    // actually entered digits. Stops the form from sending a payload like
+    // "+66" with no number behind it (cause of the bug where Hostex showed
+    // "No phone number" on real bookings).
+    const phoneCode = document.getElementById('phone-code').value.trim();
+    const phoneNum  = document.getElementById('guest-phone').value.trim();
+    const phoneDigits = phoneNum.replace(/\D+/g, '');
+    if (phoneDigits.length < 6) {
+      errorEl.textContent = hintT('phoneShort');
+      errorEl.style.display = 'block';
+      return;
+    }
+    const phoneCombined = (phoneCode + ' ' + phoneNum).trim();
+
     const payload = {
       checkIn:         formatDateISO(checkinDate),
       checkOut:        formatDateISO(checkoutDate),
       name:            document.getElementById('guest-name').value.trim(),
       email:           document.getElementById('guest-email').value.trim(),
-      phone:           (document.getElementById('phone-code').value + ' ' + document.getElementById('guest-phone').value.trim()).trim(),
+      phone:           phoneCombined,
       guests:          document.getElementById('guest-count').value,
       specialRequests: document.getElementById('special-requests').value.trim(),
       roomIds:         selectedRoomIds,

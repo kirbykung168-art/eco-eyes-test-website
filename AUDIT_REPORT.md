@@ -1,6 +1,7 @@
 # AUDIT_REPORT.md — Section C Full-Site Audit
 
 **Run:** 2026-06-02 · against `main` @ `f7ab114` (post-Section B rebuild) + 1 audit-fix commit pending.
+**Re-run:** 2026-06-12 · post-rebuild bug-check after Hostex reservation `5-6B95CG5UI` was found with empty `guest_phone`/`guest_email`. See "Bug-check addendum" at the bottom of this file.
 **Method:** Local server on port 3838 → curl probes, JS parsing, static analysis. Browser-required checks (real iOS/Android render, Stripe TEST card walk-through, screen-reader passes) are flagged where they apply.
 **Verdict:** PASS, with 5 minor notes and 1 fix applied during the audit.
 
@@ -184,3 +185,97 @@ Each of these is straightforward to do manually now that the static + integratio
 **Section C passes.** Every page returns 200. All inline JS parses. Stripe is in TEST mode and the checkout URL returns successfully. Hostex availability flows correctly into both the calendar (`/api/blocked-dates`) and the dome map (`/api/rooms`). Integration contracts are unchanged from before the Section B rebuild. The booking page's first-view weight is roughly **310 KB**, well under the 1 MB target the brief called for (down from ~3.3 MB pre-rebuild).
 
 One trivial 404 was found and fixed (favicon). Three notes are informational. One production-deploy blocker (Stripe webhook + publishable key placeholders in `.env`) needs to be addressed before going live — not a code change, a config change.
+
+---
+
+## Bug-check addendum (2026-06-12) — phone/email guest-contact lockdown
+
+### Symptom
+
+Real reservation `5-6B95CG5UI` (Parnupong thongsuk, 2026-06-12 → 2026-06-13, The Neptune) showed **"No phone number"** in the Hostex dashboard. Pulling the raw record from Hostex confirmed `guest_phone: ""` AND `guest_email: ""` — even though the remarks said "Paid via Stripe [Ref: EEV-YF5RHL]", so it came through our flow.
+
+A wider sweep showed at least 2 other recent reservations with the same empty-phone shape (`5-6B27LLEVD`, `5-6B1CW9J4J`).
+
+### Root cause
+
+The validation checks `!phone` (JavaScript truthiness) only test for emptiness, not for *semantic* validity. So a payload like:
+
+| Phone value sent | `!phone` | Result |
+|---|---|---|
+| `""`        | true  | rejected ✓ |
+| `"+66"`     | **false** | accepted, Hostex shows "No phone number" ✗ |
+| `" "`       | **false** | accepted ✗ |
+| `null`      | true  | rejected ✓ |
+| `12345` (number) | false | accepted ✗ |
+| `["12345"]` (array) | false | accepted ✗ |
+
+Combined with the form's frontend logic that always concatenates the country code (`"+66 " + phoneInput.trim()`), even an empty phone input produced `"+66"` as the payload value — truthy, but useless to Hostex.
+
+### Fixes applied (bug-check sweep)
+
+**[server.js — new `normalizeGuestContact()`](server.js#L172) (the single source of truth):**
+   1. Defensively coerces every field to a string. Null, undefined, numbers, arrays, objects all collapse to safe placeholders.
+   2. Strips invisible characters (NBSP `U+00A0`, zero-width `U+200B-200F`, line/paragraph separators, word joiner, BOM, soft hyphen, C0 control range + DEL).
+   3. Normalises Thai digits (`U+0E50-U+0E59`) and Arabic-Indic digits (`U+0660-U+0669`) to ASCII so a user typing on a Thai keyboard still passes the digit-count check.
+   4. Caps each field length (name ≤ 200, email ≤ 320 per RFC 5321, phone ≤ 40).
+   5. Validates: name ≥ 2 chars, email matches `^\S+@\S+\.\S+$` with length ≥ 6, phone contains ≥ 6 ASCII digits after normalisation.
+   6. Returns the cleaned `{name, email, phone}` so downstream code uses canonical values, not raw user input.
+
+**Both write paths route through it:**
+   - [`/api/booking`](server.js#L520) — the Stripe-paid flow.
+   - [`/api/test-payment`](server.js#L862) — previously had weaker validation (only `!name || !email`, no phone check at all). Now uses the same helper. Eliminates the chance the two endpoints drift apart.
+
+**Webhook telemetry** ([`createHostexReservations()`](server.js#L555)) — same check runs as the last line of defence before writing to Hostex. Does *not* reject (the customer has already paid), but logs a `⚠️ ` warning with the reference ID so the team is alerted immediately if anything bad ever reaches this point. Originally would have flagged `5-6B95CG5UI`.
+
+**[booking.html validateForm](booking.html#L1735) + [submitBooking](booking.html#L1810):**
+   - Counts ASCII digits instead of testing string truthiness. A user can't enable the submit button with just `"+66"` in the assembled phone any more.
+   - Defensive re-check in `submitBooking()` itself — if anything bypassed the disabled-button gate (e.g., autofill, devtools), the form refuses to POST and shows an inline error in EN/TH/ZH.
+
+### Adversarial battery (14 cases, all pass)
+
+Each row is a real HTTP POST to `/api/booking` from this run. Expected 400 = reject, expected 200 = accept.
+
+| # | Payload | Expected | Got | Server error |
+|---|---|---|---|---|
+| 01 | `phone: "+66"` (country code only) | 400 | 400 | "Phone number must contain at least 6 digits" |
+| 02 | `phone: " "` (single ASCII space) | 400 | 400 | "Phone number must contain at least 6 digits" |
+| 03 | `phone: "   "` (three NBSPs) | 400 | 400 | "Phone number must contain at least 6 digits" |
+| 04 | `phone: null` | 400 | 400 | "Phone number must contain at least 6 digits" |
+| 05 | `phone` field absent | 400 | 400 | "Phone number must contain at least 6 digits" |
+| 06 | `phone: 12345` (JSON number) | 400 | 400 | "Phone number must contain at least 6 digits" |
+| 07 | `phone: ["12345"]` (array) | 400 | 400 | "Phone number must contain at least 6 digits" |
+| 08 | `phone: "abc def ghi"` (letters only) | 400 | 400 | "Phone number must contain at least 6 digits" |
+| 09 | `email: "x@y"` (no TLD) | 400 | 400 | "A valid email address is required" |
+| 10 | `email: ""` | 400 | 400 | "A valid email address is required" |
+| 11 | `email: "foo @bar.com"` (whitespace) | 400 | 400 | "A valid email address is required" |
+| 12 | `name: "X"` (1 char) | 400 | 400 | "Name is required" |
+| 13 | `phone: "+๖๖ ๑๒๓๔๕"` (7 Thai digits — valid) | 200 | 200 | OK |
+| 14 | `phone: "+๖๖ ๐๙๙๘๘๘๗๗๗๗"` (12 Thai digits) | 200 | 200 | OK |
+
+Every rejection produced a server-log warning like `❌ Booking rejected: Phone number must contain at least 6 digits { phoneReceived: ..., digitCount: ... }` so future repeats are visible in CloudWatch / wherever the production logs land.
+
+### Round-trip verification
+
+POSTed a real booking with the Thai-digit phone `"+๖๖ ๐๙๙๘๘๘๗๗๗๗"` to `/api/booking`, then read the resulting Stripe Checkout session back:
+
+```
+metadata.name  = "Round Trip"
+metadata.email = "rt@example.com"
+metadata.phone = "+66 0998887777"   ← normalised to ASCII before reaching Stripe
+ASCII digit count : 12
+Contains Thai chrs: false
+```
+
+On payment success, the webhook reads this metadata and sends `guest_phone: "+66 0998887777"` to Hostex's `POST /reservations`. Hostex stores phones in exactly this form (proven by the existing reservation `9-5121140394-ide7bkocf2` which has `guest_phone: "+66 2035640799"`).
+
+### What this does NOT fix
+
+- **Historical reservations** with empty `guest_phone`/`guest_email` (`5-6B95CG5UI`, `5-6B27LLEVD`, `5-6B1CW9J4J`) — Hostex already stored whatever it received. The team needs to either edit those records in Hostex directly or contact the guests via the email/phone they used to pay (Stripe still has their `customer_email` and card-collected phone).
+- **Wrong country code** — a few reservations show Thai phones prefixed with `+1` because the user left the `+66` dropdown but pasted a US-format number. That's a separate UX problem (country-code mismatch detection), not a missing-phone problem.
+- **Stripe-side validation** — Stripe Checkout can also collect a phone via `phone_number_collection`. Enabling that adds a second guarantee at the payment step but requires Stripe Dashboard config, not a code change.
+
+### Files touched
+
+- `server.js` — `normalizeGuestContact()` helper + `/api/booking` + `/api/test-payment` + `createHostexReservations()` telemetry.
+- `booking.html` — `validateForm()` + `submitBooking()` digit-count check + new `phoneShort` translation hint + HTML `required` / `aria-required` / `minlength="6"` / red asterisk on the phone label.
+
