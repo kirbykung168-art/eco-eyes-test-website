@@ -627,24 +627,46 @@ async function createHostexReservations({ allRoomIds, checkIn, checkOut, name, e
   // Rate per night (average across stay); Hostex requires this separate from total
   const rateAmount = Math.round(perRoomPrice / nightsNum);
 
-  // Telemetry — last-line-of-defence check before writing to Hostex. If a
-  // paid booking ever reaches this point with weak guest contact, log
-  // loudly so the team catches it in the server log immediately instead
-  // of finding out at check-in. (Originally triggered by Hostex reservation
-  // 5-6B95CG5UI where guest_phone and guest_email were both stored as "".)
+  // ── B: Structural guarantee that empty contact never reaches Hostex. ──
+  // Even if a future endpoint forgets to call normalizeGuestContact() before
+  // invoking this helper, the check runs here too — so by construction the
+  // Hostex write either uses validated data or uses a glaring placeholder
+  // that's impossible to miss in the dashboard.
   //
-  // NOTE: we do NOT reject here — the customer has already paid, so we
-  // create the reservation with whatever we have and rely on the warning
-  // for human follow-up. /api/booking is where bad data should be blocked
-  // before payment.
-  const v = normalizeGuestContact({ name, email, phone });
-  if (!v.ok) {
-    console.warn(`⚠️  Hostex reservation ${referenceId || ''} has weak guest contact (${v.error}). phone=${JSON.stringify(phone)} email=${JSON.stringify(email)} — manual follow-up needed.`);
+  // Failure policy: we do NOT skip the reservation (the customer has
+  // already paid; losing their booking is worse than logging bad contact).
+  // Instead we substitute placeholders that scream "look at me" so the team
+  // sees them in Hostex's reservation list and can call/email recovery
+  // before check-in.
+  const validated = normalizeGuestContact({ name, email, phone });
+  let safeName, safeEmail, safePhone;
+  let placeholderUsed = false;
+  if (validated.ok) {
+    safeName  = validated.normalized.name;
+    safeEmail = validated.normalized.email;
+    safePhone = validated.normalized.phone;
+  } else {
+    placeholderUsed = true;
+    const refTag = referenceId || 'UNKNOWN';
+    // Loud, sortable placeholders. "MISSING-CONTACT-" is grep-able across
+    // the Hostex dashboard and immediately tells the team this needs follow-up.
+    safeName  = name && String(name).trim().length >= 2 ? String(name).trim().slice(0, 200) : `MISSING-NAME-REF-${refTag}`;
+    safeEmail = email && /\S+@\S+\.\S+/.test(String(email)) ? String(email).trim() : `MISSING-EMAIL-REF-${refTag}@check-stripe.com`;
+    safePhone = (() => {
+      const digits = String(phone || '').replace(/\D+/g, '');
+      return digits.length >= 6 ? String(phone).trim().slice(0, 40) : `MISSING-PHONE-CHECK-STRIPE-REF-${refTag}`;
+    })();
+    // ERROR (not warn) — anything subscribing to error-level logs in
+    // production will get paged on this.
+    console.error(`🚨 Hostex reservation ${refTag} — guest contact failed validation (${validated.error}).`);
+    console.error(`   Raw: phone=${JSON.stringify(phone)} email=${JSON.stringify(email)} name=${JSON.stringify(name)}`);
+    console.error(`   Written to Hostex as placeholders so the booking still lands. RECOVER FROM STRIPE.`);
   }
 
   for (const rid of targetIds) {
     const matched    = allRooms.find(r => r.id === rid);
     const propertyId = matched?.hostexId || await getPropertyId();
+    const remarks    = `${specialRequests ? specialRequests + ' — ' : ''}Paid via Stripe${referenceId ? ` [Ref: ${referenceId}]` : ''}${placeholderUsed ? ' ⚠️ GUEST CONTACT MISSING — see Stripe for real phone/email' : ''}`.trim();
     const result = await hostexFetch('/reservations', {
       method: 'POST',
       body: JSON.stringify({
@@ -652,9 +674,9 @@ async function createHostexReservations({ allRoomIds, checkIn, checkOut, name, e
         custom_channel_id: 4913,          // "Direct Booking" channel in Hostex
         check_in_date:     checkIn,
         check_out_date:    checkOut,
-        guest_name:        name,
-        guest_email:       email,
-        guest_phone:       phone || '',
+        guest_name:        safeName,
+        guest_email:       safeEmail,
+        guest_phone:       safePhone,
         number_of_adults:  parseInt(guests, 10) || 1,
         number_of_guests:  parseInt(guests, 10) || 1,
         rate_amount:       rateAmount,
@@ -663,12 +685,13 @@ async function createHostexReservations({ allRoomIds, checkIn, checkOut, name, e
         income_method_id:  1,             // Online/card payment
         total_price:       perRoomPrice,
         currency:          'THB',
-        remarks:           `${specialRequests ? specialRequests + ' — ' : ''}Paid via Stripe${referenceId ? ` [Ref: ${referenceId}]` : ''}`.trim(),
+        remarks,
         status:            'accepted',
       }),
     });
     const code = result?.data?.reservation?.reservation_code || 'unknown';
-    console.log(`  ✅ Hostex reservation: ${matched?.en || rid} — ${code} (${checkIn} → ${checkOut})`);
+    const tag = placeholderUsed ? '⚠️ (placeholder contact)' : '✅';
+    console.log(`  ${tag} Hostex reservation: ${matched?.en || rid} — ${code} (${checkIn} → ${checkOut})`);
   }
   roomListingCache  = null;
   blockedDatesCache = null;
@@ -685,21 +708,47 @@ async function handleStripeWebhook(req, res) {
   const sig    = req.headers['stripe-signature'];
   const secret = process.env.STRIPE_WEBHOOK_SECRET;
 
+  // ── A: Hard-fail in production if the signing secret isn't configured. ──
+  // Without the secret, a malicious actor could POST a fake
+  // `checkout.session.completed` event to this URL and create unpaid Hostex
+  // reservations. The previous behaviour was to silently process unsigned
+  // events with just a console warning — which meant a misconfigured
+  // production env would be exploitable without anyone noticing. Now an
+  // unsigned event in prod returns 503 and refuses to process anything.
+  //
+  // The unsigned-fallback is preserved ONLY for true localhost dev
+  // (where Stripe can't reach us anyway) so the test-payment flow keeps
+  // working when running `node server.js` directly.
+  const isProd = process.env.VERCEL === '1' || process.env.NODE_ENV === 'production';
+  const isLocalhost = (req.hostname === 'localhost' || req.hostname === '127.0.0.1');
+  if (!secret && (isProd || !isLocalhost)) {
+    console.error('🚨 Stripe webhook BLOCKED — STRIPE_WEBHOOK_SECRET not set in production env');
+    console.error('   Set it via: Vercel Dashboard → Settings → Environment Variables');
+    return res.status(503).send('Webhook misconfigured: signing secret required');
+  }
+  if (!secret && !sig) {
+    console.warn('⚠️  STRIPE_WEBHOOK_SECRET not set — DEV-ONLY unsigned mode');
+  }
+
   let event;
   try {
     if (secret && sig) {
       // Verified path — requires raw body (Buffer or string)
       const rawBody = Buffer.isBuffer(req.body) ? req.body : Buffer.from(JSON.stringify(req.body));
       event = stripe.webhooks.constructEvent(rawBody, sig, secret);
-    } else {
-      // No secret configured — accept without verification (dev/sandbox only)
-      // Handle both raw Buffer and pre-parsed object (Vercel may parse early)
+    } else if (!secret && !isProd && isLocalhost) {
+      // Dev-only path: parse without verification
       if (Buffer.isBuffer(req.body) || typeof req.body === 'string') {
         event = JSON.parse(req.body.toString());
       } else {
-        event = req.body; // already a parsed JS object
+        event = req.body;
       }
-      console.warn('⚠️  STRIPE_WEBHOOK_SECRET not set — processing without signature check');
+    } else if (secret && !sig) {
+      console.error('🚨 Stripe webhook BLOCKED — secret configured but request has no stripe-signature header');
+      return res.status(400).send('Missing stripe-signature header');
+    } else {
+      console.error('🚨 Stripe webhook reached an unreachable branch — secret=' + !!secret + ' sig=' + !!sig + ' prod=' + isProd);
+      return res.status(500).send('Webhook handler error');
     }
   } catch (err) {
     console.error('Stripe webhook error:', err.message);
@@ -970,6 +1019,153 @@ app.post('/api/test-payment', async (req, res) => {
 
   res.json({ success: true, referenceId, total, hostexCreated, emailSent,
     message: `Simulated payment complete. Hostex: ${hostexCreated ? '✅' : '❌'}  Email: ${emailSent ? '✅' : '❌'}` });
+});
+
+
+// ================================================================
+// C: GET /api/audit-contacts  (cron — Vercel hits this daily)
+// Scans Hostex reservations across the next 180 days for any direct
+// booking with empty/short phone or email. Returns a JSON report and
+// emails an alert to FROM_EMAIL if any broken records are found.
+//
+// Auth: must include `Authorization: Bearer ${CRON_SECRET}` header
+// (Vercel cron sends this automatically when CRON_SECRET is set on
+// the project's env). Without the secret, public callers get 401.
+//
+// History: built after Hostex reservations 5-6B95CG5UI and 5-6BBOR0I29
+// were created with guest_phone/email = "" and the team didn't notice
+// until check-in. This catches the same shape within 24h.
+// ================================================================
+app.get('/api/audit-contacts', async (req, res) => {
+  // Auth — Vercel Cron forwards `Authorization: Bearer ${CRON_SECRET}`.
+  // Same secret can be hit manually from a browser via `?secret=…`.
+  const cronSecret = process.env.CRON_SECRET;
+  const authHeader = req.headers.authorization || '';
+  const supplied = authHeader.startsWith('Bearer ')
+    ? authHeader.slice(7)
+    : (req.query.secret || '');
+  if (cronSecret && supplied !== cronSecret) {
+    return res.status(401).json({ success: false, error: 'Unauthorized' });
+  }
+  if (!cronSecret) {
+    console.warn('⚠️  /api/audit-contacts called without CRON_SECRET configured — allowing for dev convenience but DO NOT deploy without setting it');
+  }
+
+  try {
+    const matched = await matchRoomsToListings();
+    const today  = new Date().toISOString().slice(0, 10);
+    const future = new Date(Date.now() + 180 * 86400000).toISOString().slice(0, 10);
+
+    // Only flag bookings that came through OUR Stripe flow — those have
+    // `[Ref: EEV-XXXXXX]` in the remarks. Everything else (manual entries,
+    // influencer reviews, OTA channels mis-tagged as direct, tests, old
+    // crusty records from before this fix) is noise for the team and would
+    // make the daily alert email useless.
+    const seenCodes = new Set();
+    const broken = [];
+    for (const room of matched.filter(r => r.hostexId)) {
+      try {
+        const data = await hostexFetch(`/reservations?property_id=${room.hostexId}&start_date=${today}&end_date=${future}&limit=100`);
+        const list = extractList(data);
+        for (const r of list) {
+          // Dedupe: Hostex returns the same reservation across multiple
+          // property queries when it spans more than one dome.
+          if (seenCodes.has(r.reservation_code)) continue;
+          // Only Stripe-flow direct bookings — grep the EEV reference.
+          const remarks = String(r.remarks || '');
+          if (!/\[Ref:\s*EEV-/i.test(remarks)) continue;
+
+          seenCodes.add(r.reservation_code);
+
+          const phoneDigits = String(r.guest_phone || '').replace(/\D+/g, '').length;
+          const emailOk     = /\S+@\S+\.\S+/.test(String(r.guest_email || ''));
+          const isPlaceholder = /^MISSING-/.test(String(r.guest_phone || '')) ||
+                                /^MISSING-/.test(String(r.guest_email || ''));
+          if (phoneDigits < 6 || !emailOk || isPlaceholder) {
+            broken.push({
+              property:        room.en,
+              reservation:     r.reservation_code,
+              guest_name:      r.guest_name,
+              guest_email:     r.guest_email,
+              guest_phone:     r.guest_phone,
+              check_in:        r.check_in_date,
+              check_out:       r.check_out_date,
+              booked_at:       r.booked_at,
+              remarks:         r.remarks,
+              issue:           isPlaceholder ? 'placeholder contact (recover from Stripe)'
+                             : phoneDigits < 6 ? 'phone empty/short'
+                             : 'email invalid',
+            });
+          }
+        }
+      } catch (e) {
+        console.warn(`audit-contacts: property ${room.en} fetch failed:`, e.message);
+      }
+    }
+
+    const summary = {
+      success:       true,
+      scanned_range: { from: today, to: future },
+      broken_count:  broken.length,
+      broken,
+    };
+
+    // Email the team if anything broken AND Resend is configured
+    if (broken.length > 0 && process.env.RESEND_API_KEY && process.env.RESEND_API_KEY !== 'YOUR_RESEND_API_KEY_HERE') {
+      const to = process.env.AUDIT_ALERT_EMAIL || process.env.FROM_EMAIL || 'bookings@ecoeyesvillage.com';
+      const rows = broken.map(b => `
+        <tr>
+          <td style="padding:8px 12px;border-bottom:1px solid #eee"><strong>${b.reservation}</strong><br><span style="color:#999;font-size:11px">${b.property}</span></td>
+          <td style="padding:8px 12px;border-bottom:1px solid #eee">${b.guest_name || '<em style="color:#aaa">(none)</em>'}<br><span style="color:#999;font-size:11px">${b.check_in} → ${b.check_out}</span></td>
+          <td style="padding:8px 12px;border-bottom:1px solid #eee"><code>${b.guest_phone || '(empty)'}</code></td>
+          <td style="padding:8px 12px;border-bottom:1px solid #eee"><code>${b.guest_email || '(empty)'}</code></td>
+          <td style="padding:8px 12px;border-bottom:1px solid #eee;color:#A8473B"><strong>${b.issue}</strong></td>
+        </tr>`).join('');
+
+      const html = `<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;background:#f6f5f0;padding:24px">
+        <div style="max-width:760px;margin:0 auto;background:#fff;border:1px solid #ddd;padding:28px">
+          <p style="color:#A8473B;font-size:11px;letter-spacing:3px;text-transform:uppercase;margin:0">🚨 Hostex contact audit</p>
+          <h1 style="margin:8px 0 4px;font-size:22px;color:#1C1915">${broken.length} direct booking${broken.length !== 1 ? 's' : ''} need follow-up</h1>
+          <p style="color:#666;font-size:13px;margin:0 0 20px">Direct bookings with missing/short phone or email, or with placeholder contact fields. Recover the real values from Stripe and PATCH them into Hostex.</p>
+          <table style="width:100%;border-collapse:collapse;font-size:13px"><thead>
+            <tr style="background:#f6f5f0;text-align:left">
+              <th style="padding:8px 12px">Reservation</th>
+              <th style="padding:8px 12px">Guest</th>
+              <th style="padding:8px 12px">Phone</th>
+              <th style="padding:8px 12px">Email</th>
+              <th style="padding:8px 12px">Issue</th>
+            </tr></thead><tbody>${rows}</tbody></table>
+          <p style="color:#999;font-size:11px;margin:20px 0 0">Scanned ${today} → ${future}. This alert auto-fires daily via Vercel Cron.</p>
+        </div></body></html>`;
+
+      try {
+        const r = await fetch('https://api.resend.com/emails', {
+          method:  'POST',
+          headers: { 'Authorization': `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            from:    `Eco Eyes Village <${process.env.FROM_EMAIL || 'bookings@ecoeyesvillage.com'}>`,
+            to:      [to],
+            subject: `🚨 Hostex contact audit: ${broken.length} booking${broken.length !== 1 ? 's' : ''} need follow-up`,
+            html,
+          }),
+        });
+        summary.alert_email_sent = r.ok;
+        if (!r.ok) summary.alert_email_error = await r.text();
+      } catch (e) {
+        summary.alert_email_sent = false;
+        summary.alert_email_error = e.message;
+      }
+    } else {
+      summary.alert_email_sent = false;
+      summary.alert_email_reason = broken.length === 0 ? 'no broken records' : 'RESEND_API_KEY not configured';
+    }
+
+    console.log(`🔍 audit-contacts: scanned ${matched.filter(r => r.hostexId).length} properties → ${broken.length} broken`);
+    res.json(summary);
+  } catch (err) {
+    console.error('audit-contacts error:', err.message);
+    res.status(500).json({ success: false, error: err.message });
+  }
 });
 
 

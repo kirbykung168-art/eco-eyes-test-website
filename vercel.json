@@ -15,5 +15,11 @@
   ],
   "routes": [
     { "src": "/(.*)", "dest": "server.js" }
+  ],
+  "crons": [
+    {
+      "path": "/api/audit-contacts",
+      "schedule": "0 2 * * *"
+    }
   ]
 }
