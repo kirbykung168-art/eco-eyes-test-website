@@ -1039,16 +1039,28 @@ app.post('/api/test-payment', async (req, res) => {
 app.get('/api/audit-contacts', async (req, res) => {
   // Auth — Vercel Cron forwards `Authorization: Bearer ${CRON_SECRET}`.
   // Same secret can be hit manually from a browser via `?secret=…`.
+  //
+  // FAIL CLOSED in production: an unset CRON_SECRET in a deployed
+  // environment means the endpoint is exposed to anyone with the URL —
+  // they could enumerate guest contact info from the JSON response.
+  // Mirrors the Stripe webhook signature pattern in this same file: only
+  // permit the unauthenticated path on true localhost dev.
   const cronSecret = process.env.CRON_SECRET;
   const authHeader = req.headers.authorization || '';
   const supplied = authHeader.startsWith('Bearer ')
     ? authHeader.slice(7)
     : (req.query.secret || '');
-  if (cronSecret && supplied !== cronSecret) {
-    return res.status(401).json({ success: false, error: 'Unauthorized' });
-  }
+  const isProd = process.env.VERCEL === '1' || process.env.NODE_ENV === 'production';
+  const isLocalhost = (req.hostname === 'localhost' || req.hostname === '127.0.0.1');
   if (!cronSecret) {
-    console.warn('⚠️  /api/audit-contacts called without CRON_SECRET configured — allowing for dev convenience but DO NOT deploy without setting it');
+    if (isProd || !isLocalhost) {
+      console.error('🚨 /api/audit-contacts BLOCKED — CRON_SECRET not set in production env');
+      console.error('   Set it via: Vercel Dashboard → Settings → Environment Variables');
+      return res.status(503).json({ success: false, error: 'CRON_SECRET not configured' });
+    }
+    console.warn('⚠️  /api/audit-contacts called without CRON_SECRET — DEV-ONLY unauthenticated mode (localhost)');
+  } else if (supplied !== cronSecret) {
+    return res.status(401).json({ success: false, error: 'Unauthorized' });
   }
 
   try {
@@ -1113,13 +1125,22 @@ app.get('/api/audit-contacts', async (req, res) => {
     // Email the team if anything broken AND Resend is configured
     if (broken.length > 0 && process.env.RESEND_API_KEY && process.env.RESEND_API_KEY !== 'YOUR_RESEND_API_KEY_HERE') {
       const to = process.env.AUDIT_ALERT_EMAIL || process.env.FROM_EMAIL || 'bookings@ecoeyesvillage.com';
+      // HTML-escape every Hostex-supplied field before interpolation. Guest
+      // name/email/phone come from end-user input via the booking form —
+      // a malicious guest could put `<script>` or attribute-breaking quotes
+      // into their name and trigger an XSS in the audit email rendered in
+      // the team's inbox. Reservation code / property / dates come from
+      // Hostex's API which we don't fully control either.
+      const esc = (v) => String(v ?? '').replace(/[&<>"']/g, c =>
+        ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+
       const rows = broken.map(b => `
         <tr>
-          <td style="padding:8px 12px;border-bottom:1px solid #eee"><strong>${b.reservation}</strong><br><span style="color:#999;font-size:11px">${b.property}</span></td>
-          <td style="padding:8px 12px;border-bottom:1px solid #eee">${b.guest_name || '<em style="color:#aaa">(none)</em>'}<br><span style="color:#999;font-size:11px">${b.check_in} → ${b.check_out}</span></td>
-          <td style="padding:8px 12px;border-bottom:1px solid #eee"><code>${b.guest_phone || '(empty)'}</code></td>
-          <td style="padding:8px 12px;border-bottom:1px solid #eee"><code>${b.guest_email || '(empty)'}</code></td>
-          <td style="padding:8px 12px;border-bottom:1px solid #eee;color:#A8473B"><strong>${b.issue}</strong></td>
+          <td style="padding:8px 12px;border-bottom:1px solid #eee"><strong>${esc(b.reservation)}</strong><br><span style="color:#999;font-size:11px">${esc(b.property)}</span></td>
+          <td style="padding:8px 12px;border-bottom:1px solid #eee">${b.guest_name ? esc(b.guest_name) : '<em style="color:#aaa">(none)</em>'}<br><span style="color:#999;font-size:11px">${esc(b.check_in)} → ${esc(b.check_out)}</span></td>
+          <td style="padding:8px 12px;border-bottom:1px solid #eee"><code>${esc(b.guest_phone || '(empty)')}</code></td>
+          <td style="padding:8px 12px;border-bottom:1px solid #eee"><code>${esc(b.guest_email || '(empty)')}</code></td>
+          <td style="padding:8px 12px;border-bottom:1px solid #eee;color:#A8473B"><strong>${esc(b.issue)}</strong></td>
         </tr>`).join('');
 
       const html = `<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;background:#f6f5f0;padding:24px">
@@ -1135,7 +1156,7 @@ app.get('/api/audit-contacts', async (req, res) => {
               <th style="padding:8px 12px">Email</th>
               <th style="padding:8px 12px">Issue</th>
             </tr></thead><tbody>${rows}</tbody></table>
-          <p style="color:#999;font-size:11px;margin:20px 0 0">Scanned ${today} → ${future}. This alert auto-fires daily via Vercel Cron.</p>
+          <p style="color:#999;font-size:11px;margin:20px 0 0">Scanned ${esc(today)} → ${esc(future)}. This alert auto-fires daily via Vercel Cron.</p>
         </div></body></html>`;
 
       try {
