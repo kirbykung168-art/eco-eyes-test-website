@@ -674,9 +674,15 @@ async function createHostexReservations({ allRoomIds, checkIn, checkOut, name, e
         custom_channel_id: 4913,          // "Direct Booking" channel in Hostex
         check_in_date:     checkIn,
         check_out_date:    checkOut,
+        // Hostex v3 create-reservation expects FLAT fields named exactly
+        // `guest_name`, `email`, and `mobile` — NOT `guest_email`/`guest_phone`.
+        // Hostex silently ignores unrecognised keys (returns 200 + a valid
+        // reservation_code), so the previous `guest_email`/`guest_phone` keys
+        // were accepted and discarded — the name saved but phone/email were
+        // dropped. See https://api-doc.hostex.io/reference/create-reservation
         guest_name:        safeName,
-        guest_email:       safeEmail,
-        guest_phone:       safePhone,
+        email:             safeEmail,
+        mobile:            safePhone,
         number_of_adults:  parseInt(guests, 10) || 1,
         number_of_guests:  parseInt(guests, 10) || 1,
         rate_amount:       rateAmount,
@@ -1089,17 +1095,22 @@ app.get('/api/audit-contacts', async (req, res) => {
 
           seenCodes.add(r.reservation_code);
 
-          const phoneDigits = String(r.guest_phone || '').replace(/\D+/g, '').length;
-          const emailOk     = /\S+@\S+\.\S+/.test(String(r.guest_email || ''));
-          const isPlaceholder = /^MISSING-/.test(String(r.guest_phone || '')) ||
-                                /^MISSING-/.test(String(r.guest_email || ''));
+          // Hostex returns contact as `mobile`/`email` (same names as the
+          // create payload), NOT `guest_phone`/`guest_email`. Fall back to the
+          // old names defensively in case a future API version differs.
+          const rPhone = r.mobile ?? r.guest_phone ?? '';
+          const rEmail = r.email  ?? r.guest_email ?? '';
+          const phoneDigits = String(rPhone).replace(/\D+/g, '').length;
+          const emailOk     = /\S+@\S+\.\S+/.test(String(rEmail));
+          const isPlaceholder = /^MISSING-/.test(String(rPhone)) ||
+                                /^MISSING-/.test(String(rEmail));
           if (phoneDigits < 6 || !emailOk || isPlaceholder) {
             broken.push({
               property:        room.en,
               reservation:     r.reservation_code,
               guest_name:      r.guest_name,
-              guest_email:     r.guest_email,
-              guest_phone:     r.guest_phone,
+              guest_email:     rEmail,
+              guest_phone:     rPhone,
               check_in:        r.check_in_date,
               check_out:       r.check_out_date,
               booked_at:       r.booked_at,
