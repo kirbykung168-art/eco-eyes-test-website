@@ -222,20 +222,29 @@ function normalizeGuestContact({ name, email, phone }) {
 
 
 // ── Room definitions ──────────────────────────────────────────
-// These are the 10 rooms at Eco Eyes Village.
-// hostexName should match the listing name in your Hostex dashboard.
-// Once Hostex listings are confirmed, set hostexId via HOSTEX_ROOM_xx env vars.
+// These are the 10 rooms at Eco Eyes Village. Each is a separate Hostex
+// *property* (physical unit). As of 2026-07 Hostex groups all 10 under one
+// room type "Glamping Suite" (id 216415) and sells them as a pooled inventory
+// on the OTA channels (Airbnb/Booking.com/Agoda/Expedia/Trip.com) — but the
+// website still books each room individually against its own property_id, and
+// availability/reservations still key on property_id, so that model is intact.
+//
+// hostexId is the Hostex property id, PINNED here so a dashboard rename (Hostex
+// renamed these to "01 The Sun" … "10 The Pluto") can never remap a booking to
+// the wrong room. matchRoomsToListings() verifies each id against the live
+// property list and falls back to name-matching only if the pinned id is gone.
+// hostexName is the planet name still embedded in the (renamed) property title.
 const ROOMS = [
-  { id: 'sun',     num: '01', en: 'The Sun',     th: 'เดอะ ซัน',       zh: '太阳房',  hostexName: 'The Sun'     },
-  { id: 'moon',    num: '02', en: 'The Moon',    th: 'เดอะ มูน',       zh: '月亮房',  hostexName: 'The Moon'    },
-  { id: 'mercury', num: '03', en: 'The Mercury', th: 'เดอะ เมอร์คิวรี่', zh: '水星房', hostexName: 'The Mercury' },
-  { id: 'earth',   num: '04', en: 'The Earth',   th: 'เดอะ เอิร์ธ',    zh: '地球房',  hostexName: 'The Earth'   },
-  { id: 'mars',    num: '05', en: 'The Mars',    th: 'เดอะ มาร์ส',     zh: '火星房',  hostexName: 'The Mars'    },
-  { id: 'jupiter', num: '06', en: 'The Jupiter', th: 'เดอะ จูปิเตอร์', zh: '木星房',  hostexName: 'The Jupiter' },
-  { id: 'saturn',  num: '07', en: 'The Saturn',  th: 'เดอะ แซทเทิร์น', zh: '土星房',  hostexName: 'The Saturn'  },
-  { id: 'uranus',  num: '08', en: 'The Uranus',  th: 'เดอะ ยูเรนัส',  zh: '天王星房', hostexName: 'The Uranus'  },
-  { id: 'neptune', num: '09', en: 'The Neptune', th: 'เดอะ เนปจูน',   zh: '海王星房', hostexName: 'The Neptune' },
-  { id: 'pluto',   num: '10', en: 'The Pluto',   th: 'เดอะ พลูโต',    zh: '冥王星房', hostexName: 'The Pluto'   },
+  { id: 'sun',     num: '01', en: 'The Sun',     th: 'เดอะ ซัน',       zh: '太阳房',  hostexName: 'The Sun',     hostexId: 11809073 },
+  { id: 'moon',    num: '02', en: 'The Moon',    th: 'เดอะ มูน',       zh: '月亮房',  hostexName: 'The Moon',    hostexId: 11963561 },
+  { id: 'mercury', num: '03', en: 'The Mercury', th: 'เดอะ เมอร์คิวรี่', zh: '水星房', hostexName: 'The Mercury', hostexId: 11963570 },
+  { id: 'earth',   num: '04', en: 'The Earth',   th: 'เดอะ เอิร์ธ',    zh: '地球房',  hostexName: 'The Earth',   hostexId: 11963598 },
+  { id: 'mars',    num: '05', en: 'The Mars',    th: 'เดอะ มาร์ส',     zh: '火星房',  hostexName: 'The Mars',    hostexId: 11963599 },
+  { id: 'jupiter', num: '06', en: 'The Jupiter', th: 'เดอะ จูปิเตอร์', zh: '木星房',  hostexName: 'The Jupiter', hostexId: 11963600 },
+  { id: 'saturn',  num: '07', en: 'The Saturn',  th: 'เดอะ แซทเทิร์น', zh: '土星房',  hostexName: 'The Saturn',  hostexId: 11963601 },
+  { id: 'uranus',  num: '08', en: 'The Uranus',  th: 'เดอะ ยูเรนัส',  zh: '天王星房', hostexName: 'The Uranus',  hostexId: 11963602 },
+  { id: 'neptune', num: '09', en: 'The Neptune', th: 'เดอะ เนปจูน',   zh: '海王星房', hostexName: 'The Neptune', hostexId: 11963603 },
+  { id: 'pluto',   num: '10', en: 'The Pluto',   th: 'เดอะ พลูโต',    zh: '冥王星房', hostexName: 'The Pluto',   hostexId: 11963608 },
 ];
 
 // Cache matched hostex IDs per room (populated by matchRoomsToListings)
@@ -276,15 +285,25 @@ async function matchRoomsToListings() {
     const list = extractList(data);
     console.log(`Found ${list.length} Hostex listing(s)`, list.map(l => l.name || l.title || l.id));
 
-    roomListingCache = ROOMS.map((room, idx) => {
-      const match = list.find(l => {
-        const n = (l.name || l.title || '').toLowerCase();
-        return n.includes(room.hostexName.toLowerCase()) ||
-               n.includes(room.en.toLowerCase().replace('the ', ''));
-      }) || list[idx] || null;
-
-      const hostexId = match ? (match.id || match.property_id || match.listing_id) : null;
-      return { ...room, hostexId };
+    const idOf = (l) => l.id || l.property_id || l.listing_id;
+    roomListingCache = ROOMS.map((room) => {
+      // 1) Prefer the pinned property id — but only if it still exists in the
+      //    live account (guards against a deleted/replaced property).
+      let match = room.hostexId ? list.find(l => idOf(l) === room.hostexId) : null;
+      // 2) Fall back to matching the planet name inside the (renamed) title,
+      //    e.g. room "The Sun" → property "01 The Sun".
+      if (!match) {
+        const planet = room.en.toLowerCase().replace('the ', '');
+        match = list.find(l => {
+          const n = (l.name || l.title || '').toLowerCase();
+          return n.includes(room.hostexName.toLowerCase()) || n.includes(planet);
+        }) || null;
+      }
+      // 3) NO positional fallback. A wrong guess would silently book a real
+      //    guest into the wrong physical room. Unmatched → null, which makes
+      //    availability fail-closed (marked unavailable) and creation refuse.
+      if (!match) console.warn(`⚠️  No Hostex property matched room "${room.en}" — it will be treated as unavailable until fixed.`);
+      return { ...room, hostexId: match ? idOf(match) : null };
     });
   } catch (e) {
     console.warn('Could not match rooms to listings:', e.message);
@@ -666,6 +685,12 @@ async function createHostexReservations({ allRoomIds, checkIn, checkOut, name, e
   for (const rid of targetIds) {
     const matched    = allRooms.find(r => r.id === rid);
     const propertyId = matched?.hostexId || await getPropertyId();
+    // If the requested room had no Hostex match we still create the booking
+    // (the guest already paid — losing it is worse) but against a fallback
+    // property, which is the WRONG room. Scream so the team re-homes it.
+    if (rid && !matched?.hostexId) {
+      console.error(`🚨 Room "${rid}" has no Hostex property match — booking ${referenceId || ''} created against fallback property ${propertyId}. MOVE IT TO THE CORRECT ROOM IN HOSTEX.`);
+    }
     const remarks    = `${specialRequests ? specialRequests + ' — ' : ''}Paid via Stripe${referenceId ? ` [Ref: ${referenceId}]` : ''}${placeholderUsed ? ' ⚠️ GUEST CONTACT MISSING — see Stripe for real phone/email' : ''}`.trim();
     const result = await hostexFetch('/reservations', {
       method: 'POST',
