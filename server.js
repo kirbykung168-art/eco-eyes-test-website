@@ -79,6 +79,47 @@ function calcTotal(checkIn, checkOut) {
   return total;
 }
 
+// ── Helper: HTML-escape a value before interpolating it into email HTML ──
+// Guest name / room name / special requests are end-user input; without
+// escaping, a crafted value (e.g. `<script>` or quote-breaking text) becomes
+// HTML injection in the emails we send. Mirrors the audit-email escaper.
+function escapeHtml(v) {
+  return String(v ?? '').replace(/[&<>"']/g, c =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+// ── Helper: validate a check-in/check-out pair from untrusted input ──
+// Returns { ok, error?, nights? }. Rejects malformed dates, reversed/equal
+// ranges (which would make calcTotal return 0 → a free/broken booking),
+// stays that start in the past, and absurdly long ranges. `nights` is the
+// authoritative night count derived from the dates (never trust client nights).
+function validateStayDates(checkIn, checkOut) {
+  const isISO = s => typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s);
+  if (!isISO(checkIn) || !isISO(checkOut)) {
+    return { ok: false, error: 'Dates must be valid YYYY-MM-DD' };
+  }
+  const inD  = new Date(checkIn  + 'T12:00:00');
+  const outD = new Date(checkOut + 'T12:00:00');
+  if (isNaN(inD) || isNaN(outD)) return { ok: false, error: 'Invalid calendar date' };
+  const nights = Math.round((outD - inD) / 86400000);
+  if (nights < 1)   return { ok: false, error: 'Check-out must be after check-in' };
+  if (nights > 60)  return { ok: false, error: 'Stay length exceeds the 60-night maximum' };
+  // Allow "today" (guests can book same-day); reject clearly past check-ins.
+  const todayStr = new Date().toISOString().slice(0, 10);
+  if (checkIn < todayStr) return { ok: false, error: 'Check-in date is in the past' };
+  return { ok: true, nights };
+}
+
+// Fast lookup of the 10 valid room ids — used to reject unknown roomIds from
+// the client before they reach Hostex (defined after ROOMS, see below).
+let KNOWN_ROOM_IDS = null;
+
+// Idempotency: referenceIds whose Hostex reservations have already been
+// created. Guards against duplicate Stripe webhook deliveries within a warm
+// instance; the Hostex existence pre-check in createHostexReservations is the
+// cross-instance backstop.
+const processedReferenceIds = new Set();
+
 // ── Helper: extract day-level availability records from /availabilities ──
 // Hostex returns:
 //   { data: { properties: [{ id, availabilities: [{date, available, remarks}, ...] }] } }
@@ -246,6 +287,7 @@ const ROOMS = [
   { id: 'neptune', num: '09', en: 'The Neptune', th: 'เดอะ เนปจูน',   zh: '海王星房', hostexName: 'The Neptune', hostexId: 11963603 },
   { id: 'pluto',   num: '10', en: 'The Pluto',   th: 'เดอะ พลูโต',    zh: '冥王星房', hostexName: 'The Pluto',   hostexId: 11963608 },
 ];
+KNOWN_ROOM_IDS = new Set(ROOMS.map(r => r.id));
 
 // Cache matched hostex IDs per room (populated by matchRoomsToListings)
 // Set to null on startup so a fresh fetch always happens on first request.
@@ -560,12 +602,29 @@ app.post('/api/booking', async (req, res) => {
   // get the canonical form, not the raw user input.
   ({ name, email, phone } = v.normalized);
 
-  // Support both single roomId and multi-room roomIds array
-  const allRoomIds    = Array.isArray(roomIds) && roomIds.length > 0 ? roomIds : roomId ? [roomId] : [];
-  const roomCount     = Math.max(allRoomIds.length, 1);
-  const nightsNum     = parseInt(nights, 10) || 1;
-  const extraBedsNum  = parseInt(extraBeds, 10) || 0;
-  const petCountNum   = parseInt(petCount,  10) || 0;
+  // ── Date validation — never trust client dates or `nights`. Rejects
+  //    reversed/equal ranges (calcTotal would return 0), past check-ins and
+  //    malformed dates. nightsNum is derived from the dates, not the payload.
+  const sd = validateStayDates(checkIn, checkOut);
+  if (!sd.ok) {
+    return res.status(400).json({ success: false, error: sd.error });
+  }
+  const nightsNum = sd.nights;
+
+  // ── Room validation — every id must be one of our 10 known rooms. An
+  //    unknown id would otherwise fall through to a fallback property in
+  //    createHostexReservations and book the wrong (or first) room.
+  const allRoomIds = Array.isArray(roomIds) && roomIds.length > 0 ? roomIds : roomId ? [roomId] : [];
+  const unknownRooms = allRoomIds.filter(id => !KNOWN_ROOM_IDS.has(id));
+  if (unknownRooms.length) {
+    return res.status(400).json({ success: false, error: `Unknown room(s): ${unknownRooms.join(', ')}` });
+  }
+  const roomCount = Math.max(allRoomIds.length, 1);
+
+  // ── Extras — clamp to non-negative so a negative count can't discount the
+  //    total below the true room price.
+  const extraBedsNum  = Math.max(0, parseInt(extraBeds, 10) || 0);
+  const petCountNum   = Math.max(0, parseInt(petCount,  10) || 0);
 
   const referenceId   = generateRef();
   const perRoomPrice  = calcTotal(checkIn, checkOut);
@@ -574,6 +633,28 @@ app.post('/api/booking', async (req, res) => {
   const serverTotal   = perRoomPrice * roomCount + extraBedFee + petFee;
 
   try {
+    // ── Overbooking guard — re-verify availability right before taking
+    //    payment. The client's view can be stale (another guest may have
+    //    booked since the page loaded). isListingAvailable fails closed, so a
+    //    Hostex error here means "treat as unavailable" rather than overbook.
+    if (allRoomIds.length > 0) {
+      const rooms = await matchRoomsToListings();
+      const unavailable = [];
+      for (const rid of allRoomIds) {
+        const room = rooms.find(r => r.id === rid);
+        const free = room && room.hostexId && await isListingAvailable(room.hostexId, checkIn, checkOut);
+        if (!free) unavailable.push(room ? room.en : rid);
+      }
+      if (unavailable.length) {
+        console.warn(`⛔ Booking blocked — no longer available: ${unavailable.join(', ')}`);
+        return res.status(409).json({
+          success: false,
+          error: 'availability_changed',
+          message: `Sorry, no longer available for your dates: ${unavailable.join(', ')}`,
+        });
+      }
+    }
+
     // ── Stripe Checkout Session ──────────────────────────
     if (stripe) {
       const roomLabel = roomName || `${roomCount} room${roomCount !== 1 ? 's' : ''}`;
@@ -642,6 +723,35 @@ async function createHostexReservations({ allRoomIds, checkIn, checkOut, name, e
     guests, specialRequests, perRoomPrice, referenceId, nights }) {
   const allRooms  = await matchRoomsToListings();
   const targetIds = allRoomIds.length > 0 ? allRoomIds : [null];
+
+  // ── Idempotency — Stripe delivers checkout.session.completed AT LEAST once,
+  //    sometimes more. Without a guard, each delivery creates a fresh set of
+  //    Hostex reservations (duplicate bookings). Two layers:
+  //    (1) in-memory set — instant, covers rapid retries to a warm instance;
+  //    (2) Hostex lookup — survives restarts / other instances by checking
+  //        whether a reservation carrying this [Ref: …] already exists.
+  if (referenceId && processedReferenceIds.has(referenceId)) {
+    console.log(`↩️  ${referenceId}: already processed this instance — skipping duplicate create`);
+    return;
+  }
+  if (referenceId) {
+    try {
+      const probeId = allRooms.find(r => targetIds.includes(r.id))?.hostexId || await getPropertyId();
+      const existing = extractList(await hostexFetch(
+        `/reservations?property_id=${probeId}&start_date=${checkIn}&end_date=${checkOut}&limit=100`));
+      const refRe = new RegExp(`\\[Ref:\\s*${referenceId}\\b`, 'i');
+      if (existing.some(r => refRe.test(String(r.remarks || '')))) {
+        console.log(`↩️  ${referenceId}: reservation already exists in Hostex — skipping duplicate create`);
+        processedReferenceIds.add(referenceId);
+        return;
+      }
+    } catch (e) {
+      // Pre-check is best-effort; if Hostex is unreachable we proceed (the
+      // in-memory guard still prevents same-instance duplicates).
+      console.warn(`Idempotency pre-check failed for ${referenceId} (proceeding):`, e.message);
+    }
+  }
+
   const nightsNum = parseInt(nights, 10) || 1;
   // Rate per night (average across stay); Hostex requires this separate from total
   const rateAmount = Math.round(perRoomPrice / nightsNum);
@@ -724,6 +834,8 @@ async function createHostexReservations({ allRoomIds, checkIn, checkOut, name, e
     const tag = placeholderUsed ? '⚠️ (placeholder contact)' : '✅';
     console.log(`  ${tag} Hostex reservation: ${matched?.en || rid} — ${code} (${checkIn} → ${checkOut})`);
   }
+  // Mark done so a duplicate webhook delivery for the same booking is a no-op.
+  if (referenceId) processedReferenceIds.add(referenceId);
   roomListingCache  = null;
   blockedDatesCache = null;
 }
@@ -961,16 +1073,16 @@ function buildRecoveryEmailHtml({ name, checkIn, checkOut, nights,
       <h1 style="color:#FAF7EF;font-weight:300;font-size:28px;margin:0;letter-spacing:0.5px">${T.title}</h1>
     </div>
     <div style="padding:40px 40px 28px">
-      <p style="color:#555;font-family:Arial,sans-serif;font-size:14px;margin:0 0 8px">${T.dear} ${name || ''},</p>
+      <p style="color:#555;font-family:Arial,sans-serif;font-size:14px;margin:0 0 8px">${T.dear} ${escapeHtml(name || '')},</p>
       <p style="color:#666;font-family:Arial,sans-serif;font-size:14px;line-height:1.75;margin:0 0 26px">${T.body}</p>
       <div style="background:#F0EBE0;padding:24px 28px;border-left:3px solid #967138;margin-bottom:30px">
         <p style="color:#967138;font-family:Arial,sans-serif;font-size:9px;letter-spacing:4px;text-transform:uppercase;margin:0 0 16px">${T.details}</p>
         <table style="width:100%;border-collapse:collapse;font-family:Arial,sans-serif;font-size:13px">
-          ${roomName ? `<tr><td style="padding:5px 0;color:#888;width:140px">${T.room}</td><td style="color:#333">${roomName}</td></tr>` : ''}
+          ${roomName ? `<tr><td style="padding:5px 0;color:#888;width:140px">${T.room}</td><td style="color:#333">${escapeHtml(roomName)}</td></tr>` : ''}
           ${checkIn  ? `<tr><td style="padding:5px 0;color:#888">${T.checkin}</td><td style="color:#333">${fmt(checkIn)}</td></tr>` : ''}
           ${checkOut ? `<tr><td style="padding:5px 0;color:#888">${T.checkout}</td><td style="color:#333">${fmt(checkOut)}</td></tr>` : ''}
-          ${nights   ? `<tr><td style="padding:5px 0;color:#888">${T.nightsLbl}</td><td style="color:#333">${nights}</td></tr>` : ''}
-          ${guests   ? `<tr><td style="padding:5px 0;color:#888">${T.guestsLbl}</td><td style="color:#333">${guests}</td></tr>` : ''}
+          ${nights   ? `<tr><td style="padding:5px 0;color:#888">${T.nightsLbl}</td><td style="color:#333">${escapeHtml(nights)}</td></tr>` : ''}
+          ${guests   ? `<tr><td style="padding:5px 0;color:#888">${T.guestsLbl}</td><td style="color:#333">${escapeHtml(guests)}</td></tr>` : ''}
           ${total    ? `<tr style="border-top:1px solid #D4CEC4"><td style="padding:10px 0 4px;color:#888">${T.totalLbl}</td><td style="padding:10px 0 4px;color:#967138;font-size:20px;font-weight:700">฿${parseInt(total).toLocaleString()}</td></tr>` : ''}
         </table>
       </div>
@@ -1325,6 +1437,24 @@ app.get('/api/blocked-dates', async (req, res) => {
 // Open in browser: http://localhost:3000/api/debug/hostex
 // ================================================================
 app.get('/api/debug/hostex', async (req, res) => {
+  // AUTH — this endpoint returns raw Hostex reservation objects, which include
+  // guest name/phone/email. Leaving it open would leak guest PII to anyone with
+  // the URL. Fail closed in production exactly like /api/audit-contacts: require
+  // CRON_SECRET (Bearer header or ?secret=), allow the open path only on true
+  // localhost dev.
+  const cronSecret = process.env.CRON_SECRET;
+  const authHeader = req.headers.authorization || '';
+  const supplied = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : (req.query.secret || '');
+  const isProd = process.env.VERCEL === '1' || process.env.NODE_ENV === 'production';
+  const isLocalhost = (req.hostname === 'localhost' || req.hostname === '127.0.0.1');
+  if (!cronSecret) {
+    if (isProd || !isLocalhost) {
+      return res.status(503).json({ error: 'debug endpoint disabled: CRON_SECRET not configured' });
+    }
+  } else if (supplied !== cronSecret) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
   roomListingCache = null; // always re-fetch on debug
   const out = {};
   try {
@@ -1498,7 +1628,7 @@ function buildEmailHtml({ name, checkIn, checkOut, nights,
     </div>
     <!-- Body -->
     <div style="padding:44px 40px">
-      <p style="color:#555;font-family:Arial,sans-serif;font-size:14px;margin:0 0 8px">${T.dear} ${name},</p>
+      <p style="color:#555;font-family:Arial,sans-serif;font-size:14px;margin:0 0 8px">${T.dear} ${escapeHtml(name)},</p>
       <p style="color:#666;font-family:Arial,sans-serif;font-size:14px;line-height:1.75;margin:0 0 28px">${T.body}</p>
       <!-- Details box -->
       <div style="background:#F0EBE0;padding:28px 32px;border-left:3px solid #967138;margin-bottom:28px">
@@ -1507,7 +1637,7 @@ function buildEmailHtml({ name, checkIn, checkOut, nights,
           <tr><td style="padding:6px 0;color:#888;width:140px">${T.ref}</td>
               <td style="color:#1C1915;font-weight:700;font-size:15px;letter-spacing:1px">${referenceId}</td></tr>
           ${roomName ? `<tr><td style="padding:6px 0;color:#888">${T.room}</td>
-              <td style="color:#333">${roomName}</td></tr>` : ''}
+              <td style="color:#333">${escapeHtml(roomName)}</td></tr>` : ''}
           <tr><td style="padding:6px 0;color:#888">${T.checkin}</td>
               <td style="color:#333">${fmt(checkIn)}</td></tr>
           <tr><td style="padding:6px 0;color:#888">${T.checkout}</td>
@@ -1515,12 +1645,12 @@ function buildEmailHtml({ name, checkIn, checkOut, nights,
           <tr><td style="padding:6px 0;color:#888">${T.nightsLbl}</td>
               <td style="color:#333">${nights}</td></tr>
           <tr><td style="padding:6px 0;color:#888">${T.guestsLbl}</td>
-              <td style="color:#333">${guests}</td></tr>
+              <td style="color:#333">${escapeHtml(guests)}</td></tr>
           <tr style="border-top:1px solid #D4CEC4">
               <td style="padding:12px 0 6px;color:#888">${T.totalLbl}</td>
               <td style="padding:12px 0 6px;color:#967138;font-size:22px;font-weight:700">฿${parseInt(total).toLocaleString()}</td></tr>
         </table>
-        ${specialRequests ? `<p style="margin:14px 0 0;color:#666;font-family:Arial,sans-serif;font-size:12px;border-top:1px solid #D4CEC4;padding-top:12px"><strong>${T.requests}:</strong> ${specialRequests}</p>` : ''}
+        ${specialRequests ? `<p style="margin:14px 0 0;color:#666;font-family:Arial,sans-serif;font-size:12px;border-top:1px solid #D4CEC4;padding-top:12px"><strong>${T.requests}:</strong> ${escapeHtml(specialRequests)}</p>` : ''}
       </div>
       <p style="color:#666;font-family:Arial,sans-serif;font-size:13px;line-height:1.7">${T.questions}</p>
       <p style="color:#555;font-family:Arial,sans-serif;font-size:13px;line-height:1.9">
