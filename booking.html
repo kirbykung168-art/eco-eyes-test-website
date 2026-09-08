@@ -698,16 +698,28 @@
           </div>
 
           <!-- Pets row -->
+          <p class="form-label" id="label-pets">Bringing Pets?</p>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
-              <label class="form-label" for="pet-count" id="label-pets">Bringing Pets?</label>
-              <select id="pet-count" class="form-input" onchange="updateRoomSummary()">
-                <option value="0">No pets</option>
-                <option value="1">1 pet  (+฿500 / night)</option>
-                <option value="2">2 pets (+฿1,000 / night)</option>
-                <option value="3">3 pets (+฿1,500 / night)</option>
-                <option value="4">4 pets (+฿2,000 / night)</option>
-                <option value="5">5 pets (+฿2,500 / night)</option>
+              <label class="form-label" for="pet-count-small" id="label-pets-small" style="font-weight:400;">Dogs under 15kg</label>
+              <select id="pet-count-small" class="form-input" onchange="updateRoomSummary()">
+                <option value="0">0</option>
+                <option value="1">1  (+฿500 / night)</option>
+                <option value="2">2 (+฿1,000 / night)</option>
+                <option value="3">3 (+฿1,500 / night)</option>
+                <option value="4">4 (+฿2,000 / night)</option>
+                <option value="5">5 (+฿2,500 / night)</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label" for="pet-count-large" id="label-pets-large" style="font-weight:400;">Dogs 15kg and over</label>
+              <select id="pet-count-large" class="form-input" onchange="updateRoomSummary()">
+                <option value="0">0</option>
+                <option value="1">1  (+฿800 / night)</option>
+                <option value="2">2 (+฿1,600 / night)</option>
+                <option value="3">3 (+฿2,400 / night)</option>
+                <option value="4">4 (+฿3,200 / night)</option>
+                <option value="5">5 (+฿4,000 / night)</option>
               </select>
             </div>
           </div>
@@ -1620,8 +1632,17 @@
     const g = parseInt(document.getElementById('guest-count').value) || 0;
     return g >= 3 ? 1 : 0;
   }
-  function getPetCount() {
-    return parseInt(document.getElementById('pet-count')?.value) || 0;
+  const PET_RATE_SMALL = 500; // THB/night — dogs under 15kg
+  const PET_RATE_LARGE = 800; // THB/night — dogs 15kg and over
+  function getPetCounts() {
+    return {
+      small: parseInt(document.getElementById('pet-count-small')?.value) || 0,
+      large: parseInt(document.getElementById('pet-count-large')?.value) || 0,
+    };
+  }
+  function getPetFeePerNight() {
+    const { small, large } = getPetCounts();
+    return small * PET_RATE_SMALL + large * PET_RATE_LARGE;
   }
   function onGuestCountChange() {
     const notice = document.getElementById('extra-bed-notice');
@@ -1642,9 +1663,10 @@
     const count    = selectedRoomIds.length;
     const perRoom  = (checkinDate && checkoutDate) ? calcTotal(checkinDate, checkoutDate) : 0;
     const extraBed = getExtraBeds();
-    const pets     = getPetCount();
+    const { small: petsSmall, large: petsLarge } = getPetCounts();
+    const pets     = petsSmall + petsLarge;
     const extraBedFee = extraBed * 1000 * Math.max(count, 1);
-    const petFee      = pets * n * 500;
+    const petFee      = getPetFeePerNight() * n;
     const grand       = perRoom * count + extraBedFee + petFee;
 
     const names = selectedRoomIds.map(id => {
@@ -1680,8 +1702,12 @@
     const petRow = document.getElementById('sum-pet-row');
     if (pets > 0 && n > 0) {
       petRow.style.display = '';
+      const petBreakdown = [
+        petsSmall > 0 ? `${petsSmall} <15kg` : '',
+        petsLarge > 0 ? `${petsLarge} 15kg+` : '',
+      ].filter(Boolean).join(', ');
       document.getElementById('sum-pet-label').textContent =
-        `${pets} pet${pets>1?'s':''} × ${n} night${n!==1?'s':''}`;
+        `${pets} pet${pets>1?'s':''} (${petBreakdown}) × ${n} night${n!==1?'s':''}`;
       document.getElementById('sum-pet-val').textContent = `+฿${petFee.toLocaleString()}`;
     } else {
       petRow.style.display = 'none';
@@ -1780,7 +1806,7 @@
     }
     return ok;
   }
-  ['guest-name','guest-email','guest-phone','guest-count','pet-count'].forEach(id => {
+  ['guest-name','guest-email','guest-phone','guest-count','pet-count-small','pet-count-large'].forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
     el.addEventListener('input',  validateForm);
@@ -1804,9 +1830,10 @@
     const nights      = getNights();
     const perRoom     = calcTotal(checkinDate, checkoutDate);
     const extraBeds   = getExtraBeds();
-    const petCount    = getPetCount();
+    const { small: petCountSmall, large: petCountLarge } = getPetCounts();
+    const petCount    = petCountSmall + petCountLarge;
     const extraBedFee = extraBeds * 1000 * selectedRoomIds.length;
-    const petFee      = petCount * nights * 500;
+    const petFee      = getPetFeePerNight() * nights;
 
     // Final phone assembly — only attach the country code if the user has
     // actually entered digits. Stops the form from sending a payload like
@@ -1837,6 +1864,8 @@
       nights,
       extraBeds,
       petCount,
+      petCountSmall,
+      petCountLarge,
       total:           perRoom * selectedRoomIds.length + extraBedFee + petFee,
     };
 
@@ -1902,6 +1931,9 @@
     'label-email':       { en:'Email Address',       th:'อีเมล',                  zh:'电子邮箱' },
     'label-phone':       { en:'Phone Number',        th:'เบอร์โทรศัพท์',           zh:'电话号码' },
     'label-guests':      { en:'Number of Guests',    th:'จำนวนผู้เข้าพัก',         zh:'入住人数' },
+    'label-pets':        { en:'Bringing Pets?',      th:'พาสัตว์เลี้ยงมาด้วยไหม?', zh:'携带宠物？' },
+    'label-pets-small':  { en:'Dogs under 15kg',     th:'สุนัขน้ำหนักต่ำกว่า 15 กก.', zh:'15公斤以下狗狗' },
+    'label-pets-large':  { en:'Dogs 15kg and over',  th:'สุนัขน้ำหนัก 15 กก. ขึ้นไป', zh:'15公斤及以上狗狗' },
     'label-requests':    { en:'Special Requests',    th:'คำขอพิเศษ',               zh:'特殊要求' },
     'label-optional':    { en:'(optional)',          th:'(ถ้ามี)',                  zh:'（可选）' },
     'btn-submit-text':   { en:'Pay Now',              th:'ชำระเงิน',                zh:'立即付款' },
@@ -1932,7 +1964,7 @@
     'chip-shower':       { en:'Rainfall shower',      th:'ฝักบัวเรนชาวเวอร์',  zh:'雨淋花洒' },
     'chip-forest':       { en:'Forest & lake views',  th:'วิวป่าและทะเลสาบ',    zh:'森林与湖景' },
     'chip-breakfast':    { en:'Breakfast included',   th:'รวมอาหารเช้า',       zh:'含早餐' },
-    'intro-weekend':     { en:'Fri–Sat ฿3,500/night · 3+ guests add an extra bed (+฿1,000/night) · Pets welcome (฿500/pet/night)', th:'ศุกร์–เสาร์ ฿3,500/คืน · 3 ท่านขึ้นไปเพิ่มเตียงเสริม (+฿1,000/คืน) · ยินดีต้อนรับสัตว์เลี้ยง (฿500/ตัว/คืน)', zh:'周五–周六 ฿3,500/晚 · 3人及以上加床（+฿1,000/晚） · 欢迎宠物（฿500/只/晚）' },
+    'intro-weekend':     { en:'Fri–Sat ฿3,500/night · 3+ guests add an extra bed (+฿1,000/night) · Pets welcome (dogs under 15kg ฿500/pet/night, 15kg+ ฿800/pet/night)', th:'ศุกร์–เสาร์ ฿3,500/คืน · 3 ท่านขึ้นไปเพิ่มเตียงเสริม (+฿1,000/คืน) · ยินดีต้อนรับสัตว์เลี้ยง (สุนัขน้ำหนักต่ำกว่า 15 กก. ฿500/ตัว/คืน, 15 กก. ขึ้นไป ฿800/ตัว/คืน)', zh:'周五–周六 ฿3,500/晚 · 3人及以上加床（+฿1,000/晚） · 欢迎宠物（15公斤以下狗狗 ฿500/只/晚，15公斤及以上 ฿800/只/晚）' },
 
     // ── B6b: Dome pick step ──
     'step-2-label':      { en:'Step 2',                  th:'ขั้นตอนที่ 2',     zh:'第 2 步' },

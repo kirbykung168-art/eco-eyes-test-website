@@ -584,7 +584,7 @@ app.post('/api/booking', async (req, res) => {
   let { name, email, phone, guests, checkIn, checkOut,
         nights, total, specialRequests, lang,
         roomId, roomIds, roomName,
-        extraBeds, petCount } = req.body;
+        extraBeds, petCountSmall, petCountLarge } = req.body;
 
   // ── Validation ───────────────────────────────────────────
   if (!checkIn || !checkOut || !guests) {
@@ -623,13 +623,16 @@ app.post('/api/booking', async (req, res) => {
 
   // ── Extras — clamp to non-negative so a negative count can't discount the
   //    total below the true room price.
-  const extraBedsNum  = Math.max(0, parseInt(extraBeds, 10) || 0);
-  const petCountNum   = Math.max(0, parseInt(petCount,  10) || 0);
+  const extraBedsNum     = Math.max(0, parseInt(extraBeds,      10) || 0);
+  const petCountSmallNum = Math.max(0, parseInt(petCountSmall,  10) || 0);
+  const petCountLargeNum = Math.max(0, parseInt(petCountLarge,  10) || 0);
+  const petCountNum      = petCountSmallNum + petCountLargeNum;
 
   const referenceId   = generateRef();
   const perRoomPrice  = calcTotal(checkIn, checkOut);
   const extraBedFee   = extraBedsNum * 1000 * roomCount;
-  const petFee        = petCountNum  * nightsNum * 500;
+  // Pet fee tiers — dogs under 15kg vs. 15kg and over, priced per pet per night.
+  const petFee         = (petCountSmallNum * 500 + petCountLargeNum * 800) * nightsNum;
   const serverTotal   = perRoomPrice * roomCount + extraBedFee + petFee;
 
   try {
@@ -662,7 +665,12 @@ app.post('/api/booking', async (req, res) => {
       // Build description with extras
       let desc = `${checkIn} → ${checkOut} · ${nightsNum} night${nightsNum !== 1 ? 's' : ''} · ${guests} guest${parseInt(guests) > 1 ? 's' : ''}`;
       if (extraBedsNum > 0) desc += ` · Extra bed ×${roomCount}`;
-      if (petCountNum  > 0) desc += ` · ${petCountNum} pet${petCountNum > 1 ? 's' : ''}`;
+      if (petCountNum  > 0) {
+        const petParts = [];
+        if (petCountSmallNum > 0) petParts.push(`${petCountSmallNum} dog${petCountSmallNum > 1 ? 's' : ''} <15kg`);
+        if (petCountLargeNum > 0) petParts.push(`${petCountLargeNum} dog${petCountLargeNum > 1 ? 's' : ''} 15kg+`);
+        desc += ` · ${petParts.join(', ')}`;
+      }
 
       const session = await stripe.checkout.sessions.create({
         mode:  'payment',
@@ -691,6 +699,8 @@ app.post('/api/booking', async (req, res) => {
           total:           String(serverTotal),
           extraBeds:       String(extraBedsNum),
           petCount:        String(petCountNum),
+          petCountSmall:   String(petCountSmallNum),
+          petCountLarge:   String(petCountLargeNum),
         },
         success_url: `${SITE_URL}/booking-confirm.html?ref=${referenceId}&checkIn=${checkIn}&checkOut=${checkOut}&nights=${nightsNum}&total=${serverTotal}&name=${encodeURIComponent(name)}&room=${encodeURIComponent(roomName || roomLabel)}&paid=1`,
         cancel_url:  `${SITE_URL}/booking.html?cancelled=1`,
