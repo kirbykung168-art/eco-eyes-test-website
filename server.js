@@ -57,6 +57,9 @@ app.use(express.static(__dirname));   // serves index.html, booking.html etc.
 // ── Config ───────────────────────────────────────────────────
 const HOSTEX_API_KEY  = process.env.HOSTEX_API_KEY;
 const HOSTEX_BASE     = 'https://api.hostex.io/v3';
+// Hostex calls run ~1s; cap them so a hung request can't burn the whole
+// serverless budget and get the function killed mid-booking.
+const HOSTEX_TIMEOUT_MS = 15000;
 const BASE_RATE       = parseInt(process.env.NIGHTLY_RATE  || '2700', 10);
 const WEEKEND_RATE    = parseInt(process.env.WEEKEND_RATE  || '3500', 10);
 // SITE_URL: explicit env var wins; fall back to Vercel's auto-injected URL (needs https:// prefix);
@@ -304,6 +307,7 @@ let blockedDatesCacheTime = 0;
 async function hostexFetch(path, options = {}) {
   const url = `${HOSTEX_BASE}${path}`;
   const res = await fetch(url, {
+    signal: AbortSignal.timeout(HOSTEX_TIMEOUT_MS),
     ...options,
     headers: {
       'Authorization': `Bearer ${HOSTEX_API_KEY}`,
@@ -313,7 +317,17 @@ async function hostexFetch(path, options = {}) {
   });
   const text = await res.text();
   if (!res.ok) throw new Error(`Hostex ${res.status} on ${path}: ${text}`);
-  try { return JSON.parse(text); } catch { return text; }
+  let parsed;
+  try { parsed = JSON.parse(text); } catch { return text; }
+  // Hostex reports failures as HTTP 200 with a non-200 `error_code` in the BODY
+  // (success is error_code:200 / "Done."). Checking only res.ok made every
+  // rejected write look like a success: createHostexReservations logged a ✅,
+  // the guest got a confirmation email, and no reservation existed in Hostex.
+  const code = parsed?.error_code;
+  if (code !== undefined && Number(code) !== 200) {
+    throw new Error(`Hostex error ${code} on ${path}: ${parsed.error_msg || text}`);
+  }
+  return parsed;
 }
 
 // ================================================================
@@ -348,8 +362,11 @@ async function matchRoomsToListings() {
       return { ...room, hostexId: match ? idOf(match) : null };
     });
   } catch (e) {
-    console.warn('Could not match rooms to listings:', e.message);
-    roomListingCache = ROOMS.map(r => ({ ...r, hostexId: null }));
+    console.error('🚨 Could not match rooms to Hostex listings:', e.message);
+    // Deliberately NOT cached: caching the failure pinned every room to
+    // hostexId:null for the life of the instance, so one transient Hostex
+    // error degraded every later booking on that instance.
+    return ROOMS.map(r => ({ ...r, hostexId: null }));
   }
   return roomListingCache;
 }
@@ -744,16 +761,23 @@ async function createHostexReservations({ allRoomIds, checkIn, checkOut, name, e
     console.log(`↩️  ${referenceId}: already processed this instance — skipping duplicate create`);
     return;
   }
+  // Per-PROPERTY, not per-reference: creation below is a loop over rooms, so a
+  // run that died halfway (timeout, API error) left some rooms created. The old
+  // reference-level check then saw "ref exists" and skipped ALL rooms, leaving
+  // multi-room bookings permanently short. Collect which rooms already carry
+  // this ref and create only the missing ones.
+  const alreadyCreated = new Set();
   if (referenceId) {
     try {
-      const probeId = allRooms.find(r => targetIds.includes(r.id))?.hostexId || await getPropertyId();
       const existing = extractList(await hostexFetch(
-        `/reservations?property_id=${probeId}&start_date=${checkIn}&end_date=${checkOut}&limit=100`));
-      const refRe = new RegExp(`\\[Ref:\\s*${referenceId}\\b`, 'i');
-      if (existing.some(r => refRe.test(String(r.remarks || '')))) {
-        console.log(`↩️  ${referenceId}: reservation already exists in Hostex — skipping duplicate create`);
-        processedReferenceIds.add(referenceId);
-        return;
+        `/reservations?start_date=${checkIn}&end_date=${checkOut}&limit=100`));
+      const safeRef = referenceId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const refRe = new RegExp(`\\[Ref:\\s*${safeRef}\\b`, 'i');
+      for (const r of existing) {
+        if (refRe.test(String(r.remarks || ''))) alreadyCreated.add(r.property_id);
+      }
+      if (alreadyCreated.size) {
+        console.log(`↩️  ${referenceId}: ${alreadyCreated.size} room(s) already in Hostex — creating only the remainder`);
       }
     } catch (e) {
       // Pre-check is best-effort; if Hostex is unreachable we proceed (the
@@ -804,19 +828,28 @@ async function createHostexReservations({ allRoomIds, checkIn, checkOut, name, e
 
   for (const rid of targetIds) {
     const matched    = allRooms.find(r => r.id === rid);
-    const propertyId = matched?.hostexId || await getPropertyId();
-    // If the requested room had no Hostex match we still create the booking
-    // (the guest already paid — losing it is worse) but against a fallback
-    // property, which is the WRONG room. Scream so the team re-homes it.
+    // Refuse rather than booking the guest into a DIFFERENT room. The old
+    // fallback silently created the reservation against the first property in
+    // the account, so the booking looked "missing" from the room the guest
+    // actually paid for. The webhook now returns non-2xx on throw, so Stripe
+    // retries and the failure is visible instead of silently mis-homed.
     if (rid && !matched?.hostexId) {
-      console.error(`🚨 Room "${rid}" has no Hostex property match — booking ${referenceId || ''} created against fallback property ${propertyId}. MOVE IT TO THE CORRECT ROOM IN HOSTEX.`);
+      throw new Error(`Room "${rid}" has no Hostex property match — refusing to create a reservation against the wrong room. Fix the room↔property mapping, then replay the Stripe event for ${referenceId || 'this booking'}.`);
+    }
+    const propertyId = matched?.hostexId || await getPropertyId();
+    if (alreadyCreated.has(propertyId)) {
+      console.log(`  ↩️  ${matched?.en || rid}: already created for ${referenceId} — skipping`);
+      continue;
     }
     const remarks    = `${specialRequests ? specialRequests + ' — ' : ''}Paid via Stripe${referenceId ? ` [Ref: ${referenceId}]` : ''}${placeholderUsed ? ' ⚠️ GUEST CONTACT MISSING — see Stripe for real phone/email' : ''}`.trim();
     const result = await hostexFetch('/reservations', {
       method: 'POST',
       body: JSON.stringify({
         property_id:       propertyId,
-        custom_channel_id: 4913,          // "Direct Booking" channel in Hostex
+        // 29 = "Booking Site". The previous value (4913) does not exist in the
+        // account's custom_channels; Hostex accepted it but filed every booking
+        // under 29 anyway, so this just makes the code match reality.
+        custom_channel_id: 29,
         check_in_date:     checkIn,
         check_out_date:    checkOut,
         // Hostex v3 create-reservation expects FLAT fields named exactly
@@ -840,7 +873,12 @@ async function createHostexReservations({ allRoomIds, checkIn, checkOut, name, e
         status:            'accepted',
       }),
     });
-    const code = result?.data?.reservation?.reservation_code || 'unknown';
+    // A response with no reservation_code means nothing was created. Logging it
+    // as 'unknown' and carrying on is what let paid bookings vanish silently.
+    const code = result?.data?.reservation?.reservation_code;
+    if (!code) {
+      throw new Error(`Hostex returned no reservation_code for ${matched?.en || rid} — treating as FAILED. Response: ${JSON.stringify(result).slice(0, 300)}`);
+    }
     const tag = placeholderUsed ? '⚠️ (placeholder contact)' : '✅';
     console.log(`  ${tag} Hostex reservation: ${matched?.en || rid} — ${code} (${checkIn} → ${checkOut})`);
   }
@@ -886,9 +924,16 @@ async function handleStripeWebhook(req, res) {
   let event;
   try {
     if (secret && sig) {
-      // Verified path — requires raw body (Buffer or string)
-      const rawBody = Buffer.isBuffer(req.body) ? req.body : Buffer.from(JSON.stringify(req.body));
-      event = stripe.webhooks.constructEvent(rawBody, sig, secret);
+      // Verified path — needs the EXACT bytes Stripe sent. Stripe pretty-prints
+      // its payloads, so re-serialising an already-parsed body yields different
+      // bytes and can NEVER verify. The old fallback did exactly that and
+      // surfaced as a misleading "no signatures match" — report the real cause.
+      if (!Buffer.isBuffer(req.body) && typeof req.body !== 'string') {
+        console.error('🚨 Stripe webhook body was parsed before signature verification (expected a raw Buffer).');
+        console.error('   express.raw({type:"application/json"}) must run before any JSON body parser on this route.');
+        return res.status(400).send('Webhook Error: raw body unavailable for signature verification');
+      }
+      event = stripe.webhooks.constructEvent(req.body, sig, secret);
     } else if (!secret && !isProd && isLocalhost) {
       // Dev-only path: parse without verification
       if (Buffer.isBuffer(req.body) || typeof req.body === 'string') {
@@ -930,7 +975,21 @@ async function handleStripeWebhook(req, res) {
         referenceId:     meta.referenceId,
         nights:          meta.nights,
       });
+    } catch (err) {
+      // Return 5xx so Stripe RETRIES (it backs off over ~3 days) and the failure
+      // is visible in the Stripe dashboard. Answering 200 here is what destroyed
+      // paid bookings silently: the guest was charged, no room was ever blocked,
+      // and nothing surfaced anywhere. The idempotency check above makes the
+      // retry safe — it creates only the rooms that are still missing.
+      console.error(`🚨 HOSTEX RESERVATION FAILED — ${meta.referenceId} | ${meta.name} <${meta.email}> | ${meta.checkIn}→${meta.checkOut} | rooms=${meta.roomName}`);
+      console.error(`   Cause: ${err.message}`);
+      console.error('   GUEST HAS PAID. Stripe will retry this webhook; fix the cause or create the reservation manually in Hostex.');
+      return res.status(500).send('Hostex reservation failed — retry expected');
+    }
 
+    // Email is best-effort and must not trigger a webhook retry: a retry would
+    // only re-send the email, and the booking is already safely in Hostex.
+    try {
       await sendConfirmationEmail({
         name:            meta.name,
         email:           meta.email,
@@ -944,12 +1003,11 @@ async function handleStripeWebhook(req, res) {
         lang:            meta.lang || 'en',
         roomName:        meta.roomName,
       });
-
-      console.log(`✅ Booking complete: ${meta.referenceId} for ${meta.name}`);
     } catch (err) {
-      console.error('Post-payment processing error:', err.message);
-      // Still return 200 to Stripe so it doesn't retry — log for manual follow-up
+      console.error(`⚠️  Confirmation email failed for ${meta.referenceId} (reservation IS in Hostex):`, err.message);
     }
+
+    console.log(`✅ Booking complete: ${meta.referenceId} for ${meta.name}`);
   }
 
   // ── B9: Abandoned-booking recovery ───────────────────────────────────
