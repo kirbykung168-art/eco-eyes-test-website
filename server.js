@@ -794,8 +794,6 @@ async function createHostexReservations({ allRoomIds, checkIn, checkOut, name, e
   }
 
   const nightsNum = parseInt(nights, 10) || 1;
-  // Rate per night (average across stay); Hostex requires this separate from total
-  const rateAmount = Math.round(perRoomPrice / nightsNum);
 
   // Extras (pet fees, extra beds) are charged by Stripe but are NOT part of the
   // nightly room rate, so they used to be dropped entirely: Hostex recorded
@@ -884,7 +882,11 @@ async function createHostexReservations({ allRoomIds, checkIn, checkOut, name, e
         mobile:            safePhone,
         number_of_adults:  parseInt(guests, 10) || 1,
         number_of_guests:  parseInt(guests, 10) || 1,
-        rate_amount:       rateAmount,
+        // Hostex DERIVES the reservation total from rate_amount × nights and
+        // ignores total_price entirely (verified against the live API), so the
+        // per-night rate has to carry the extras or Hostex reports the
+        // room-only figure while Stripe collected more.
+        rate_amount:       Math.round(roomTotal / nightsNum),
         commission_amount: 0,
         received_amount:   roomTotal,
         income_method_id:  1,             // Online/card payment
