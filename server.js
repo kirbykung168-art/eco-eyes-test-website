@@ -747,9 +747,16 @@ app.post('/api/booking', async (req, res) => {
 // Called both by the Stripe webhook (paid) and the no-Stripe fallback.
 // ================================================================
 async function createHostexReservations({ allRoomIds, checkIn, checkOut, name, email, phone,
-    guests, specialRequests, perRoomPrice, referenceId, nights }) {
+    guests, specialRequests, perRoomPrice, referenceId, nights, bookingTotal }) {
   const allRooms  = await matchRoomsToListings();
-  const targetIds = allRoomIds.length > 0 ? allRoomIds : [null];
+  // An empty room list used to fall through to getPropertyId(), which returns
+  // HOSTEX_PROPERTY_ID — a single fixed property. That silently filed bookings
+  // against whatever room that env var names (observed: a guest's booking
+  // landing on The Earth). There is no safe default room: refuse instead.
+  if (!allRoomIds || allRoomIds.length === 0) {
+    throw new Error(`No room selected for ${referenceId || 'this booking'} — refusing to create a reservation against a default property. Check roomIds in the Stripe session metadata.`);
+  }
+  const targetIds = allRoomIds;
 
   // ── Idempotency — Stripe delivers checkout.session.completed AT LEAST once,
   //    sometimes more. Without a guard, each delivery creates a fresh set of
@@ -789,6 +796,14 @@ async function createHostexReservations({ allRoomIds, checkIn, checkOut, name, e
   const nightsNum = parseInt(nights, 10) || 1;
   // Rate per night (average across stay); Hostex requires this separate from total
   const rateAmount = Math.round(perRoomPrice / nightsNum);
+
+  // Extras (pet fees, extra beds) are charged by Stripe but are NOT part of the
+  // nightly room rate, so they used to be dropped entirely: Hostex recorded
+  // ฿3,500 for a booking the guest actually paid ฿5,600 for. Bill the remainder
+  // on the first reservation so the Hostex totals reconcile with the payout.
+  const roomsSubtotal = perRoomPrice * targetIds.length;
+  const extrasTotal   = Math.max(0, (parseInt(bookingTotal, 10) || 0) - roomsSubtotal);
+  let extrasPending   = extrasTotal;
 
   // ── B: Structural guarantee that empty contact never reaches Hostex. ──
   // Even if a future endpoint forgets to call normalizeGuestContact() before
@@ -841,7 +856,13 @@ async function createHostexReservations({ allRoomIds, checkIn, checkOut, name, e
       console.log(`  ↩️  ${matched?.en || rid}: already created for ${referenceId} — skipping`);
       continue;
     }
-    const remarks    = `${specialRequests ? specialRequests + ' — ' : ''}Paid via Stripe${referenceId ? ` [Ref: ${referenceId}]` : ''}${placeholderUsed ? ' ⚠️ GUEST CONTACT MISSING — see Stripe for real phone/email' : ''}`.trim();
+    // Attach any extras to the first reservation created, so the sum across
+    // rooms equals what the guest actually paid.
+    const extrasHere  = extrasPending;
+    extrasPending     = 0;
+    const roomTotal   = perRoomPrice + extrasHere;
+    const extrasNote  = extrasHere > 0 ? ` (incl. ฿${extrasHere.toLocaleString()} extras: pets/extra bed)` : '';
+    const remarks    = `${specialRequests ? specialRequests + ' — ' : ''}Paid via Stripe${referenceId ? ` [Ref: ${referenceId}]` : ''}${extrasNote}${placeholderUsed ? ' ⚠️ GUEST CONTACT MISSING — see Stripe for real phone/email' : ''}`.trim();
     const result = await hostexFetch('/reservations', {
       method: 'POST',
       body: JSON.stringify({
@@ -865,9 +886,9 @@ async function createHostexReservations({ allRoomIds, checkIn, checkOut, name, e
         number_of_guests:  parseInt(guests, 10) || 1,
         rate_amount:       rateAmount,
         commission_amount: 0,
-        received_amount:   perRoomPrice,
+        received_amount:   roomTotal,
         income_method_id:  1,             // Online/card payment
-        total_price:       perRoomPrice,
+        total_price:       roomTotal,
         currency:          'THB',
         remarks,
         status:            'accepted',
@@ -974,6 +995,8 @@ async function handleStripeWebhook(req, res) {
         perRoomPrice:    calcTotal(meta.checkIn, meta.checkOut),
         referenceId:     meta.referenceId,
         nights:          meta.nights,
+        // What the guest was actually charged, so pet/extra-bed fees reach Hostex
+        bookingTotal:    parseInt(meta.total, 10) || 0,
       });
     } catch (err) {
       // Return 5xx so Stripe RETRIES (it backs off over ~3 days) and the failure
@@ -1214,7 +1237,7 @@ app.post('/api/test-payment', async (req, res) => {
 
   try {
     await createHostexReservations({ allRoomIds, checkIn, checkOut, name, email, phone,
-      guests, specialRequests, perRoomPrice, referenceId });
+      guests, specialRequests, perRoomPrice, referenceId, nights: nightsNum, bookingTotal: total });
     hostexCreated = true;
   } catch (err) {
     console.error('Test: Hostex failed:', err.message);
